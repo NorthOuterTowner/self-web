@@ -45,7 +45,7 @@ export const categories: CategoryMeta[] = [
     slug: "journal",
     title: "个人感受记录",
     titleEn: "Journal",
-    summary: "关于阅读、独处与节奏的碎片，不追求结论。",
+    summary: "在学习和生活的过程中留下的碎片",
     intro:
       "Everything Meaningful By Everyone",
     index: "01",
@@ -56,7 +56,7 @@ export const categories: CategoryMeta[] = [
     slug: "computing",
     title: "计算机技术博客",
     titleEn: "Computing",
-    summary: "系统、编译与运行时，偏向把抽象层拆开看的那类笔记。",
+    summary: "计算机科学与软件工程的架构",
     intro:
       "Computer Science Build Everything on the Internet.",
     index: "02",
@@ -67,7 +67,7 @@ export const categories: CategoryMeta[] = [
     slug: "comms",
     title: "通信工程博客",
     titleEn: "Communications",
-    summary: "从信号与信道出发，到协议栈与无线组网的工程笔记。",
+    summary: "从信号与系统，到真正的通信基站。",
     intro:
       "Telecommunications Connect Everything with Each Other.",
     index: "03",
