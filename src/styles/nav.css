@@ -1,0 +1,176 @@
+/* Fixed top bar: hairline bottom rule, wordmark left, sections right. */
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: var(--nav-h);
+  background: color-mix(in srgb, var(--bone) 78%, transparent);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    background-color var(--dur) var(--ease-out);
+}
+
+.nav.is-stuck {
+  border-bottom-color: var(--line);
+  background: color-mix(in srgb, var(--bone) 92%, transparent);
+}
+
+.nav__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+
+/* ---- Wordmark -------------------------------------------------------- */
+
+.nav__mark {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+
+.nav__glyph {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  position: relative;
+}
+
+/* The crosshair inside the mark — a nod to the grid. */
+.nav__glyph::before,
+.nav__glyph::after {
+  content: "";
+  position: absolute;
+  background: var(--ink);
+}
+
+.nav__glyph::before {
+  left: 50%;
+  top: 2px;
+  bottom: 2px;
+  width: 1.5px;
+  transform: translateX(-50%);
+}
+
+.nav__glyph::after {
+  top: 50%;
+  left: 2px;
+  right: 2px;
+  height: 1.5px;
+  transform: translateY(-50%);
+}
+
+.nav__name {
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.nav__name--short {
+  display: none;
+  font-family: var(--mono);
+  letter-spacing: 0.06em;
+}
+
+/* ---- Sections -------------------------------------------------------- */
+
+.nav__list {
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  height: 100%;
+}
+
+.nav__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 100%;
+  padding-inline: var(--sp-4);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.nav__link:hover {
+  color: var(--ink);
+}
+
+.nav__link-idx {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+/* Active indicator: a 2px bar flush with the bottom rule. */
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: var(--sp-4);
+  right: var(--sp-4);
+  bottom: 0;
+  height: 2px;
+  background: var(--accent-dot, var(--ink));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.nav__link.is-active {
+  color: var(--ink);
+}
+
+.nav__link.is-active::after {
+  transform: scaleX(1);
+}
+
+.nav__link.is-active .nav__link-idx {
+  color: var(--accent-dot, var(--ink-3));
+}
+
+.nav__link[data-accent-key="journal"] {
+  --accent-dot: var(--clay);
+}
+.nav__link[data-accent-key="computing"] {
+  --accent-dot: var(--fjord);
+}
+.nav__link[data-accent-key="comms"] {
+  --accent-dot: var(--birch);
+}
+
+@media (max-width: 700px) {
+  :root {
+    --nav-h: 58px;
+  }
+  .nav__name {
+    display: none;
+  }
+  .nav__name--short {
+    display: block;
+  }
+  .nav__link {
+    padding-inline: var(--sp-3);
+  }
+  .nav__link-idx {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav__link {
+    padding-inline: 0.5rem;
+    font-size: var(--t-micro);
+  }
+}

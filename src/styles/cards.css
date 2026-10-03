@@ -1,0 +1,201 @@
+/* Three streams, presented as a staggered Swiss row. */
+
+.streams {
+  position: relative;
+  padding-block: var(--sp-24) var(--sp-16);
+}
+
+.streams__head {
+  margin-bottom: var(--sp-16);
+}
+
+.streams__row {
+  align-items: start;
+}
+
+.stream {
+  grid-column: span 4;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  padding: var(--sp-6);
+  background: transparent;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  will-change: transform;
+  /* Explicit resting value so the GSAP entrance wipe has a target to land on. */
+  clip-path: inset(0%);
+  transition:
+    background-color var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out);
+}
+
+/* Swiss asymmetry: the flanking cards sit lower than the centre one. */
+.stream[data-position="left"] {
+  margin-top: var(--sp-12);
+}
+.stream[data-position="right"] {
+  margin-top: var(--sp-16);
+}
+
+.stream:hover,
+.stream:focus-visible {
+  background: var(--paper);
+  border-color: var(--line-strong);
+}
+
+/* Accent rule across the top, revealed on scroll, extended on hover. */
+/* Kept inside the box because the card is clipped to inset(0%). */
+.stream__accent {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.stream__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-12);
+}
+
+.stream__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: auto;
+}
+
+.stream__title {
+  font-size: var(--t-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  margin-bottom: var(--sp-2);
+}
+
+.stream__title-en {
+  display: block;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--sp-4);
+}
+
+.stream__summary {
+  font-size: var(--t-small);
+  line-height: 1.66;
+  color: var(--ink-2);
+  max-width: 34ch;
+}
+
+.stream__latest {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.stream__latest-title {
+  display: block;
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  margin-top: var(--sp-2);
+  text-wrap: pretty;
+}
+
+.stream__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-top: auto;
+  padding-top: var(--sp-8);
+}
+
+.stream__count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+}
+
+.stream__count-unit {
+  font-family: var(--sans);
+  font-size: var(--t-small);
+  color: var(--ink-4);
+}
+
+.stream__arrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.stream__arrow svg {
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.stream:hover .stream__arrow svg,
+.stream:focus-visible .stream__arrow svg {
+  transform: translateX(6px);
+}
+
+/* The centre stream is the primary one: heavier frame, taller box. */
+.stream[data-position="center"] {
+  min-height: 468px;
+  border-color: var(--line-strong);
+}
+
+.stream[data-position="center"] .stream__title {
+  font-size: var(--t-h1);
+}
+
+@media (max-width: 1080px) {
+  .stream {
+    min-height: 380px;
+  }
+  .stream[data-position="center"] {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 860px) {
+  .streams__row {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    row-gap: var(--sp-6);
+  }
+  .stream {
+    grid-column: 1 / span 6;
+    min-height: 0;
+    margin-top: 0 !important;
+  }
+  .stream[data-position="center"] {
+    min-height: 0;
+  }
+  .stream[data-position="center"] .stream__title {
+    font-size: var(--t-h2);
+  }
+  .stream__top {
+    padding-bottom: var(--sp-6);
+  }
+  .stream__foot {
+    padding-top: var(--sp-6);
+  }
+  .streams__head {
+    margin-bottom: var(--sp-8);
+  }
+  .streams {
+    padding-block: var(--sp-16) var(--sp-12);
+  }
+}

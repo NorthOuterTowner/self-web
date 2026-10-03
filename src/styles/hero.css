@@ -1,0 +1,283 @@
+/* Hero: one line of type on an almost empty field. */
+
+.hero {
+  position: relative;
+  min-height: calc(100svh - var(--nav-h));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* ---- Background ------------------------------------------------------ */
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 12 hairlines marking the grid the page is built on. */
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.hero__grid-line {
+  border-left: 1px solid var(--line);
+  opacity: 0.55;
+  transform-origin: top;
+}
+
+.hero__grid-line:last-child {
+  border-right: 1px solid var(--line);
+}
+
+/* Two concentric rings, drifting very slowly. Kept to the right of the
+   headline so the display type never reads against a curve. */
+.hero__ring {
+  position: absolute;
+  top: 46%;
+  left: 82%;
+  width: min(62vw, 660px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 1px solid color-mix(in srgb, var(--fjord) 30%, transparent);
+  border-radius: 50%;
+  animation: ring-drift 52s var(--ease-swiss) infinite alternate;
+}
+
+.hero__ring--inner {
+  width: min(36vw, 380px);
+  border-color: color-mix(in srgb, var(--clay) 26%, transparent);
+  animation-duration: 68s;
+  animation-direction: alternate-reverse;
+}
+
+/* Small amplitude on purpose: perceptible over a minute, never distracting. */
+@keyframes ring-drift {
+  from {
+    translate: -50% -50%;
+  }
+  to {
+    translate: -47% -53%;
+  }
+}
+
+/* Faint dot field for texture without using an image. */
+.hero__dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--ink) 18%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 26px 26px;
+  opacity: 0.26;
+  /* Fades out before it reaches the headline. */
+  mask-image: radial-gradient(
+    ellipse 64% 54% at 24% 56%,
+    #000 0%,
+    transparent 70%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 64% 54% at 24% 56%,
+    #000 0%,
+    transparent 70%
+  );
+}
+
+/* ---- Content --------------------------------------------------------- */
+
+.hero__body {
+  position: relative;
+  padding-block: var(--sp-24) var(--sp-16);
+}
+
+.hero__eyebrow {
+  grid-column: 1 / span 12;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-6);
+}
+
+.hero__eyebrow-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  transform-origin: left;
+}
+
+.hero__display {
+  grid-column: 1 / span 11;
+  font-size: var(--t-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-display);
+  font-weight: 500;
+  /* Reserve the final height so the typed line never reflows the page. */
+  min-height: calc(var(--t-display) * var(--lh-tight));
+  text-wrap: balance;
+}
+
+.hero__caret {
+  display: inline-block;
+  width: 0.46em;
+  height: 0.07em;
+  margin-left: 0.06em;
+  vertical-align: baseline;
+  background: var(--fjord);
+  animation: caret-blink 1.05s steps(1, end) infinite;
+}
+
+.hero__caret.is-done {
+  animation: caret-settle 2.1s var(--ease-out) forwards;
+}
+
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Three slow blinks, then it leaves for good. */
+@keyframes caret-settle {
+  0%,
+  16% {
+    opacity: 1;
+  }
+  17%,
+  33% {
+    opacity: 0;
+  }
+  34%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  67% {
+    opacity: 0;
+  }
+  68%,
+  84% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 1 0.4;
+  }
+}
+
+.hero__meta {
+  grid-column: 1 / span 12;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--col-gap);
+  padding-top: var(--sp-8);
+  margin-top: var(--sp-8);
+  border-top: 1px solid var(--ink);
+}
+
+.hero__sub {
+  grid-column: 1 / span 5;
+  font-size: var(--t-lede);
+  line-height: 1.52;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.hero__facts {
+  grid-column: 8 / span 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.hero__fact {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.hero__fact dd {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Scroll cue ------------------------------------------------------ */
+
+.hero__cue {
+  position: absolute;
+  left: var(--gutter);
+  bottom: var(--sp-8);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.hero__cue-track {
+  position: relative;
+  width: 1px;
+  height: 46px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.hero__cue-track::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  background: var(--ink);
+  animation: cue-run 2.4s var(--ease-swiss) infinite;
+}
+
+@keyframes cue-run {
+  0% {
+    transform: translateY(-110%);
+  }
+  60%,
+  100% {
+    transform: translateY(260%);
+  }
+}
+
+@media (max-width: 860px) {
+  .hero__display {
+    grid-column: 1 / span 6;
+  }
+  .hero__eyebrow,
+  .hero__meta {
+    grid-column: 1 / span 6;
+  }
+  .hero__meta {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .hero__sub {
+    grid-column: 1 / span 6;
+  }
+  .hero__facts {
+    grid-column: 1 / span 6;
+    margin-top: var(--sp-6);
+  }
+  .hero__body {
+    padding-block: var(--sp-16) var(--sp-24);
+  }
+}

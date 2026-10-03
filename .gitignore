@@ -6,6 +6,12 @@ out
 dist
 *.tgz
 
+# local visual checks
+shots
+
+# compiled from content/**/*.md by scripts/content.ts
+src/content/generated.ts
+
 # code coverage
 coverage
 *.lcov

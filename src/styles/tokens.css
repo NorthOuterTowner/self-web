@@ -1,0 +1,99 @@
+/**
+ * Design tokens — Swiss International Typographic Style × Nordic palette.
+ *
+ * Rules of the system:
+ *  - One sans family, few weights, large size contrast.
+ *  - Hairline rules (1px) instead of shadows and rounded corners.
+ *  - A 12 column grid with a single gutter value.
+ *  - Desaturated Nordic colour, accents used once per surface.
+ */
+
+:root {
+  /* ---- Nordic surfaces ---------------------------------------------- */
+  --bone: #f4f2ed; /* page */
+  --paper: #fbfaf7; /* raised surface */
+  --snow: #ffffff;
+  --fog: #e8e5de; /* wash / hover fill */
+  --line: #d8d4cb; /* hairline */
+  --line-soft: #e3dfd6;
+  --line-strong: #b5afa3;
+
+  /* ---- Ink ---------------------------------------------------------- */
+  --ink: #14171a;
+  --ink-2: #3a4046;
+  --ink-3: #6a7178;
+  --ink-4: #9ba1a7;
+
+  /* ---- Accents (one per blog stream) -------------------------------- */
+  --clay: #bc866a; /* journal — 个人感受 */
+  --fjord: #67899f; /* computing — 计算机技术 */
+  --birch: #8b9c85; /* comms — 通信工程 */
+
+  /* Per-surface accent hook, overridden by [data-accent] */
+  --accent: var(--ink);
+
+  /* ---- Type --------------------------------------------------------- */
+  --sans:
+    "Helvetica Neue", Helvetica, Inter, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  --mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* Fluid modular scale, ratio ≈ 1.26 */
+  --t-micro: 0.6875rem; /* 11px — labels, indices */
+  --t-small: 0.8125rem; /* 13px — meta */
+  --t-body: clamp(0.9375rem, 0.9rem + 0.18vw, 1.0625rem);
+  --t-lede: clamp(1.0625rem, 1rem + 0.38vw, 1.3125rem);
+  --t-h3: clamp(1.0625rem, 1rem + 0.45vw, 1.375rem);
+  --t-h2: clamp(1.3125rem, 1.15rem + 0.8vw, 1.875rem);
+  --t-h1: clamp(1.75rem, 1.35rem + 1.9vw, 3.25rem);
+  --t-display: clamp(2.25rem, 1.1rem + 6.4vw, 7.5rem);
+
+  --lh-tight: 1.02;
+  --lh-snug: 1.18;
+  --lh-text: 1.68;
+
+  --track-label: 0.16em; /* uppercase micro labels */
+  --track-display: -0.035em; /* large display type */
+
+  /* ---- Grid & spacing ----------------------------------------------- */
+  --maxw: 1512px;
+  --gutter: clamp(1.25rem, 0.6rem + 3vw, 4.5rem);
+  --col-gap: clamp(1rem, 0.5rem + 1.4vw, 2rem);
+  --nav-h: 68px;
+  /* Reading column. Deliberately in rem, not ch: `ch` resolves against each
+     element's own font-size, which let headings and body text drift to
+     different widths. ~44rem keeps CJK lines near 40 characters. */
+  --measure: 44rem;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-24: 6rem;
+  --sp-32: 8rem;
+
+  /* ---- Motion ------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-swiss: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms;
+  --dur: 320ms;
+  --dur-slow: 620ms;
+
+  color-scheme: light;
+}
+
+[data-accent="journal"] {
+  --accent: var(--clay);
+}
+[data-accent="computing"] {
+  --accent: var(--fjord);
+}
+[data-accent="comms"] {
+  --accent: var(--birch);
+}

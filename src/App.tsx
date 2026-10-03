@@ -1,23 +1,25 @@
-import { APITester } from "./APITester";
-import "./index.css";
-
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+import { Route, Routes } from "react-router-dom";
+import { TopNav } from "./components/TopNav";
+import { CategoryPage } from "./pages/CategoryPage";
+import { Home } from "./pages/Home";
+import { NotFound } from "./pages/NotFound";
 
 export function App() {
   return (
-    <div className="app">
-      <div className="logo-container">
-        <img src={logo} alt="Bun Logo" className="logo bun-logo" />
-        <img src={reactLogo} alt="React Logo" className="logo react-logo" />
-      </div>
-
-      <h1>Bun + React</h1>
-      <p>
-        Edit <code>src/App.tsx</code> and save to test HMR
-      </p>
-      <APITester />
-    </div>
+    <>
+      <a className="skip-link" href="#main">
+        跳到主要内容
+      </a>
+      <TopNav />
+      <main id="main">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/:category" element={<CategoryPage />} />
+          <Route path="/:category/:slug" element={<CategoryPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </>
   );
 }
 

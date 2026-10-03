@@ -31,11 +31,28 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Reports every malformed article at once, with file and line numbers,
+      # instead of failing on the first one during the build.
+      - name: Check content format
+        run: bun run content:check
+
+      - name: Typecheck
+        run: bun run typecheck
+
       - name: Build static site
         run: bun run build:pages
 
+      # Asserts the things that silently break a Pages deploy: asset prefix,
+      # injected router basename, production React, and the 404 fallback.
+      - name: Verify build output
+        run: bun run verify:pages
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Creates the Pages site if the repository does not have one yet,
+          # which is otherwise a "Get Pages site failed / Not Found" error.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

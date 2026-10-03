@@ -1,0 +1,536 @@
+/* Blog layout: index on the left, text on the right. */
+
+.blog {
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.blog__masthead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-6);
+  padding-bottom: var(--sp-4);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: var(--sp-8);
+}
+
+.blog__masthead-title {
+  font-size: var(--t-h2);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-snug);
+}
+
+.blog__masthead-en {
+  margin-left: var(--sp-4);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.blog__masthead-count {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.blog__body {
+  display: grid;
+  grid-template-columns: minmax(216px, 272px) minmax(0, 1fr);
+  gap: clamp(1.5rem, 1rem + 3vw, 5rem);
+  align-items: start;
+}
+
+/* ---- Sidebar --------------------------------------------------------- */
+
+.toc {
+  position: sticky;
+  top: calc(var(--nav-h) + var(--sp-8));
+  max-height: calc(100vh - var(--nav-h) - var(--sp-12));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--sp-2);
+  border-right: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+
+.toc__group + .toc__group {
+  margin-top: var(--sp-8);
+}
+
+.toc__heading {
+  display: block;
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.toc__intro {
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-3);
+  margin-bottom: var(--sp-8);
+  text-wrap: pretty;
+}
+
+/* Entry list */
+.toc__entry {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 0 var(--sp-3) var(--sp-2);
+  border-left: 2px solid transparent;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink-3);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.toc__entry:hover {
+  color: var(--ink);
+  background: var(--fog);
+}
+
+.toc__entry.is-active {
+  color: var(--ink);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+
+.toc__entry-num {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+  padding-top: 0.25em;
+}
+
+.toc__entry-date {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-4);
+  margin-top: var(--sp-1);
+}
+
+/* Within-article headings */
+.toc__anchors {
+  display: flex;
+  flex-direction: column;
+}
+
+.toc__anchor {
+  display: block;
+  padding: var(--sp-2) 0 var(--sp-2) var(--sp-3);
+  border-left: 1px solid var(--line);
+  font-size: var(--t-small);
+  line-height: 1.45;
+  color: var(--ink-3);
+  text-align: left;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toc__anchor--sub {
+  padding-left: var(--sp-6);
+  font-size: 0.78rem;
+  color: var(--ink-4);
+}
+
+.toc__anchor:hover {
+  color: var(--ink);
+  border-left-color: var(--ink-3);
+}
+
+.toc__anchor.is-current {
+  color: var(--ink);
+  border-left-color: var(--accent);
+}
+
+.toc__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-8);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.toc__back:hover {
+  color: var(--ink);
+}
+
+/* ---- Article --------------------------------------------------------- */
+
+.article {
+  min-width: 0;
+}
+
+.article__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding-bottom: var(--sp-4);
+}
+
+.article__eyebrow-sep {
+  width: 14px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.article__title {
+  font-size: var(--t-h1);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.028em;
+  font-weight: 500;
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+/* The rule spans the column, the standfirst text does not. */
+.article__lede {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--ink);
+}
+
+.article__lede p {
+  max-width: 34rem;
+  font-size: var(--t-lede);
+  line-height: 1.56;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.article__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+}
+
+.article__tag {
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ---- Prose ----------------------------------------------------------- */
+
+.prose {
+  margin-top: var(--sp-12);
+}
+
+/* Running text sits in the measure; rules and code span the whole column.
+   That contrast between a short text block and a full-width hairline is the
+   main structural device of the style. */
+.prose > * {
+  max-width: var(--measure);
+}
+
+.prose h2,
+.prose hr,
+.prose pre {
+  max-width: none;
+}
+
+.prose p {
+  margin-bottom: var(--sp-6);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.prose h2 {
+  font-size: var(--t-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  margin-top: var(--sp-16);
+  margin-bottom: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--ink);
+  scroll-margin-top: calc(var(--nav-h) + var(--sp-6));
+}
+
+.prose h3 {
+  font-size: var(--t-h3);
+  line-height: var(--lh-snug);
+  font-weight: 500;
+  margin-top: var(--sp-12);
+  margin-bottom: var(--sp-4);
+  color: var(--ink);
+  scroll-margin-top: calc(var(--nav-h) + var(--sp-6));
+}
+
+/* A hairline tick in front of h3 instead of extra weight. */
+.prose h3::before {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--accent);
+  margin-bottom: var(--sp-3);
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  counter-reset: prose-item;
+}
+
+.prose li {
+  display: grid;
+  grid-template-columns: 1.9rem 1fr;
+  align-items: baseline;
+}
+
+.prose li::before {
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  color: var(--accent);
+}
+
+.prose ul li::before {
+  content: "—";
+}
+
+.prose ol li {
+  counter-increment: prose-item;
+}
+
+.prose ol li::before {
+  content: counter(prose-item, decimal-leading-zero);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+}
+
+.prose blockquote {
+  margin: var(--sp-12) 0;
+  padding-left: var(--sp-6);
+  border-left: 2px solid var(--accent);
+  font-size: var(--t-lede);
+  line-height: 1.5;
+  color: var(--ink);
+  /* Matches the standfirst measure so pull quotes and ledes agree. */
+  max-width: 34rem;
+}
+
+.prose blockquote footer {
+  margin-top: var(--sp-3);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.prose pre {
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-4) var(--sp-6);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose pre code {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.72;
+  color: var(--ink-2);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.prose__code-lang {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: var(--sp-3);
+}
+
+/* ---- Inline markers -------------------------------------------------- */
+
+.prose :not(pre) > code,
+.prose :not(pre) code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--fog);
+  padding: 0.1em 0.3em;
+  /* Long identifiers should not blow out the measure. */
+  overflow-wrap: break-word;
+}
+
+.prose strong {
+  font-weight: 500;
+  /* Weight alone reads weakly in this grotesque at body size, so emphasis
+     also gets a hairline underscore in the stream's accent colour. */
+  box-shadow: inset 0 -0.42em 0 color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.prose em {
+  font-style: normal;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--accent);
+}
+
+.prose__link {
+  color: var(--ink);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.prose__link:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Inline code keeps its own background, so drop the emphasis wash. */
+.prose strong > code,
+.prose em > code {
+  background: transparent;
+}
+
+.prose__note {
+  margin: var(--sp-8) 0;
+  padding: var(--sp-4) var(--sp-6);
+  background: color-mix(in srgb, var(--accent) 7%, var(--paper));
+  border-left: 2px solid var(--accent);
+  font-size: var(--t-small);
+  line-height: 1.66;
+  color: var(--ink-2);
+}
+
+.prose__note .label {
+  display: block;
+  margin-bottom: var(--sp-2);
+  color: var(--accent);
+}
+
+.prose hr {
+  margin: var(--sp-12) 0;
+  border: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ---- Prev / next ----------------------------------------------------- */
+
+.article__nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--col-gap);
+  margin-top: var(--sp-24);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--ink);
+}
+
+.article__nav-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) 0;
+  color: var(--ink-2);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.article__nav-item:hover {
+  color: var(--ink);
+}
+
+.article__nav-item--next {
+  text-align: right;
+  grid-column: 2;
+  align-items: flex-end;
+}
+
+.article__nav-title {
+  font-size: var(--t-small);
+  line-height: 1.5;
+  max-width: 28ch;
+}
+
+/* ---- Mobile ---------------------------------------------------------- */
+
+.toc__mobile-summary {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .blog__body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-8);
+  }
+
+  .toc {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: var(--sp-4);
+  }
+
+  /* Collapse the index into a disclosure on small screens. */
+  .toc__mobile-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    cursor: pointer;
+    padding-block: var(--sp-3);
+    list-style: none;
+  }
+
+  .toc__mobile-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .toc__mobile-summary::after {
+    content: "+";
+    margin-left: auto;
+    font-family: var(--mono);
+    color: var(--ink-3);
+  }
+
+  details[open] > .toc__mobile-summary::after {
+    content: "–";
+  }
+
+  .toc__panel {
+    padding-top: var(--sp-4);
+  }
+
+  .article__nav {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .article__nav-item--next {
+    grid-column: 1;
+    text-align: left;
+    align-items: flex-start;
+    border-top: 1px solid var(--line);
+  }
+}
