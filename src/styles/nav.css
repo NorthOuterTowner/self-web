@@ -68,17 +68,21 @@
   transform: translateY(-50%);
 }
 
+/* The bar is set in the serif face. Sizes run a step larger than the sans
+   equivalents because the serif has a smaller x-height at the same px. */
 .nav__name {
-  font-size: var(--t-small);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
 .nav__name--short {
   display: none;
-  font-family: var(--mono);
-  letter-spacing: 0.06em;
+  font-family: var(--serif);
+  font-size: 1rem;
+  letter-spacing: 0.01em;
 }
 
 /* ---- Sections -------------------------------------------------------- */
@@ -94,10 +98,14 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 0.42em;
   height: 100%;
   padding-inline: var(--sp-4);
-  font-size: var(--t-small);
+  font-family: var(--serif);
+  font-size: 0.9375rem;
+  letter-spacing: 0.005em;
+  /* 首页 would otherwise break across two lines in a cramped bar. */
+  white-space: nowrap;
   color: var(--ink-3);
   transition: color var(--dur-fast) var(--ease-out);
 }
@@ -107,9 +115,12 @@
 }
 
 .nav__link-idx {
-  font-family: var(--mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.06em;
+  font-family: var(--serif);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  /* Lining figures on purpose: the serif's old-style zero sits at x-height and
+     reads as "oo" at this size. Tabular keeps the indices from shifting. */
+  font-variant-numeric: lining-nums tabular-nums;
   color: var(--ink-4);
   transition: color var(--dur-fast) var(--ease-out);
 }
@@ -168,9 +179,35 @@
   }
 }
 
-@media (max-width: 380px) {
+/* The serif runs wider than the grotesque it replaced, so the compact step has
+   to start earlier than it used to: "Communications" is the binding item and
+   body uses `overflow-x: clip`, which would silently cut it off rather than
+   produce a scrollbar. */
+@media (max-width: 520px) {
   .nav__link {
-    padding-inline: 0.5rem;
-    font-size: var(--t-micro);
+    padding-inline: 0.45rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0;
+  }
+  .nav__name--short {
+    font-size: 0.9375rem;
+  }
+  .nav__link::after {
+    left: 0.45rem;
+    right: 0.45rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav__inner {
+    gap: var(--sp-3);
+  }
+  .nav__link {
+    padding-inline: 0.3rem;
+    font-size: 0.75rem;
+  }
+  .nav__link::after {
+    left: 0.3rem;
+    right: 0.3rem;
   }
 }

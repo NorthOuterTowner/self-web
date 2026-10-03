@@ -40,6 +40,14 @@
     "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 
+  /* Serif, used for the top bar. An old-style face reads as a counterpoint to
+     the grotesque body text rather than a second voice competing with it.
+     System faces only — the site loads no web fonts. */
+  --serif:
+    "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "New York",
+    Cambria, Constantia, Georgia, "Times New Roman", Times, "Songti SC",
+    "Source Han Serif SC", "Noto Serif CJK SC", SimSun, serif;
+
   /* Fluid modular scale, ratio ≈ 1.26 */
   --t-micro: 0.6875rem; /* 11px — labels, indices */
   --t-small: 0.8125rem; /* 13px — meta */
