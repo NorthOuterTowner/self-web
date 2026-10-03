@@ -119,13 +119,28 @@
 
 .hero__display {
   grid-column: 1 / span 11;
+  font-weight: 500;
+  letter-spacing: var(--track-display);
+  /* Reserve both lines up front so neither typewriter reflows the page. */
+  min-height: calc(
+    (var(--t-display) + var(--t-display-2)) * var(--lh-tight)
+  );
+}
+
+.hero__line {
+  display: block;
   font-size: var(--t-display);
   line-height: var(--lh-tight);
-  letter-spacing: var(--track-display);
-  font-weight: 500;
-  /* Reserve the final height so the typed line never reflows the page. */
-  min-height: calc(var(--t-display) * var(--lh-tight));
   text-wrap: balance;
+}
+
+/* Second line: same family and tracking, a step down in size and ink so the
+   hierarchy is carried by scale rather than by a different treatment. */
+.hero__line--two {
+  font-size: var(--t-display-2);
+  color: var(--ink-2);
+  letter-spacing: -0.028em;
+  margin-top: 0.18em;
 }
 
 .hero__caret {
@@ -262,6 +277,9 @@
 @media (max-width: 860px) {
   .hero__display {
     grid-column: 1 / span 6;
+  }
+  .hero__line--two {
+    margin-top: 0.24em;
   }
   .hero__eyebrow,
   .hero__meta {

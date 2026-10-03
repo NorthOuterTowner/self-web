@@ -7,7 +7,13 @@ import { categories, site } from "../site.config";
 const GRID_COLUMNS = 12;
 
 export function Hero() {
-  const { typed, done } = useTypewriter(site.heroLine);
+  const line = useTypewriter(site.heroLine);
+  // Chained: starts only once the first line has finished writing itself.
+  const lineTwo = useTypewriter(site.heroLineTwo, {
+    enabled: line.done,
+    startDelay: 520,
+    speed: 52,
+  });
   const root = useRef<HTMLElement>(null);
 
   // Entrance: the grid draws itself, then the marginal data arrives.
@@ -73,11 +79,22 @@ export function Hero() {
         </div>
 
         <h1 className="hero__display" id="hero-title">
-          {/* Full line for assistive tech; the animated copy is decorative. */}
-          <span className="sr-only">{site.heroLine}</span>
-          <span aria-hidden="true">
-            {typed}
-            <span className={`hero__caret${done ? " is-done" : ""}`} />
+          {/* Both lines in full for assistive tech; the typed copy below is
+              decorative and hidden from it. */}
+          <span className="sr-only">
+            {site.heroLine}. {site.heroLineTwo}
+          </span>
+
+          <span className="hero__line" aria-hidden="true">
+            {line.typed}
+            {!line.done && <span className="hero__caret" />}
+          </span>
+
+          <span className="hero__line hero__line--two" aria-hidden="true">
+            {lineTwo.typed}
+            {line.done && (
+              <span className={`hero__caret${lineTwo.done ? " is-done" : ""}`} />
+            )}
           </span>
         </h1>
 

@@ -11,57 +11,96 @@ export interface TypewriterState {
   done: boolean;
 }
 
+export interface TypewriterOptions {
+  /** Milliseconds per character. */
+  speed?: number;
+  /** Pause before the first character. */
+  startDelay?: number;
+  /** Random variance added per character. */
+  jitter?: number;
+  /**
+   * Hold the animation until this is true. Used to chain lines: the second
+   * line passes the first line's `done`.
+   */
+  enabled?: boolean;
+}
+
 /**
- * Types `text` out exactly once and then stops for good.
+ * Types `text` out exactly once and then stops for good — no loop, no reset.
  *
- * Deliberately not a loop: the hero line is written on arrival and stays put.
- * Guards against React's double-invoked effects in StrictMode so the animation
- * cannot restart or interleave with itself.
+ * Progress is kept in refs rather than guarded by a "has run" flag. That
+ * matters because React double-invokes effects in StrictMode: a flag would let
+ * the first run's cleanup cancel the timer while the second run skips setup,
+ * and the line would never appear in development. Keeping the character count
+ * outside React state means a remount resumes where it left off, and a line
+ * that already finished is restored instantly instead of replayed.
  */
 export function useTypewriter(
   text: string,
-  options: { speed?: number; startDelay?: number; jitter?: number } = {},
+  options: TypewriterOptions = {},
 ): TypewriterState {
-  const { speed = 58, startDelay = 420, jitter = 26 } = options;
+  const { speed = 58, startDelay = 420, jitter = 26, enabled = true } = options;
 
   const [typed, setTyped] = useState("");
   const [done, setDone] = useState(false);
-  // Survives StrictMode remounts, so the line is only ever animated once.
-  const hasRun = useRef(false);
+
+  const typedCount = useRef(0);
+  const finished = useRef(false);
+  const source = useRef(text);
 
   useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
+    if (!enabled) return;
 
-    if (prefersReducedMotion()) {
+    // Editing the copy restarts the animation; it is not a resume.
+    if (source.current !== text) {
+      source.current = text;
+      typedCount.current = 0;
+      finished.current = false;
+      setDone(false);
+    }
+
+    const chars = Array.from(text);
+
+    if (finished.current) {
       setTyped(text);
       setDone(true);
       return;
     }
 
-    const chars = Array.from(text);
-    let index = 0;
+    if (prefersReducedMotion()) {
+      typedCount.current = chars.length;
+      finished.current = true;
+      setTyped(text);
+      setDone(true);
+      return;
+    }
+
     let timer: ReturnType<typeof setTimeout>;
 
     const tick = () => {
-      index += 1;
-      setTyped(chars.slice(0, index).join(""));
+      typedCount.current += 1;
+      const count = typedCount.current;
+      setTyped(chars.slice(0, count).join(""));
 
-      if (index >= chars.length) {
+      if (count >= chars.length) {
+        finished.current = true;
         setDone(true);
         return;
       }
 
       // A small random variance reads as a hand rather than a metronome,
       // with a longer pause after a space to suggest word boundaries.
-      const isSpace = chars[index - 1] === " ";
-      const delay = speed + Math.random() * jitter + (isSpace ? 90 : 0);
-      timer = setTimeout(tick, delay);
+      const isSpace = chars[count - 1] === " ";
+      timer = setTimeout(
+        tick,
+        speed + Math.random() * jitter + (isSpace ? 90 : 0),
+      );
     };
 
-    timer = setTimeout(tick, startDelay);
+    // Only wait out the opening pause on a genuine start, not on a resume.
+    timer = setTimeout(tick, typedCount.current === 0 ? startDelay : speed);
     return () => clearTimeout(timer);
-  }, [text, speed, startDelay, jitter]);
+  }, [enabled, text, speed, startDelay, jitter]);
 
   return { typed, done };
 }

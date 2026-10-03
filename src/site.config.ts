@@ -4,11 +4,13 @@
 
 export const site = {
   /** Shown in the nav as the wordmark. */
-  name: "North Outer Tower",
+  name: "Nils Lidén",
   /** Compact monogram for small screens. */
-  monogram: "N.O.T.",
+  monogram: "N.L.",
   /** The hero line, typed out once on first paint. */
   heroLine: "Connecting Everything",
+  /** Second hero line, typed after the first one finishes. */
+  heroLineTwo: "This is Nils Lidén",
   heroSub:
     "一个关于计算、通信与日常感受的记录处。用结构化的方式，把分散的知识连成网络。",
   email: "hello@example.com",
