@@ -4,6 +4,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
@@ -84,6 +85,298 @@ function measure(stage: HTMLElement, card: HTMLElement | null): Metrics {
     dy: Math.min(dx * 0.3, 90),
     travel: Math.max(150, Math.min(w * 0.34, 300)),
   };
+}
+
+/**
+ * Decorative marks scattered behind the ring.
+ *
+ * Positions are hand placed, not random. The cards are opaque, so anything
+ * dropped in the middle is simply never seen; the ring occupies roughly
+ * x 19–81%, which leaves the two side bands plus a block at the upper left and
+ * another at the lower right — the diagonal opposite the ring's own
+ * lower-left/upper-right axis. Keeping the marks there turns them into a
+ * constellation in the margin rather than a texture behind the content.
+ *
+ * `d` is the breathing duration in seconds and `t` a negative delay, so the
+ * marks are already out of step on the first frame instead of pulsing in
+ * unison.
+ */
+interface Spark {
+  x: number;
+  y: number;
+  /** Dot diameter in px; ignored by crosses. */
+  s: number;
+  tone: "ink" | "fjord" | "clay" | "birch";
+  d: number;
+  t: number;
+  cross?: true;
+}
+
+const SPARKS: Spark[] = [
+  // Left band
+  { x: 4.5, y: 14, s: 2, tone: "ink", d: 6.5, t: -0.4 },
+  { x: 9, y: 27, s: 1, tone: "ink", d: 8, t: -3.1 },
+  { x: 3, y: 41, s: 3, tone: "fjord", d: 5.5, t: -1.8, cross: true },
+  { x: 12.5, y: 52, s: 1, tone: "ink", d: 7.2, t: -4.6 },
+  { x: 6, y: 68, s: 2, tone: "clay", d: 6, t: -2.3 },
+  { x: 14, y: 79, s: 1, tone: "ink", d: 9, t: -5.9 },
+  { x: 8, y: 91, s: 2, tone: "ink", d: 7.8, t: -0.9 },
+
+  // Upper-left block, above the lower-left card
+  { x: 22, y: 7, s: 1, tone: "ink", d: 7.5, t: -2.7 },
+  { x: 31, y: 17, s: 2, tone: "birch", d: 6.2, t: -5.2 },
+  { x: 26.5, y: 28, s: 3, tone: "clay", d: 5.8, t: -3.6, cross: true },
+  { x: 37, y: 5, s: 1, tone: "ink", d: 8.6, t: -1.2 },
+  { x: 19, y: 22, s: 1, tone: "fjord", d: 6.8, t: -6.4 },
+
+  // Thin strips above and below the centre card
+  { x: 47, y: 3.5, s: 2, tone: "ink", d: 7, t: -4.1 },
+  { x: 55, y: 96, s: 1, tone: "ink", d: 8.2, t: -2.0 },
+
+  // The lower-right block is left clear on purpose — the elk constellation
+  // lives there and loose dots around it only read as noise.
+
+  // Right band
+  { x: 87, y: 11, s: 2, tone: "ink", d: 6.9, t: -2.9 },
+  { x: 94, y: 24, s: 1, tone: "clay", d: 8.4, t: -4.8 },
+  { x: 90, y: 45, s: 3, tone: "ink", d: 5.6, t: -1.1, cross: true },
+  { x: 96.5, y: 58, s: 1, tone: "ink", d: 7.7, t: -6.1 },
+  { x: 88, y: 76, s: 2, tone: "birch", d: 6.4, t: -3.3 },
+  { x: 95, y: 89, s: 1, tone: "ink", d: 8.8, t: -1.9 },
+];
+
+/**
+ * Elk constellation, as points and edges in a 160×120 field.
+ *
+ * Inline SVG rather than an image: it is a list of coordinates, it stays crisp
+ * at any size, it takes its colour from the design tokens, and every star can
+ * breathe on its own. A raster would be a separate hashed asset that can do
+ * none of that.
+ *
+ * Three things make the figure read as a deer rather than a stick man, and the
+ * first attempt had none of them:
+ *
+ *   1. The body is a closed outline — back, chest, belly and rump enclose an
+ *      area. A single spine line reads as a skeleton.
+ *   2. Four legs, each with a joint, and the rear pair carries the hock bend
+ *      that is specific to deer.
+ *   3. The antlers are a dense thicket of short branches. They hold most of
+ *      the line count on purpose; they are what the eye identifies first.
+ *
+ * The stance is deliberately horizontal. The clear block this sits in is wider
+ * than it is tall, so an upright deer would not fit without shrinking the
+ * whole figure into mush.
+ */
+const ELK_POINTS = {
+  // Closed body outline, facing right. Roughly 3:1 long to deep — a shorter
+  // torso than this reads as a dog.
+  withers: [88, 50],
+  backMid: [66, 47],
+  rumpTop: [40, 50],
+  rumpBack: [30, 58],
+  bellyRear: [40, 70],
+  bellyMid: [64, 73],
+  chestLow: [88, 70],
+  chestFront: [95, 58],
+
+  // Neck as a clean four-sided wedge. The first attempt also ran a jaw line
+  // back into the neck, which put three strokes through one small area and
+  // turned the head into a knot.
+  neckBack: [96, 40],
+  neckFront: [104, 46],
+  head: [112, 30],
+  muzzle: [124, 34],
+
+  // Antlers: two beams sweeping back and forward with spikes off each, plus a
+  // crown between them. Their total span is held close to the torso length;
+  // wider than that and the animal looks like it is carrying an aerial.
+  // Weighted backwards, the way an elk's rack actually sits: the back beam
+  // reaches further than the front one, so the mass sits over the body
+  // instead of hanging out in front of the nose.
+  antlerBase: [110, 23],
+  beamB1: [99, 18],
+  beamB2: [86, 13],
+  beamB3: [73, 9],
+  spikeB1: [97, 9],
+  spikeB2: [83, 5],
+  spikeB3: [69, 4],
+  beamF1: [119, 19],
+  beamF2: [128, 14],
+  beamF3: [136, 10],
+  spikeF1: [120, 10],
+  spikeF2: [130, 6],
+  spikeF3: [138, 4],
+  crownLow: [110, 15],
+  crownTip: [109, 5],
+
+  // Legs run nearly twice the torso depth and sit at the ends of the body,
+  // which is most of what separates a deer from a sheep.
+  foreNearKnee: [90, 90],
+  foreNearHoof: [88, 112],
+  foreFarKnee: [78, 88],
+  foreFarHoof: [74, 110],
+  hindNearKnee: [38, 88],
+  hindNearHock: [45, 99],
+  hindNearHoof: [41, 113],
+  hindFarKnee: [56, 89],
+  hindFarHoof: [58, 111],
+
+  tail: [25, 46],
+} as const;
+
+type ElkPoint = keyof typeof ELK_POINTS;
+
+const ELK_EDGES: Array<[ElkPoint, ElkPoint]> = [
+  // Body, closed
+  ["withers", "backMid"],
+  ["backMid", "rumpTop"],
+  ["rumpTop", "rumpBack"],
+  ["rumpBack", "bellyRear"],
+  ["bellyRear", "bellyMid"],
+  ["bellyMid", "chestLow"],
+  ["chestLow", "chestFront"],
+  ["chestFront", "withers"],
+
+  // Neck and head
+  ["withers", "neckBack"],
+  ["neckBack", "head"],
+  ["chestFront", "neckFront"],
+  ["neckFront", "head"],
+  ["head", "muzzle"],
+
+  // Antlers
+  ["head", "antlerBase"],
+  ["antlerBase", "beamB1"],
+  ["beamB1", "beamB2"],
+  ["beamB2", "beamB3"],
+  ["beamB1", "spikeB1"],
+  ["beamB2", "spikeB2"],
+  ["beamB3", "spikeB3"],
+  ["antlerBase", "beamF1"],
+  ["beamF1", "beamF2"],
+  ["beamF2", "beamF3"],
+  ["beamF1", "spikeF1"],
+  ["beamF2", "spikeF2"],
+  ["beamF3", "spikeF3"],
+  ["antlerBase", "crownLow"],
+  ["crownLow", "crownTip"],
+
+  // Legs
+  ["chestLow", "foreNearKnee"],
+  ["foreNearKnee", "foreNearHoof"],
+  ["chestLow", "foreFarKnee"],
+  ["foreFarKnee", "foreFarHoof"],
+  ["bellyRear", "hindNearKnee"],
+  ["hindNearKnee", "hindNearHock"],
+  ["hindNearHock", "hindNearHoof"],
+  ["bellyRear", "hindFarKnee"],
+  ["hindFarKnee", "hindFarHoof"],
+
+  // Tail
+  ["rumpTop", "tail"],
+];
+
+/** Brightest: silhouette corners, antler tips, hooves. */
+const ELK_BRIGHT = new Set<ElkPoint>([
+  "withers",
+  "rumpTop",
+  "bellyMid",
+  "head",
+  "muzzle",
+  "spikeB3",
+  "spikeF3",
+  "crownTip",
+  "foreNearHoof",
+  "hindNearHoof",
+]);
+
+/** Mid-weight: joints where a line changes direction. */
+const ELK_MID = new Set<ElkPoint>([
+  "backMid",
+  "chestLow",
+  "chestFront",
+  "bellyRear",
+  "rumpBack",
+  "antlerBase",
+  "beamB1",
+  "beamB3",
+  "beamF1",
+  "beamF3",
+  "foreNearKnee",
+  "hindNearHock",
+  "foreFarHoof",
+  "hindFarHoof",
+]);
+
+const ELK_NAMES = Object.keys(ELK_POINTS) as ElkPoint[];
+
+function ElkConstellation() {
+  return (
+    <svg
+      className="elk"
+      viewBox="0 0 160 120"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {ELK_EDGES.map(([a, b], i) => {
+        const from = ELK_POINTS[a];
+        const to = ELK_POINTS[b];
+        return (
+          <line
+            key={i}
+            className="elk__link"
+            x1={from[0]}
+            y1={from[1]}
+            x2={to[0]}
+            y2={to[1]}
+          />
+        );
+      })}
+
+      {ELK_NAMES.map((name, i) => {
+        const [x, y] = ELK_POINTS[name];
+        return (
+          <circle
+            key={name}
+            className="elk__star"
+            cx={x}
+            cy={y}
+            r={ELK_BRIGHT.has(name) ? 1.9 : ELK_MID.has(name) ? 1.4 : 1}
+            style={
+              {
+                // Spread over a 7s cycle so neighbours never pulse together.
+                "--spark-delay": `${-((i * 1.37) % 7).toFixed(2)}s`,
+              } as CSSProperties
+            }
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function Sparks() {
+  return (
+    <div className="streams__sparks" aria-hidden="true">
+      <ElkConstellation />
+
+      {SPARKS.map((spark, i) => (
+        <span
+          key={i}
+          className={`spark${spark.cross ? " spark--cross" : ""}`}
+          data-tone={spark.tone}
+          style={{
+            left: `${spark.x}%`,
+            top: `${spark.y}%`,
+            "--spark-size": `${spark.s}px`,
+            "--spark-dur": `${spark.d}s`,
+            "--spark-delay": `${spark.t}s`,
+          } as CSSProperties}
+        />
+      ))}
+    </div>
+  );
 }
 
 function ArrowRight() {
@@ -407,6 +700,34 @@ export function CardsSection() {
       });
     });
 
+    // The constellation draws itself when the section comes into view. Each
+    // edge is dashed by its own measured length, so the stroke travels the
+    // line instead of fading in place.
+    mm.add("(prefers-reduced-motion: no-preference) and (min-width: 861px)", () => {
+      const links = gsap.utils.toArray<SVGLineElement>(".elk__link");
+      links.forEach((line) => {
+        const length = line.getTotalLength();
+        gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
+      });
+
+      gsap.to(links, {
+        strokeDashoffset: 0,
+        duration: 0.9,
+        stagger: 0.07,
+        ease: "power2.inOut",
+        scrollTrigger: { trigger: ".streams__carousel", start: "top 78%" },
+      });
+
+      gsap.from(".elk__star", {
+        opacity: 0,
+        scale: 0.4,
+        duration: 0.5,
+        stagger: 0.05,
+        ease: "power2.out",
+        scrollTrigger: { trigger: ".streams__carousel", start: "top 78%" },
+      });
+    });
+
     mm.add("(prefers-reduced-motion: reduce)", () => {
       gsap.set(".stream__accent", { scaleX: 1 });
     });
@@ -421,6 +742,19 @@ export function CardsSection() {
           start: "top bottom",
           end: "bottom top",
           scrub: 0.8,
+        },
+      });
+
+      // The marks drift the other way, which is what separates them into
+      // their own depth instead of looking stuck to the cards.
+      gsap.to(".streams__sparks", {
+        yPercent: 9,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".streams__carousel",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1.1,
         },
       });
     });
@@ -458,6 +792,8 @@ export function CardsSection() {
             onPointerCancel={endDrag}
             onLostPointerCapture={endDrag}
           >
+            <Sparks />
+
             {ORDER.map((c, i) => {
               const posts = getPosts(c.id);
               const latest = posts[0];

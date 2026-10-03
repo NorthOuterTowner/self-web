@@ -35,6 +35,146 @@
   cursor: grabbing;
 }
 
+/* ---- Sparks ---------------------------------------------------------- *
+ * Behind every card (z-index 1 against the cards' 10/20/30), so they only
+ * ever show in the margins the ring leaves open. Sits under the drag
+ * handlers, hence pointer-events: none.                                   */
+
+.streams__sparks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.spark {
+  position: absolute;
+  width: var(--spark-size);
+  height: var(--spark-size);
+  margin: calc(var(--spark-size) / -2);
+  border-radius: 50%;
+  background: var(--spark-tone);
+  /* opacity and transform only, so the whole field stays on the compositor. */
+  animation: spark-breathe var(--spark-dur) var(--ease-swiss) var(--spark-delay)
+    infinite;
+  will-change: opacity;
+}
+
+/* A hairline plus instead of a dot. Reads as a registration mark, which sits
+   better in this design than a glow would. */
+.spark--cross {
+  background: none;
+  width: calc(var(--spark-size) * 3);
+  height: calc(var(--spark-size) * 3);
+  margin: calc(var(--spark-size) * -1.5);
+}
+
+.spark--cross::before,
+.spark--cross::after {
+  content: "";
+  position: absolute;
+  background: var(--spark-tone);
+}
+
+.spark--cross::before {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.spark--cross::after {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.spark[data-tone="ink"] {
+  --spark-tone: color-mix(in srgb, var(--ink) 34%, transparent);
+}
+.spark[data-tone="fjord"] {
+  --spark-tone: color-mix(in srgb, var(--fjord) 68%, transparent);
+}
+.spark[data-tone="clay"] {
+  --spark-tone: color-mix(in srgb, var(--clay) 64%, transparent);
+}
+.spark[data-tone="birch"] {
+  --spark-tone: color-mix(in srgb, var(--birch) 68%, transparent);
+}
+
+/* Never fully out and never fully lit: a slow breath, not a twinkle. */
+@keyframes spark-breathe {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* ---- Elk constellation ------------------------------------------------ *
+ * Sits in the clear block at the lower right of the stage.
+ *
+ * On the colour: pure white is invisible against --bone (#f4f2ed), so this is
+ * a cool desaturated blue-grey instead — it still reads as cold light but it
+ * is actually there. Override --elk-ink to try something else; white only
+ * works if this block gets a dark surface behind it.                       */
+
+/* Sized to the clear block below the upper-right card (roughly x 64–100%,
+   y 66–100% of the stage), which is landscape — hence the horizontal stance of
+   the figure rather than an upright one. */
+.elk {
+  --elk-ink: color-mix(in srgb, var(--fjord) 72%, var(--ink-3));
+
+  position: absolute;
+  right: 1.5%;
+  bottom: 2.5%;
+  width: 21%;
+  height: auto;
+  overflow: visible;
+}
+
+.elk__link {
+  stroke: color-mix(in srgb, var(--elk-ink) 38%, transparent);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+.elk__star {
+  fill: var(--elk-ink);
+  animation: spark-breathe 7s var(--ease-swiss) var(--spark-delay) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elk__star {
+    animation: none;
+    opacity: 0.75;
+  }
+}
+
+/* The cards fill a narrow stage, so there is no clear block left to put it in. */
+@media (max-width: 860px) {
+  .elk {
+    display: none;
+  }
+}
+
 /* ---- Card ------------------------------------------------------------ */
 
 .stream {
