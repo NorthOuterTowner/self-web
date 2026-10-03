@@ -12,7 +12,7 @@ export const site = {
   /** Second hero line, typed after the first one finishes. */
   heroLineTwo: "This is Nils Lidén",
   heroSub:
-    "一个关于计算、通信与日常感受的记录处。用结构化的方式，把分散的知识连成网络。",
+    "BLOG Collection By Telecommunications Integration Engineer and Software Engineering Student",
   email: "hello@example.com",
   github: "https://github.com/NorthOuterTowner",
   /** Footer line. */
@@ -47,7 +47,7 @@ export const categories: CategoryMeta[] = [
     titleEn: "Journal",
     summary: "关于阅读、独处与节奏的碎片，不追求结论。",
     intro:
-      "这里放不需要被验证的东西：读完一本书后的残留、搬到新城市的第一个冬天、以及一些关于如何安排时间的失败实验。",
+      "Everything Meaningful By Everyone",
     index: "01",
     position: "left",
   },
@@ -58,7 +58,7 @@ export const categories: CategoryMeta[] = [
     titleEn: "Computing",
     summary: "系统、编译与运行时，偏向把抽象层拆开看的那类笔记。",
     intro:
-      "主线是「为什么它是这样设计的」。涉及运行时与打包工具、并发模型、以及一些把性能问题定位到具体指令的过程记录。",
+      "Computer Science Build Everything on the Internet.",
     index: "02",
     position: "center",
   },
@@ -69,7 +69,7 @@ export const categories: CategoryMeta[] = [
     titleEn: "Communications",
     summary: "从信号与信道出发，到协议栈与无线组网的工程笔记。",
     intro:
-      "通信是一门把物理约束翻译成工程余量的学科。这里记录调制与编码、链路预算、以及 5G NR 物理层里那些容易被跳过的细节。",
+      "Telecommunications Connect Everything with Each Other.",
     index: "03",
     position: "right",
   },

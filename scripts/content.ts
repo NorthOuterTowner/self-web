@@ -28,6 +28,8 @@ export interface CompileResult {
   posts: Post[];
   errors: string[];
   drafts: string[];
+  /** Slugs of declared categories that currently have no articles. */
+  empty: string[];
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -112,19 +114,19 @@ export async function compile(): Promise<CompileResult> {
     });
   }
 
-  // The home page links to every declared stream, so an empty one would be a
-  // dead end. Caught here rather than rendering a 404 behind a card.
-  for (const category of categories) {
-    if (!posts.some((p) => p.category === category.id)) {
-      errors.push(
-        `content/${category.slug}/  分类「${category.title}」还没有任何文章。` +
-          `先写一篇，或者从 src/site.config.ts 的 categories 里移除这条记录线`,
-      );
-    }
-  }
+  // An empty stream is reported but is deliberately NOT an error. Treating it
+  // as one made deleting articles impossible to carry through: the failure
+  // stopped the artefact from being rewritten, so the site kept serving the
+  // posts that had just been removed. The category page renders an empty state
+  // instead.
+  const empty = categories
+    .filter((c) => !posts.some((p) => p.category === c.id))
+    .map((c) => c.slug);
 
-  posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
-  return { posts, errors, drafts };
+  posts.sort(
+    (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug),
+  );
+  return { posts, errors, drafts, empty };
 }
 
 function render(posts: Post[]): string {
@@ -153,7 +155,11 @@ function report(result: CompileResult, wrote: boolean): void {
   if (result.errors.length > 0) {
     console.error(`\n内容校验失败，共 ${result.errors.length} 处：\n`);
     for (const err of result.errors) console.error(`  ${err}`);
-    console.error("");
+    // Worth stating plainly: the previous artefact is still on disk, so the
+    // site keeps serving the last version that compiled.
+    console.error(
+      `\n  ${relative(ROOT, OUT_FILE)} 未更新，网站仍在使用上一次编译成功的内容。\n`,
+    );
     return;
   }
   const byCategory = categories
@@ -165,6 +171,9 @@ function report(result: CompileResult, wrote: boolean): void {
   console.log(
     `  ${result.posts.length} 篇文章  (${byCategory})${wrote ? ` → ${relative(ROOT, OUT_FILE)}` : ""}`,
   );
+  if (result.empty.length > 0) {
+    console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);
+  }
 }
 
 /** Regenerates on any change under content/. Never exits on a content error. */
@@ -181,7 +190,11 @@ export async function startWatcher(): Promise<void> {
         console.error(`\n[content] 校验失败，产物未更新：`);
         for (const err of result.errors) console.error(`  ${err}`);
       } else {
-        console.log(`[content] 已重新编译 ${result.posts.length} 篇`);
+        const suffix =
+          result.empty.length > 0 ? `，空分类 ${result.empty.join(", ")}` : "";
+        console.log(
+          `[content] 已重新编译 ${result.posts.length} 篇${suffix}`,
+        );
       }
     } finally {
       running = false;

@@ -31,10 +31,14 @@ export function CategoryPage() {
 
   // New article: back to the top, then a short entrance.
   useEffect(() => {
-    if (!post) return;
+    if (!category) return;
 
     window.scrollTo({ top: 0, behavior: "auto" });
-    document.title = `${post.title} — ${site.name}`;
+    document.title = post
+      ? `${post.title} — ${site.name}`
+      : `${category.title} — ${site.name}`;
+
+    if (!post) return;
 
     setupGsap();
     const scope = root.current;
@@ -61,9 +65,47 @@ export function CategoryPage() {
     });
 
     return () => mm.revert();
-  }, [post]);
+  }, [post, category]);
 
-  if (!valid || !category || !post) {
+  // Unknown stream in the URL.
+  if (!valid || !category) {
+    return <NotFound />;
+  }
+
+  // A declared stream with nothing written yet. This is a normal state, not an
+  // error: the home page still links here, so it gets a placeholder rather
+  // than a 404 that would read as a broken link.
+  if (posts.length === 0) {
+    return (
+      <div className="page page--reading" data-accent={category.id}>
+        <div className="shell blog">
+          <header className="blog__masthead">
+            <span className="index-num">{category.index}</span>
+            <p className="blog__masthead-title">
+              {category.title}
+              <span className="blog__masthead-en">{category.titleEn}</span>
+            </p>
+            <span className="label blog__masthead-count">00 Entries</span>
+          </header>
+
+          <div className="blog__empty">
+            <p className="blog__empty-lede">{category.intro}</p>
+            <p className="blog__empty-note">
+              这条记录线还没有文章。在 <code>content/{category.slug}/</code>{" "}
+              下新建一个 <code>.md</code> 文件即可，格式见{" "}
+              <code>content/FORMAT.md</code>。
+            </p>
+            <Link to="/" className="toc__back">
+              ← 返回首页
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Stream exists and has posts, but the requested slug does not match one.
+  if (!post) {
     return <NotFound />;
   }
 
@@ -71,7 +113,7 @@ export function CategoryPage() {
   const minutes = readingMinutes(post.blocks);
 
   return (
-    <div className="page" data-accent={category.id}>
+    <div className="page page--reading" data-accent={category.id}>
       <div className="shell blog" ref={root}>
         <header className="blog__masthead">
           <span className="index-num">{category.index}</span>

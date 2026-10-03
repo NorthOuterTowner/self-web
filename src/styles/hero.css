@@ -119,8 +119,14 @@
 
 .hero__display {
   grid-column: 1 / span 11;
-  font-weight: 500;
-  letter-spacing: var(--track-display);
+  font-family: var(--times);
+  /* Times has no 500, and `font-synthesis-weight: none` on body means asking
+     for one would just snap to regular anyway. Stated explicitly so the
+     intent is clear. */
+  font-weight: 400;
+  /* The grotesque wanted -0.035em; Times is already tightly fitted, so that
+     much negative tracking closes the counters up. */
+  letter-spacing: -0.012em;
   /* Reserve both lines up front so neither typewriter reflows the page. */
   min-height: calc(
     (var(--t-display) + var(--t-display-2)) * var(--lh-tight)
@@ -139,7 +145,7 @@
 .hero__line--two {
   font-size: var(--t-display-2);
   color: var(--ink-2);
-  letter-spacing: -0.028em;
+  letter-spacing: -0.006em;
   margin-top: 0.18em;
 }
 
@@ -208,8 +214,11 @@
 
 .hero__sub {
   grid-column: 1 / span 5;
+  font-family: var(--times);
   font-size: var(--t-lede);
-  line-height: 1.52;
+  /* Slightly more leading than the grotesque used: Times' lighter stems and
+     longer descenders need the extra room over a multi-line block. */
+  line-height: 1.58;
   color: var(--ink-2);
   text-wrap: pretty;
 }

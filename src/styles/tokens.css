@@ -48,6 +48,16 @@
     Cambria, Constantia, Georgia, "Times New Roman", Times, "Songti SC",
     "Source Han Serif SC", "Noto Serif CJK SC", SimSun, serif;
 
+  /* Times specifically, for the hero lines and the stream introductions.
+     The Linux entries are metric-compatible substitutes; the CJK serifs at the
+     end matter because the stream introductions are in Chinese and Times has
+     no glyphs for it — without them the Chinese would drop back to a sans and
+     the line would read as two different voices. */
+  --times:
+    "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", Tinos,
+    "Songti SC", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC",
+    SimSun, serif;
+
   /* Fluid modular scale, ratio ≈ 1.26 */
   --t-micro: 0.6875rem; /* 11px — labels, indices */
   --t-small: 0.8125rem; /* 13px — meta */

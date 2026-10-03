@@ -1,4 +1,4 @@
-/* Three streams, presented as a staggered Swiss row. */
+/* Three streams on a ring: one centred anchor, two parked behind it. */
 
 .streams {
   position: relative;
@@ -6,47 +6,82 @@
 }
 
 .streams__head {
-  margin-bottom: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 
-.streams__row {
-  align-items: start;
+.streams__carousel {
+  position: relative;
 }
+
+/* ---- Stage ----------------------------------------------------------- */
+
+.streams__stage {
+  position: relative;
+  /* Keeps the cards' z-indexes a private matter between the three of them. */
+  isolation: isolate;
+  height: clamp(440px, 46vw, 620px);
+  /* Side cards are allowed to run past the edge on narrow screens; the crop
+     reads as intentional rather than broken. */
+  overflow: hidden;
+  /* Vertical panning stays with the browser so the page can still be scrolled
+     from on top of the stage; horizontal movement is the carousel's. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.streams__stage.is-dragging {
+  cursor: grabbing;
+}
+
+/* ---- Card ------------------------------------------------------------ */
 
 .stream {
-  grid-column: span 4;
-  position: relative;
+  --card-w: clamp(260px, 29vw, 400px);
+  --card-h: clamp(360px, 38vw, 490px);
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: calc(var(--card-w) / -2);
+  margin-top: calc(var(--card-h) / -2);
+  width: var(--card-w);
+  height: var(--card-h);
+
   display: flex;
   flex-direction: column;
-  min-height: 420px;
   padding: var(--sp-6);
-  background: transparent;
+  /* Opaque on purpose: the centre card has to actually hide the two behind it.
+     Transparent cards would turn the overlap into a muddle of borders. */
+  background: var(--paper);
   border: 1px solid var(--line);
   text-decoration: none;
+  /* One shadow for every card. Because the depth difference comes from
+     `scale`, the shadow scales with it and needs no per-station override. */
+  box-shadow: 0 24px 48px -34px rgba(20, 23, 26, 0.45);
   will-change: transform;
-  /* Explicit resting value so the GSAP entrance wipe has a target to land on. */
-  clip-path: inset(0%);
+  -webkit-user-drag: none;
   transition:
-    background-color var(--dur) var(--ease-out),
-    border-color var(--dur) var(--ease-out);
+    border-color var(--dur-slow) var(--ease-out),
+    background-color var(--dur) var(--ease-out);
 }
 
-/* Swiss asymmetry: the flanking cards sit lower than the centre one. */
-.stream[data-position="left"] {
-  margin-top: var(--sp-12);
-}
-.stream[data-position="right"] {
-  margin-top: var(--sp-16);
-}
-
-.stream:hover,
-.stream:focus-visible {
-  background: var(--paper);
+/* The station attribute changes only when a move commits, so these two
+   properties are given the transit duration and fade rather than snap. */
+.stream[data-station="centre"] {
   border-color: var(--line-strong);
 }
 
-/* Accent rule across the top, revealed on scroll, extended on hover. */
-/* Kept inside the box because the card is clipped to inset(0%). */
+/* Hover belongs to the centred card alone — it is the only one that opens. */
+.stream[data-station="centre"]:hover,
+.stream[data-station="centre"]:focus-visible {
+  background: var(--snow);
+  border-color: var(--ink-3);
+}
+
+/* Accent rule across the top, revealed on scroll. Kept inside the box so the
+   card's own background clips nothing. */
 .stream__accent {
   position: absolute;
   inset: 0 0 auto 0;
@@ -60,7 +95,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding-bottom: var(--sp-12);
+  padding-bottom: var(--sp-8);
 }
 
 .stream__dot {
@@ -76,38 +111,39 @@
   line-height: var(--lh-snug);
   letter-spacing: -0.015em;
   font-weight: 500;
-  margin-bottom: var(--sp-2);
-}
-
-.stream__title-en {
-  display: block;
-  font-family: var(--mono);
-  font-size: var(--t-micro);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--accent);
   margin-bottom: var(--sp-4);
 }
 
 .stream__summary {
-  font-size: var(--t-small);
-  line-height: 1.66;
+  font-family: var(--times);
+  /* A step up from --t-small: Times' x-height is well below the grotesque's,
+     so matching the px would leave it looking undersized next to the rest. */
+  font-size: 0.9375rem;
+  line-height: 1.7;
   color: var(--ink-2);
-  max-width: 34ch;
+  /* Bounded so a long summary cannot push the footer out of a fixed card. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
 }
 
 .stream__latest {
-  margin-top: var(--sp-8);
+  margin-top: var(--sp-6);
   padding-top: var(--sp-4);
   border-top: 1px solid var(--line-soft);
 }
 
 .stream__latest-title {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   font-size: var(--t-small);
   color: var(--ink-2);
   margin-top: var(--sp-2);
-  text-wrap: pretty;
 }
 
 .stream__foot {
@@ -116,7 +152,7 @@
   justify-content: space-between;
   gap: var(--sp-4);
   margin-top: auto;
-  padding-top: var(--sp-8);
+  padding-top: var(--sp-6);
 }
 
 .stream__count {
@@ -139,6 +175,11 @@
   font-size: var(--t-micro);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color var(--dur) var(--ease-out);
+}
+
+.stream[data-station="centre"] .stream__arrow {
   color: var(--ink);
 }
 
@@ -146,56 +187,107 @@
   transition: transform var(--dur) var(--ease-out);
 }
 
-.stream:hover .stream__arrow svg,
-.stream:focus-visible .stream__arrow svg {
+.stream[data-station="centre"]:hover .stream__arrow svg,
+.stream[data-station="centre"]:focus-visible .stream__arrow svg {
   transform: translateX(6px);
 }
 
-/* The centre stream is the primary one: heavier frame, taller box. */
-.stream[data-position="center"] {
-  min-height: 468px;
-  border-color: var(--line-strong);
+/* ---- Dial ------------------------------------------------------------ */
+
+.streams__dial {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
 }
 
-.stream[data-position="center"] .stream__title {
-  font-size: var(--t-h1);
+.streams__nudge {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  color: var(--ink-3);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
 }
 
-@media (max-width: 1080px) {
-  .stream {
-    min-height: 380px;
-  }
-  .stream[data-position="center"] {
-    min-height: 420px;
-  }
+.streams__nudge:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+  background: var(--fog);
 }
+
+.streams__ticks {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.streams__tick {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 32px;
+  border: 1px solid transparent;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.streams__tick:hover {
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+
+.streams__tick.is-active {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.streams__hint {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ---- Narrow screens -------------------------------------------------- */
 
 @media (max-width: 860px) {
-  .streams__row {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    row-gap: var(--sp-6);
-  }
-  .stream {
-    grid-column: 1 / span 6;
-    min-height: 0;
-    margin-top: 0 !important;
-  }
-  .stream[data-position="center"] {
-    min-height: 0;
-  }
-  .stream[data-position="center"] .stream__title {
-    font-size: var(--t-h2);
-  }
-  .stream__top {
-    padding-bottom: var(--sp-6);
-  }
-  .stream__foot {
-    padding-top: var(--sp-6);
+  .streams {
+    padding-block: var(--sp-16) var(--sp-12);
   }
   .streams__head {
     margin-bottom: var(--sp-8);
   }
-  .streams {
-    padding-block: var(--sp-16) var(--sp-12);
+  .stream {
+    --card-w: clamp(250px, 68vw, 360px);
+    --card-h: clamp(340px, 88vw, 460px);
+  }
+  .streams__stage {
+    height: clamp(400px, 104vw, 540px);
+  }
+  .stream__top {
+    padding-bottom: var(--sp-6);
+  }
+  .stream__latest {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .streams__hint {
+    display: none;
+  }
+  .streams__tick {
+    width: 30px;
   }
 }

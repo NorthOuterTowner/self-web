@@ -332,7 +332,31 @@ const RE_QUOTE = /^>\s?(.*)$/;
 const RE_CITE = /^(?:--|—)\s+(.+)$/;
 const RE_NOTE = /^\[!NOTE\]\s*$/i;
 
-/** True when a line opens a block construct, so a paragraph must not absorb it. */
+/** Index of the next line that is not blank, or -1 if there is none. */
+function nextContentLine(lines: string[], from: number): number {
+  let k = from;
+  while (k < lines.length && lines[k]!.trim() === "") k++;
+  return k < lines.length ? k : -1;
+}
+
+/**
+ * Decides whether a blank line inside a list ends it.
+ *
+ * Blank lines between items ("loose" lists) are ordinary Markdown and read
+ * better in long prose, so the list continues as long as the next line with
+ * content is another item of the same kind.
+ */
+function listContinuesAfterBlank(
+  lines: string[],
+  from: number,
+  pattern: RegExp,
+): number {
+  const k = nextContentLine(lines, from);
+  if (k === -1 || !pattern.test(lines[k]!)) return -1;
+  return k;
+}
+
+/** True when a line opens a block construct, so it ends any open paragraph. */
 function startsBlock(line: string): boolean {
   return (
     RE_FENCE.test(line) ||
@@ -527,15 +551,20 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
       let j = i;
       while (j < lines.length) {
         const current = lines[j]!;
-        if (current.trim() === "") break;
+        if (current.trim() === "") {
+          const resume = listContinuesAfterBlank(lines, j, RE_UL);
+          if (resume === -1) break;
+          j = resume;
+          continue;
+        }
         const match = RE_UL.exec(current);
         if (!match) {
+          // Indentation and the other unsupported constructs still fail here,
+          // because an indented line after an item is usually an attempt at a
+          // nested list. Anything else simply closes the list and becomes the
+          // next paragraph.
           rejectKnownUnsupported(current, file, lineNo(j));
-          throw new ContentError(
-            file,
-            lineNo(j),
-            "列表项必须各占一行、以 `- ` 开头；列表与其他内容之间要空一行",
-          );
+          break;
         }
         const text = match[1]!.trim();
         if (text === "") {
@@ -556,15 +585,16 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
       let j = i;
       while (j < lines.length) {
         const current = lines[j]!;
-        if (current.trim() === "") break;
+        if (current.trim() === "") {
+          const resume = listContinuesAfterBlank(lines, j, RE_OL);
+          if (resume === -1) break;
+          j = resume;
+          continue;
+        }
         const match = RE_OL.exec(current);
         if (!match) {
           rejectKnownUnsupported(current, file, lineNo(j));
-          throw new ContentError(
-            file,
-            lineNo(j),
-            "有序列表项必须各占一行、以 `1. ` 这样的序号开头",
-          );
+          break;
         }
         const num = Number(match[1]);
         if (num !== expected) {
@@ -594,13 +624,25 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
       let j = i;
       while (j < lines.length && lines[j]!.trim() !== "") {
         const current = lines[j]!;
-        if (j > i && startsBlock(current)) {
-          throw new ContentError(
-            file,
-            lineNo(j),
-            "段落和其他块之间必须空一行",
-          );
+
+        if (j > i) {
+          // A row of dashes straight under text means a setext heading in most
+          // Markdown dialects but a thematic break here. Too ambiguous to
+          // guess at, so this one case still has to be spaced out.
+          if (current.trim() === "---") {
+            throw new ContentError(
+              file,
+              lineNo(j),
+              "分隔线 --- 的上一行不能是正文，否则无法和 setext 标题区分；请空一行",
+            );
+          }
+          // Anything else that opens a block just ends the paragraph. Writing
+          // "…如下：" and dropping straight into a fence is how people
+          // actually type, and a line starting with ``` or ## or - is not
+          // ambiguous, so there is nothing to protect against here.
+          if (startsBlock(current)) break;
         }
+
         rejectKnownUnsupported(current, file, lineNo(j));
         buf.push(current.trim());
         j++;

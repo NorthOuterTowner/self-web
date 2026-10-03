@@ -1,7 +1,105 @@
 /* Blog layout: index on the left, text on the right. */
 
+/* ---- Reading surface texture ----------------------------------------- *
+ * Two fixed layers behind the content, so the page reads as a sheet rather
+ * than a flat fill. Both are deliberately near the threshold of visibility:
+ * the text sits directly on them, so anything stronger would cost contrast.
+ * `position: fixed` keeps the grain still while the text scrolls over it.   */
+
+.page--reading {
+  position: relative;
+}
+
+/* Grid hairlines plus a wash in the stream's accent colour. The accent comes
+   from [data-accent] on the same element, so each stream tints differently. */
+.page--reading::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--line) 62%, transparent) 0 1px,
+      transparent 1px calc(100% / 12)
+    ),
+    radial-gradient(
+      ellipse 110% 70% at 86% -10%,
+      color-mix(in srgb, var(--accent) 13%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 4% 108%,
+      color-mix(in srgb, var(--accent) 9%, transparent),
+      transparent 70%
+    );
+  background-repeat: no-repeat;
+  opacity: 0.6;
+}
+
+/* Paper grain. Generated inline rather than shipped as an image file so the
+   build has one less asset to hash and the page one less request. */
+.page--reading::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-contrast: more) {
+  .page--reading::before,
+  .page--reading::after {
+    display: none;
+  }
+}
+
 .blog {
   padding-block: var(--sp-12) var(--sp-16);
+}
+
+/* ---- Empty stream ---------------------------------------------------- */
+
+.blog__empty {
+  max-width: 44rem;
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--ink);
+}
+
+.blog__empty-lede {
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 34rem;
+  text-wrap: pretty;
+}
+
+.blog__empty-note {
+  margin-top: var(--sp-6);
+  padding: var(--sp-4) var(--sp-6);
+  background: color-mix(in srgb, var(--accent) 7%, var(--paper));
+  border-left: 2px solid var(--accent);
+  font-size: var(--t-small);
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+
+.blog__empty-note code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--fog);
+  padding: 0.1em 0.3em;
+}
+
+.blog__empty .toc__back {
+  margin-top: var(--sp-8);
 }
 
 .blog__masthead {

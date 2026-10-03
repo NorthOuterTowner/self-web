@@ -26,7 +26,7 @@ src/
     TopNav.tsx        固定顶栏
     Hero.tsx          首屏:网格背景 + 一次性打字动效
     SmoothScroll.tsx  ScrollSmoother 包装层(仅首页)
-    CardsSection.tsx  三张卡片 + ScrollTrigger 滚动动效
+    CardsSection.tsx  三张卡片的环形轮播(拖拽/点击切换中心卡)
     TableOfContents.tsx 左侧目录,含当前小节高亮
     ArticleBody.tsx   块模型渲染
   pages/
@@ -138,9 +138,17 @@ Markdown 解析器;内容路径上没有 `dangerouslySetInnerHTML`,链接地址�
 
 ## 动效约定
 
-- Hero 的 `Connecting Everything` 只打一次字,打完即停,不循环。
-  实现见 `lib/useTypewriter.ts`,用 ref 挡住 StrictMode 的二次调用。
-- 卡片的入场、强调线、视差都由 GSAP ScrollTrigger 驱动。
+- Hero 的两行字各打一次,打完即停,不循环。第二行等第一行写完才开始。
+  实现见 `lib/useTypewriter.ts`:进度存在 ref 里允许续跑,而不是用标志位拦重复执行
+  —— 后者会被 StrictMode 的双调用卡死(第一次的 cleanup 清掉定时器,第二次直接跳过)。
+- 卡片是三站位的环形轮播,见 `components/CardsSection.tsx`。中间为视觉锚点,
+  另两张分别停在左下与右上并被中间那张遮住一部分。环的循环顺序是
+  `右上 → 中间 → 左下 → 右上`:向左下拖进一站,向右上拖退一站,点击侧边卡片
+  则把它送到中间。卡片背景必须是不透明的,否则遮挡关系会变成一堆边框叠在一起。
+  入场、强调线与视差都挂在舞台容器上,**不碰卡片自身的 transform** ——
+  那部分归轮播逻辑独占,两边都写会打架。
+- 触屏上舞台是 `touch-action: pan-y`,竖向留给浏览器滚页,所以触摸手势按横向
+  分量判断方向;鼠标则按环本身的斜向判断。
 - ScrollSmoother **只在首页启用**:它会给内容容器加 transform,
   导致博客页左侧目录的 `position: sticky` 失效。博客页用原生滚动。
 - 全站尊重 `prefers-reduced-motion`:打字动效直接显示全文,

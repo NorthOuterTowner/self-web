@@ -27,7 +27,9 @@ const cases: Case[] = [
     expect: [
       "hero__display",
       "Connecting Everything",
-      "streams__row",
+      "This is Nils Lidén",
+      "streams__stage",
+      'data-station="centre"',
       "个人感受记录",
       "计算机技术博客",
       "通信工程博客",
