@@ -238,6 +238,61 @@ svg {
   margin-left: auto;
 }
 
+.site-footer__social {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin-left: auto;
+}
+
+.site-footer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.site-footer__link:hover {
+  color: var(--ink);
+}
+
+.site-footer__icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  /* Same hairline weight as the nav glyph, and it takes the link's colour so
+     the hover transition covers mark and label together. */
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--dur) var(--ease-out);
+}
+
+/* The dot on the "i" is the one filled shape in either mark. */
+.site-footer__icon .is-solid {
+  fill: currentColor;
+  stroke: none;
+}
+
+.site-footer__link:hover .site-footer__icon {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+  .site-footer__social {
+    margin-left: 0;
+    gap: var(--sp-4);
+  }
+}
+
 /* ---- Reduced motion -------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

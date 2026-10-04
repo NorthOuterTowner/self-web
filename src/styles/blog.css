@@ -156,11 +156,39 @@
   margin-top: var(--sp-8);
 }
 
+/* The old version was a plain underlined label with the count glued on after a
+   middot. Splitting it into label / rule / count lets the rule do the dividing,
+   so there is one line instead of two competing ones, and the figure lands on
+   the right edge where the masthead's count also sits. */
 .toc__heading {
-  display: block;
-  padding-bottom: var(--sp-3);
-  margin-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.toc__heading-label {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.toc__heading-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.toc__heading-count {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
 }
 
 .toc__intro {
@@ -287,10 +315,12 @@
 }
 
 .article__title {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
   font-size: var(--t-h1);
   line-height: var(--lh-snug);
   letter-spacing: -0.028em;
-  font-weight: 500;
+  font-weight: 700;
   max-width: 30ch;
   text-wrap: balance;
 }
@@ -302,11 +332,15 @@
   border-top: 1px solid var(--ink);
 }
 
+/* The standfirst is not indented: it introduces the piece rather than being
+   the first paragraph of it. */
 .article__lede p {
   max-width: 34rem;
+  font-family: var(--times);
   font-size: var(--t-lede);
-  line-height: 1.56;
+  line-height: 1.62;
   color: var(--ink-2);
+  text-indent: 0;
   text-wrap: pretty;
 }
 
@@ -329,8 +363,22 @@
 
 /* ---- Prose ----------------------------------------------------------- */
 
+/* The reading column is set in the serif pairing — Times for Latin, a Song
+   face for Chinese. The grotesque is kept for the furniture around it (labels,
+   tags, the index, the masthead), so the split is: chrome in sans, reading
+   matter in serif.
+
+   Both faces have a smaller x-height than the grotesque and need more leading,
+   hence the size and line-height bump here rather than globally. */
 .prose {
-  margin-top: var(--sp-12);
+  margin-top: var(--sp-8);
+  font-family: var(--times);
+  font-size: clamp(1rem, 0.94rem + 0.3vw, 1.1875rem);
+  line-height: 1.85;
+  /* Body turns synthesis off so the grotesque UI never gets a fake bold. In
+     the reading column the opposite is wanted: a Song face has no bold of its
+     own, and a heading that renders at regular weight has no hierarchy left. */
+  font-synthesis-weight: auto;
 }
 
 /* Running text sits in the measure; rules and code span the whole column.
@@ -340,24 +388,41 @@
   max-width: var(--measure);
 }
 
+/* Only the rules break out of the measure. The contrast between a short text
+   block and a hairline crossing the whole column is the main structural device
+   here, but it reads as structure precisely because it is a line — code,
+   formulas and figures are content, so they stay with the text. */
 .prose h2,
-.prose hr,
-.prose pre {
+.prose hr {
   max-width: none;
 }
 
+/* Two character first-line indent, the Chinese convention. Unlike English
+   practice the paragraph after a heading is indented too, so this applies to
+   every paragraph. The gap between paragraphs comes down accordingly: with the
+   indent marking the break, the old spacing left the column looking gappy. */
 .prose p {
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-4);
+  text-indent: 2em;
   color: var(--ink);
   text-wrap: pretty;
 }
 
+/* Headings go back to the sans, and not for consistency with the chrome — for
+   a mechanical reason. No Song face on Windows ships a bold, so a bold serif
+   heading there is the renderer smearing the regular weight, which is exactly
+   what looked wrong. The sans stack reaches Microsoft YaHei and PingFang SC,
+   both of which have a real Bold. Song body with Hei headings is also the
+   standard Chinese editorial pairing, for the same underlying reason. */
 .prose h2 {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
   font-size: var(--t-h2);
   line-height: var(--lh-snug);
-  letter-spacing: -0.02em;
-  font-weight: 500;
-  margin-top: var(--sp-16);
+  /* Looser than the grotesque wanted; the serif is already tightly fitted. */
+  letter-spacing: -0.016em;
+  font-weight: 700;
+  margin-top: var(--sp-12);
   margin-bottom: var(--sp-6);
   padding-top: var(--sp-4);
   border-top: 1px solid var(--ink);
@@ -365,10 +430,13 @@
 }
 
 .prose h3 {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
   font-size: var(--t-h3);
   line-height: var(--lh-snug);
-  font-weight: 500;
-  margin-top: var(--sp-12);
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin-top: var(--sp-8);
   margin-bottom: var(--sp-4);
   color: var(--ink);
   scroll-margin-top: calc(var(--nav-h) + var(--sp-6));
@@ -399,6 +467,25 @@
   align-items: baseline;
 }
 
+/* Blocks indented under a list item. They sit in the item's text column, not
+   the marker's, so the list structure stays legible. */
+.prose__nested {
+  grid-column: 2;
+  margin-top: var(--sp-3);
+}
+
+.prose__nested > *:last-child {
+  margin-bottom: 0;
+}
+
+.prose__nested pre {
+  margin-bottom: var(--sp-3);
+}
+
+.prose__nested p {
+  text-indent: 0;
+}
+
 .prose li::before {
   font-family: var(--mono);
   font-size: var(--t-small);
@@ -424,10 +511,16 @@
   padding-left: var(--sp-6);
   border-left: 2px solid var(--accent);
   font-size: var(--t-lede);
-  line-height: 1.5;
+  line-height: 1.58;
   color: var(--ink);
   /* Matches the standfirst measure so pull quotes and ledes agree. */
   max-width: 34rem;
+}
+
+/* A pull quote is set flush — the indent belongs to running paragraphs only. */
+.prose blockquote p {
+  text-indent: 0;
+  margin-bottom: 0;
 }
 
 .prose blockquote footer {
@@ -445,15 +538,22 @@
   background: var(--paper);
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
+  /* No max-width here on purpose: `.prose > *` already holds it to the reading
+     measure. It used to carry `max-width: 100%`, which beat that rule on
+     source order and let code blocks run the full column width while the
+     prose beside them stopped much earlier. A long line scrolls instead. */
   overflow-x: auto;
-  max-width: 100%;
 }
 
+/* Higher specificity than `.prose code`, so this is what strips the inline
+   treatment back off inside a fence. */
 .prose pre code {
   font-family: var(--mono);
   font-size: 0.8125rem;
   line-height: 1.72;
   color: var(--ink-2);
+  background: none;
+  padding: 0;
   white-space: pre;
   tab-size: 2;
 }
@@ -468,10 +568,215 @@
   margin-bottom: var(--sp-3);
 }
 
+/* ---- Figures --------------------------------------------------------- *
+ * Framed rather than bled: a hairline box with inner padding, so the image
+ * reads as a plate set into the column instead of floating in it. Same
+ * hairline vocabulary as the cards and the table.                          */
+
+/* Held to the reading measure, same as the running text. A plate wider than
+   the paragraph it illustrates reads as a second column and pulls the eye off
+   the text. `min()` keeps it inside the available width on narrow screens. */
+.prose__figure {
+  width: min(var(--measure), 100%);
+  margin: var(--sp-8) 0;
+  /* Centres both the image and the caption block within that measure. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.prose__figure-img {
+  display: block;
+  /* Wider than the text area: shrink to fit. Narrower: leave it alone and let
+     the flex centring place it. Never scaled up — enlarging a small plot only
+     makes it soft. */
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  padding: var(--sp-3);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  /* The compiler supplies width and height attributes, so the ratio is known
+     before the file loads and the column stops jumping as images arrive. */
+}
+
+/* Shrinks to its own content so it sits under a centred image instead of
+   starting at the far left of the measure, but still wraps at the full width
+   when the text is long. */
+.prose__figure-caption {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  max-width: 100%;
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--sans);
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-indent: 0;
+}
+
+/* A rule in the accent colour marks the caption without adding a label. */
+.prose__figure-caption::before {
+  content: "";
+  flex: 0 0 18px;
+  height: 2px;
+  margin-top: 0.55em;
+  background: var(--accent);
+}
+
+/* Inside a list item the frame would crowd the marker column. */
+.prose__nested .prose__figure {
+  margin: var(--sp-3) 0;
+}
+
+/* ---- Tables ---------------------------------------------------------- *
+ * Horizontal rules only. Vertical lines would box every cell and fight the
+ * hairline grid the rest of the page is built on; whitespace separates the
+ * columns instead.                                                         */
+
+.prose__table-wrap {
+  max-width: none;
+  margin: var(--sp-8) 0;
+  /* A table can be wider than the reading measure, so this is what scrolls. */
+  overflow-x: auto;
+}
+
+.prose__table-wrap:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.prose__table {
+  border-collapse: collapse;
+  /* Sized to its content rather than stretched to the column. A table of five
+     short cells pulled out to full width leaves gaps so wide the rows stop
+     scanning as rows; a table with long cells still grows to fill the column
+     on its own, and past that the wrapper scrolls. */
+  width: auto;
+  max-width: 100%;
+  /* Figures in a column have to line up to be comparable. */
+  font-variant-numeric: tabular-nums;
+}
+
+.prose__table th,
+.prose__table td {
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  vertical-align: baseline;
+  /* The prose indent must not reach inside a cell. */
+  text-indent: 0;
+}
+
+.prose__table th:first-child,
+.prose__table td:first-child {
+  padding-left: 0;
+}
+
+.prose__table th:last-child,
+.prose__table td:last-child {
+  padding-right: 0;
+}
+
+/* Header in the sans, like the other headings: the Song face has no bold. */
+.prose__table thead th {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
+  font-weight: 600;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: nowrap;
+  border-bottom: 2px solid var(--ink);
+}
+
+.prose__table tbody td {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.prose__table tbody tr:last-child td {
+  border-bottom-color: var(--line-strong);
+}
+
+.prose__table tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.prose__table [data-align="center"] {
+  text-align: center;
+}
+
+.prose__table [data-align="right"] {
+  text-align: right;
+}
+
+/* Inline code in a cell has no room for the usual padding. */
+.prose__table code {
+  padding: 0.05em 0.25em;
+  font-size: 0.8125em;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .prose__table th,
+  .prose__table td {
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .prose__table tbody td {
+    font-size: 0.875rem;
+  }
+}
+
+/* ---- Math ------------------------------------------------------------ *
+ * MathML, rendered by the browser. No stylesheet or font file ships for it;
+ * these rules only set size and spacing.                                   */
+
+.math {
+  /* MathML is laid out with the serif by default, which is what is wanted
+     here — it matches the reading face rather than fighting it. */
+  font-family: var(--times);
+}
+
+.math--inline {
+  /* Native MathML runs a little large beside body text. */
+  font-size: 1.04em;
+  /* A formula must not be split across lines mid-expression. */
+  white-space: nowrap;
+}
+
+/* Centred inside the reading measure, like a figure. `.prose > *` supplies the
+   measure; a formula too wide for it scrolls rather than breaking out. */
+.math--block {
+  margin: var(--sp-8) 0;
+  padding: var(--sp-4) 0;
+  /* Long expressions scroll rather than overflow the column. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 1.12em;
+  text-align: center;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.math--block math {
+  /* Keeps the displayed form even if the markup loses the attribute. */
+  display: block math;
+}
+
 /* ---- Inline markers -------------------------------------------------- */
 
-.prose :not(pre) > code,
-.prose :not(pre) code {
+/* Inline code. Written as a plain descendant selector and undone inside `pre`
+   by the more specific `.prose pre code` rule above, rather than trying to
+   exclude `pre` here: `:not(pre) code` matches any code with *some* non-pre
+   ancestor, which is true of a fence nested under a list item, and it put this
+   background behind every line of those code blocks. */
+.prose code {
   font-family: var(--mono);
   font-size: 0.875em;
   background: var(--fog);
@@ -480,8 +785,14 @@
   overflow-wrap: break-word;
 }
 
+/* Emphasis switches to the sans rather than asking the Song face for a bold it
+   does not have. Setting a weight on Song gets either nothing or a smeared
+   fake; a Hei run inside Song body text is how Chinese typesetting has always
+   marked emphasis, and here it also buys a real bold. */
 .prose strong {
-  font-weight: 500;
+  font-family: var(--sans);
+  font-synthesis-weight: none;
+  font-weight: 600;
   /* Weight alone reads weakly in this grotesque at body size, so emphasis
      also gets a hairline underscore in the stream's accent colour. */
   box-shadow: inset 0 -0.42em 0 color-mix(in srgb, var(--accent) 16%, transparent);

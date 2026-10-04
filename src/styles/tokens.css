@@ -48,11 +48,16 @@
     Cambria, Constantia, Georgia, "Times New Roman", Times, "Songti SC",
     "Source Han Serif SC", "Noto Serif CJK SC", SimSun, serif;
 
-  /* Times specifically, for the hero lines and the stream introductions.
-     The Linux entries are metric-compatible substitutes; the CJK serifs at the
-     end matter because the stream introductions are in Chinese and Times has
-     no glyphs for it — without them the Chinese would drop back to a sans and
-     the line would read as two different voices. */
+  /* The reading face: Times for Latin, a Song face for Chinese. Used by the
+     hero lines, the stream introductions and the whole article column.
+
+     Order matters. Times covers Latin; everything after it is a fallback for
+     characters Times has no glyph for, which is all of the Chinese. Songti SC
+     is the macOS Song face, Source Han Serif / Noto Serif are better-rendered
+     Song designs where installed, and SimSun — 宋体 proper — is the Windows
+     backstop that is always present. The Linux entries are metric-compatible
+     Times substitutes. Without the CJK tail the Chinese would fall back to a
+     sans and a single sentence would read in two unrelated voices. */
   --times:
     "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", Tinos,
     "Songti SC", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC",

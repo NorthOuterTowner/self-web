@@ -10,19 +10,39 @@
  *   bun run content:check    compile in memory, report problems, write nothing
  *   bun run content -- --watch
  */
-import { watch } from "node:fs";
+import { existsSync, readFileSync, statSync, watch } from "node:fs";
 import { mkdir } from "node:fs/promises";
-import { relative, resolve } from "node:path";
+import { dirname, extname, relative, resolve, basename, sep } from "node:path";
 import { Glob } from "bun";
 import { categories } from "../src/site.config";
 import type { Post } from "../src/content/types";
+import { IMAGE_EXTENSIONS, imageSize } from "./image";
 import { ContentError, parseDocument } from "./markdown";
 
 const ROOT = resolve(import.meta.dir, "..");
 const CONTENT_DIR = resolve(ROOT, "content");
 const OUT_FILE = resolve(ROOT, "src/content/generated.ts");
+/**
+ * Written as JSON rather than a TypeScript module on purpose. The dev server
+ * needs to re-read it every time the watcher rewrites it, and importing a
+ * module that keeps changing under `--hot` segfaulted Bun 1.3.13. Data read
+ * through Bun.file has no such interaction, and it can never be pulled into
+ * the browser bundle by accident either.
+ */
+const ASSET_FILE = resolve(ROOT, "src/content/assets.json");
+
+/** Where copied images live, both in dist/ and in the URL. */
+const MEDIA_DIR = "media";
 
 const slugToCategory = new Map(categories.map((c) => [c.slug, c.id]));
+
+/** An image an article referenced, resolved and ready to be copied. */
+export interface Asset {
+  /** Absolute path on disk. */
+  from: string;
+  /** Path inside dist/, e.g. `media/amam-1a2b3c4d.png`. */
+  to: string;
+}
 
 export interface CompileResult {
   posts: Post[];
@@ -30,6 +50,8 @@ export interface CompileResult {
   drafts: string[];
   /** Slugs of declared categories that currently have no articles. */
   empty: string[];
+  /** Images to copy into the build output. Deduplicated by content hash. */
+  assets: Asset[];
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -55,6 +77,83 @@ export async function compile(): Promise<CompileResult> {
   }
 
   const seen = new Map<string, string>();
+  /** Keyed by absolute source path, so one image used twice is copied once. */
+  const assets = new Map<string, Asset>();
+
+  /**
+   * Turns an image reference in a .md file into a public URL, and records the
+   * file so the build can copy it.
+   *
+   * Nothing else in the pipeline would pick these up: the bundler only walks
+   * the graph that starts at src/index.html, so an image mentioned only in
+   * Markdown would be absent from dist/ and 404 in production. Resolving and
+   * copying here is what makes that not happen — and a missing file becomes a
+   * build error rather than a broken image on the page.
+   */
+  const makeResolver =
+    (mdPath: string, display: string) =>
+    (ref: string, line: number) => {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(ref) || ref.startsWith("//")) {
+        throw new ContentError(
+          display,
+          line,
+          `图片不支持外部地址 "${ref}"。请把文件放进仓库再用相对路径引用，这样它会被一起构建和部署`,
+        );
+      }
+      if (ref.startsWith("/")) {
+        throw new ContentError(
+          display,
+          line,
+          `图片路径要相对于当前 .md 文件写，例如 ./amam.png，而不是 "${ref}"`,
+        );
+      }
+
+      const absolute = resolve(dirname(mdPath), ref);
+      if (!absolute.startsWith(ROOT + sep)) {
+        throw new ContentError(
+          display,
+          line,
+          `图片 "${ref}" 指到了仓库外面，无法随站点一起部署`,
+        );
+      }
+
+      const ext = extname(absolute).toLowerCase();
+      if (!IMAGE_EXTENSIONS.has(ext)) {
+        throw new ContentError(
+          display,
+          line,
+          `"${ext || ref}" 不是支持的图片格式。可用：${[...IMAGE_EXTENSIONS].join(" ")}`,
+        );
+      }
+
+      // Synchronous because the parser calls this inline; these are a handful
+      // of small files per build.
+      if (!existsSync(absolute) || !statSync(absolute).isFile()) {
+        throw new ContentError(
+          display,
+          line,
+          `找不到图片 ${relative(ROOT, absolute).replace(/\\/g, "/")}`,
+        );
+      }
+      const bytes = new Uint8Array(readFileSync(absolute));
+
+      const existing = assets.get(absolute);
+      let to: string;
+      if (existing) {
+        to = existing.to;
+      } else {
+        const hash = Bun.hash(bytes).toString(16).padStart(16, "0").slice(0, 8);
+        const stem = basename(absolute, ext).replace(/[^a-zA-Z0-9-]+/g, "-");
+        to = `${MEDIA_DIR}/${stem}-${hash}${ext}`;
+        assets.set(absolute, { from: absolute, to });
+      }
+
+      const size = imageSize(bytes);
+      return {
+        src: `/${to}`,
+        ...(size ? { width: size.width, height: size.height } : {}),
+      };
+    };
 
   for (const rel of files) {
     const display = `content/${rel.replace(/\\/g, "/")}`;
@@ -68,12 +167,12 @@ export async function compile(): Promise<CompileResult> {
       continue;
     }
 
+    const mdPath = resolve(CONTENT_DIR, rel);
     let doc;
     try {
-      doc = parseDocument(
-        await Bun.file(resolve(CONTENT_DIR, rel)).text(),
-        display,
-      );
+      doc = parseDocument(await Bun.file(mdPath).text(), display, {
+        resolveImage: makeResolver(mdPath, display),
+      });
     } catch (err) {
       errors.push(
         err instanceof ContentError ? err.message : `${display}  ${String(err)}`,
@@ -126,7 +225,7 @@ export async function compile(): Promise<CompileResult> {
   posts.sort(
     (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug),
   );
-  return { posts, errors, drafts, empty };
+  return { posts, errors, drafts, empty, assets: [...assets.values()] };
 }
 
 function render(posts: Post[]): string {
@@ -140,11 +239,22 @@ export const posts: Post[] = ${JSON.stringify(posts, null, 2)};
 `;
 }
 
+/**
+ * Manifest consumed by the dev server so it can serve content images from
+ * their original location. The production build copies the files into dist/
+ * instead, so this module is never imported by the browser bundle.
+ */
+function renderAssets(assets: Asset[]): string {
+  const entries = Object.fromEntries(assets.map((a) => [`/${a.to}`, a.from]));
+  return `${JSON.stringify(entries, null, 2)}\n`;
+}
+
 export async function generate(): Promise<CompileResult> {
   const result = await compile();
   if (result.errors.length > 0) return result;
   await mkdir(resolve(ROOT, "src/content"), { recursive: true });
   await Bun.write(OUT_FILE, render(result.posts));
+  await Bun.write(ASSET_FILE, renderAssets(result.assets));
   return result;
 }
 
@@ -171,6 +281,9 @@ function report(result: CompileResult, wrote: boolean): void {
   console.log(
     `  ${result.posts.length} 篇文章  (${byCategory})${wrote ? ` → ${relative(ROOT, OUT_FILE)}` : ""}`,
   );
+  if (result.assets.length > 0) {
+    console.log(`  ${result.assets.length} 张图片待复制到 dist/${MEDIA_DIR}/`);
+  }
   if (result.empty.length > 0) {
     console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);
   }

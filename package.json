@@ -24,8 +24,10 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/katex": "0.16.7",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "katex": "0.16.11",
     "typescript": "5.9.2"
   }
 }

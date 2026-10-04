@@ -37,6 +37,8 @@ src/
     nav.css  hero.css  cards.css  blog.css
 scripts/
   markdown.ts         严格 Markdown 子集解析器
+  math.ts             LaTeX → MathML(构建期,浏览器端零负担)
+  image.ts            从文件头读图片尺寸,零依赖
   content.ts          内容编译器:校验 content/**/*.md → src/content/generated.ts
   build.ts            构建(Bun.build API),构建前先编译内容
   preview.ts          按 GitHub Pages 的形态本地预览 dist
@@ -135,6 +137,23 @@ Markdown 解析器;内容路径上没有 `dangerouslySetInnerHTML`,链接地址�
 内容最终编译成 `src/content/types.ts` 里的 `Block` / `Inline` 树。要新增一种块,
 三处都得改:`Block` 类型、`scripts/markdown.ts` 的解析分支、`ArticleBody.tsx` 的
 渲染分支 —— 后者的 `switch` 有穷尽性检查,漏掉就是编译错误。
+
+### 图片的资源管线
+
+打包器只遍历从 `src/index.html` 出发的依赖图,所以**只在 Markdown 里出现过的图片
+它看不到** —— 不管的话线上必然 404。流程是:
+
+1. 内容编译器解析 `![](...)`,把路径按 .md 文件的位置解析,读文件头拿到原始尺寸,
+   按内容哈希生成输出名,记进资源清单。
+2. `scripts/build.ts` 在打包之后把清单里的文件复制到 `dist/media/`。
+3. 开发时不复制,`src/index.ts` 的 `/media/*` 路由直接按清单从原位置读。
+
+清单是 `src/content/assets.json`(已 gitignore)。**它是 JSON 而不是 TS 模块是有原因的**:
+开发时文件监听器每次保存都会重写它,而在 `--hot` 下 `import()` 一个不断变化的模块会让
+Bun 1.3.13 段错误崩溃。用 `Bun.file` 当数据读就绕开了模块图。
+
+图片块带上了 `width` / `height` 属性,这不只是为了避免抖动 —— ScrollTrigger 在挂载时
+就测完了所有起止位置,图片晚到造成的回流会让首页卡片和星座的动效位置全部失准。
 
 ## 动效约定
 

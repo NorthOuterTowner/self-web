@@ -1,5 +1,7 @@
-import type { Block, Inline } from "../content/types";
+import { createElement, type ReactNode } from "react";
+import type { Block, Inline, ListItem, MathNode } from "../content/types";
 import { headingId } from "../content/types";
+import { withBase } from "../lib/basePath";
 
 /**
  * Renders the compiled block tree.
@@ -14,6 +16,25 @@ function isExternal(href: string): boolean {
   return /^https?:/.test(href);
 }
 
+/**
+ * Builds the MathML subtree as React elements.
+ *
+ * React DOM recognises `math` and switches to the MathML namespace for its
+ * descendants, so createElement is enough — the alternative would have been to
+ * inject the markup string, which this exists to avoid. The tree was already
+ * checked against a tag and attribute whitelist when it was compiled.
+ */
+function mathNodes(nodes: MathNode[]): ReactNode[] {
+  return nodes.map((node, i) => {
+    if (typeof node === "string") return node;
+    return createElement(
+      node.t,
+      { key: i, ...node.a },
+      node.c ? mathNodes(node.c) : undefined,
+    );
+  });
+}
+
 function InlineNodes({ nodes }: { nodes: Inline[] }) {
   return (
     <>
@@ -24,6 +45,13 @@ function InlineNodes({ nodes }: { nodes: Inline[] }) {
 
           case "code":
             return <code key={i}>{node.text}</code>;
+
+          case "math":
+            return (
+              <span className="math math--inline" key={i}>
+                {mathNodes(node.nodes)}
+              </span>
+            );
 
           case "strong":
             return (
@@ -63,9 +91,36 @@ function InlineNodes({ nodes }: { nodes: Inline[] }) {
   );
 }
 
-export function ArticleBody({ blocks }: { blocks: Block[] }) {
+function ListItems({ items }: { items: ListItem[] }) {
   return (
-    <div className="prose">
+    <>
+      {items.map((item, j) => (
+        <li key={j}>
+          <span>
+            <InlineNodes nodes={item.content} />
+          </span>
+          {item.children && (
+            <div className="prose__nested">
+              <Blocks blocks={item.children} />
+            </div>
+          )}
+        </li>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Recursive so a list item can carry its own blocks — a code sample under a
+ * numbered step, most of the time.
+ *
+ * Heading ids come from the block index, which is only meaningful at the top
+ * level; the compiler rejects headings inside list items for that reason, so
+ * nested calls never produce one.
+ */
+function Blocks({ blocks }: { blocks: Block[] }) {
+  return (
+    <>
       {blocks.map((block, i) => {
         switch (block.type) {
           case "h2":
@@ -92,26 +147,14 @@ export function ArticleBody({ blocks }: { blocks: Block[] }) {
           case "ul":
             return (
               <ul key={i}>
-                {block.items.map((item, j) => (
-                  <li key={j}>
-                    <span>
-                      <InlineNodes nodes={item} />
-                    </span>
-                  </li>
-                ))}
+                <ListItems items={block.items} />
               </ul>
             );
 
           case "ol":
             return (
               <ol key={i}>
-                {block.items.map((item, j) => (
-                  <li key={j}>
-                    <span>
-                      <InlineNodes nodes={item} />
-                    </span>
-                  </li>
-                ))}
+                <ListItems items={block.items} />
               </ol>
             );
 
@@ -143,6 +186,70 @@ export function ArticleBody({ blocks }: { blocks: Block[] }) {
               </aside>
             );
 
+          case "mathBlock":
+            return (
+              <div className="math math--block" key={i}>
+                {mathNodes(block.nodes)}
+              </div>
+            );
+
+          case "figure":
+            return (
+              <figure className="prose__figure" key={i}>
+                <img
+                  className="prose__figure-img"
+                  src={withBase(block.src)}
+                  alt={block.alt}
+                  /* Intrinsic size reserves the box before the bytes land, so
+                     the article does not reflow under ScrollTrigger. */
+                  width={block.width}
+                  height={block.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+                {block.caption && (
+                  <figcaption className="prose__figure-caption">
+                    <InlineNodes nodes={block.caption} />
+                  </figcaption>
+                )}
+              </figure>
+            );
+
+          case "table":
+            return (
+              // The wrapper is what scrolls; tabindex lets a keyboard user
+              // reach a table that is wider than the column.
+              <div
+                className="prose__table-wrap"
+                key={i}
+                tabIndex={0}
+                role="group"
+              >
+                <table className="prose__table">
+                  <thead>
+                    <tr>
+                      {block.head.map((cell, c) => (
+                        <th key={c} scope="col" data-align={block.align[c]}>
+                          <InlineNodes nodes={cell} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, r) => (
+                      <tr key={r}>
+                        {row.map((cell, c) => (
+                          <td key={c} data-align={block.align[c]}>
+                            <InlineNodes nodes={cell} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+
           case "hr":
             return <hr key={i} />;
 
@@ -154,6 +261,14 @@ export function ArticleBody({ blocks }: { blocks: Block[] }) {
           }
         }
       })}
+    </>
+  );
+}
+
+export function ArticleBody({ blocks }: { blocks: Block[] }) {
+  return (
+    <div className="prose">
+      <Blocks blocks={blocks} />
     </div>
   );
 }

@@ -62,7 +62,17 @@ if (!(await indexHtml.exists())) {
 }
 await Bun.write(`${outdir}/404.html`, await indexHtml.bytes());
 
-const total = result.outputs.reduce((n, o) => n + o.size, 0);
+// Content images. The bundler only walks the graph rooted at src/index.html,
+// so anything referenced from Markdown alone has to be carried over by hand —
+// otherwise it is simply missing from the deploy.
+let mediaBytes = 0;
+for (const asset of content.assets) {
+  const bytes = await Bun.file(asset.from).bytes();
+  await Bun.write(`${outdir}/${asset.to}`, bytes);
+  mediaBytes += bytes.length;
+}
+
+const total = result.outputs.reduce((n, o) => n + o.size, 0) + mediaBytes;
 for (const out of result.outputs) {
   console.log(
     `  ${out.path.replace(/^.*[\\/]/, "").padEnd(24)} ${(out.size / 1024).toFixed(1).padStart(8)} KB  ${out.kind}`,
@@ -71,6 +81,12 @@ for (const out of result.outputs) {
 console.log(
   `  ${"404.html".padEnd(24)} ${(indexHtml.size / 1024).toFixed(1).padStart(8)} KB  spa-fallback`,
 );
+for (const asset of content.assets) {
+  const size = Bun.file(asset.from).size;
+  console.log(
+    `  ${asset.to.replace(/^.*\//, "").padEnd(24)} ${(size / 1024).toFixed(1).padStart(8)} KB  media`,
+  );
+}
 console.log(
   `\nbase path: ${base || "/"}   total: ${(total / 1024).toFixed(1)} KB`,
 );

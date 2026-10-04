@@ -9,7 +9,13 @@
  *
  * The authoring contract lives in `content/FORMAT.md`.
  */
-import type { Block, Inline } from "../src/content/types";
+import type {
+  Block,
+  Inline,
+  ListItem,
+  TableAlign,
+} from "../src/content/types";
+import { MathError, renderMath } from "./math";
 
 export class ContentError extends Error {
   constructor(
@@ -117,6 +123,32 @@ export function parseInline(
       continue;
     }
 
+    // $math$ — LaTeX, rendered to MathML at build time. Checked before the
+    // other markers so a formula's braces and carets are never read as
+    // markdown; a literal dollar sign is written \$.
+    if (ch === "$") {
+      const end = raw.indexOf("$", i + 1);
+      if (end === -1) {
+        throw new ContentError(
+          file,
+          line,
+          "行内公式的 $ 没有闭合；字面美元符号请写成 \\$",
+        );
+      }
+      const tex = raw.slice(i + 1, end);
+      flush();
+      try {
+        nodes.push({ type: "math", nodes: renderMath(tex, false), tex });
+      } catch (err) {
+        if (err instanceof MathError) {
+          throw new ContentError(file, line, err.message);
+        }
+        throw err;
+      }
+      i = end + 1;
+      continue;
+    }
+
     // `code` — contents are literal, no nested markers.
     if (ch === "`") {
       const end = raw.indexOf("`", i + 1);
@@ -194,6 +226,17 @@ export function parseInline(
       });
       i = paren + 1;
       continue;
+    }
+
+    // Images are block level only, so catch the inline form explicitly —
+    // otherwise `![alt](src)` would quietly fall through to the link branch
+    // and render as a stray "!" followed by a link.
+    if (ch === "!" && raw.startsWith("![", i)) {
+      throw new ContentError(
+        file,
+        line,
+        "图片必须独占一行，不能插在段落中间；字面感叹号加方括号请写成 \\!\\[",
+      );
     }
 
     if (ch === "]") {
@@ -332,6 +375,24 @@ const RE_QUOTE = /^>\s?(.*)$/;
 const RE_CITE = /^(?:--|—)\s+(.+)$/;
 const RE_NOTE = /^\[!NOTE\]\s*$/i;
 
+/** `![alt](./path.png "optional caption")`, on a line of its own. */
+const RE_FIGURE =
+  /^!\[([^\]]*)\]\(\s*([^\s)"]+)(?:\s+"([^"]*)")?\s*\)\s*$/;
+
+/**
+ * Resolves an image reference against the file it was written in.
+ *
+ * Supplied by the content compiler, which is where the repository root and the
+ * asset manifest live; keeping it out here means this module never touches the
+ * filesystem for images.
+ */
+export interface ParseOptions {
+  resolveImage?: (
+    ref: string,
+    line: number,
+  ) => { src: string; width?: number; height?: number };
+}
+
 /** Index of the next line that is not blank, or -1 if there is none. */
 function nextContentLine(lines: string[], from: number): number {
   let k = from;
@@ -359,6 +420,8 @@ function listContinuesAfterBlank(
 /** True when a line opens a block construct, so it ends any open paragraph. */
 function startsBlock(line: string): boolean {
   return (
+    line.trim() === "$$" ||
+    RE_FIGURE.test(line.trim()) ||
     RE_FENCE.test(line) ||
     RE_HEADING.test(line) ||
     RE_UL.test(line) ||
@@ -383,16 +446,8 @@ function rejectKnownUnsupported(
   if (/^[*+]\s/.test(line)) {
     throw new ContentError(file, lineNo, "无序列表只能用 `- `，不要用 * 或 +");
   }
-  if (line.startsWith("|")) {
-    throw new ContentError(
-      file,
-      lineNo,
-      "不支持表格。请改用列表，或把表格放进 ``` 围栏当作纯文本",
-    );
-  }
-  if (line.startsWith("![")) {
-    throw new ContentError(file, lineNo, "不支持图片");
-  }
+
+
   if (/^<[a-z!/]/i.test(line)) {
     throw new ContentError(file, lineNo, "不支持内嵌 HTML");
   }
@@ -405,7 +460,298 @@ function rejectKnownUnsupported(
   }
 }
 
-function parseBlocks(lines: string[], file: string, offset: number): Block[] {
+/* ------------------------------------------------------------------ *
+ * Tables
+ * ------------------------------------------------------------------ */
+
+/**
+ * Splits one row into cells.
+ *
+ * Outer pipes are optional. A pipe is only a separator when it is neither
+ * escaped nor inside a code span, so `` `a|b` `` and `a \| b` both survive as
+ * single cells. The backslash is left in place for parseInline to consume.
+ */
+function splitRow(raw: string): string[] {
+  let s = raw.trim();
+  if (s.startsWith("|")) s = s.slice(1);
+  if (s.endsWith("|") && !s.endsWith("\\|")) s = s.slice(0, -1);
+
+  const cells: string[] = [];
+  let buf = "";
+  let inCode = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (ch === "\\" && s[i + 1] === "|") {
+      buf += "\\|";
+      i++;
+      continue;
+    }
+    if (ch === "`") {
+      inCode = !inCode;
+      buf += ch;
+      continue;
+    }
+    if (ch === "|" && !inCode) {
+      cells.push(buf.trim());
+      buf = "";
+      continue;
+    }
+    buf += ch;
+  }
+  cells.push(buf.trim());
+  return cells;
+}
+
+/**
+ * True for a row made only of dashes and colons.
+ *
+ * Three dashes minimum on purpose: a single `-` is a plausible cell value —
+ * "not applicable" is written that way — and `| - | - |` would otherwise be
+ * read as a separator instead of data.
+ */
+function isDelimiterRow(raw: string): boolean {
+  if (!raw.includes("|") && !raw.includes("-")) return false;
+  const cells = splitRow(raw);
+  return cells.length > 0 && cells.every((c) => /^:?-{3,}:?$/.test(c));
+}
+
+function alignOf(cell: string): TableAlign {
+  const left = cell.startsWith(":");
+  const right = cell.endsWith(":");
+  if (left && right) return "center";
+  if (right) return "right";
+  return "left";
+}
+
+/** End of the run of consecutive non-blank lines containing a pipe. */
+function tableRunEnd(lines: string[], from: number): number {
+  let k = from;
+  while (k < lines.length && lines[k]!.trim() !== "" && lines[k]!.includes("|")) {
+    k++;
+  }
+  return k;
+}
+
+/**
+ * A run of pipe rows is only a table if it contains a delimiter row. That keeps
+ * an ordinary sentence with a pipe in it from being swallowed, and means the
+ * separator is what declares the intent.
+ */
+function looksLikeTable(lines: string[], from: number): boolean {
+  const end = tableRunEnd(lines, from);
+  if (end === from) return false;
+  for (let k = from; k < end; k++) {
+    if (isDelimiterRow(lines[k]!)) return true;
+  }
+  return false;
+}
+
+function parseTable(
+  lines: string[],
+  start: number,
+  file: string,
+  offset: number,
+): { block: Block; next: number } {
+  const lineNo = (idx: number) => offset + idx + 1;
+  const end = tableRunEnd(lines, start);
+
+  const run: Array<{ raw: string; index: number }> = [];
+  for (let k = start; k < end; k++) run.push({ raw: lines[k]!, index: k });
+
+  const delimiters = run.filter((r) => isDelimiterRow(r.raw));
+  const content = run.filter((r) => !isDelimiterRow(r.raw));
+
+  if (content.length === 0) {
+    throw new ContentError(
+      file,
+      lineNo(start),
+      "表格只有分隔行，没有任何内容行",
+    );
+  }
+
+  const header = content[0]!;
+  const headCells = splitRow(header.raw);
+  if (headCells.length < 2) {
+    throw new ContentError(
+      file,
+      lineNo(header.index),
+      "表格至少要有两列，否则用列表更合适",
+    );
+  }
+
+  // Alignment comes from the first delimiter row *after* the header. Extra
+  // delimiter rows above and below are treated as decoration and dropped, so a
+  // table drawn with full ASCII borders works as written.
+  const separator = delimiters.find((d) => d.index > header.index);
+  let align: TableAlign[] = headCells.map(() => "left");
+  if (separator) {
+    const cells = splitRow(separator.raw);
+    if (cells.length !== headCells.length) {
+      throw new ContentError(
+        file,
+        lineNo(separator.index),
+        `分隔行有 ${cells.length} 个单元格，表头是 ${headCells.length} 个，两者必须一致`,
+      );
+    }
+    align = cells.map(alignOf);
+  }
+
+  const rows = content.slice(1).map((r) => {
+    const cells = splitRow(r.raw);
+    if (cells.length !== headCells.length) {
+      throw new ContentError(
+        file,
+        lineNo(r.index),
+        `这一行有 ${cells.length} 个单元格，表头是 ${headCells.length} 个。` +
+          "每行必须对齐；单元格里的竖线请写成 \\|",
+      );
+    }
+    return cells.map((c) => parseInline(c, file, lineNo(r.index)));
+  });
+
+  return {
+    block: {
+      type: "table",
+      head: headCells.map((c) => parseInline(c, file, lineNo(header.index))),
+      rows,
+      align,
+    },
+    next: end,
+  };
+}
+
+const INDENT = /^([ \t]+)(.*)$/;
+
+/**
+ * Reads one list, including any blocks indented underneath its items.
+ *
+ * Indented content is the reason this is not a flat scan. Writing a numbered
+ * list where each step carries a code sample is ordinary Markdown, and the
+ * first version of this parser rejected it outright because it refused every
+ * line that began with whitespace. Here the indented run is collected, the
+ * common indent is stripped, and the result goes back through parseBlocks — so
+ * a fence, a further paragraph or a nested list all work, and line numbers in
+ * errors still point at the real file.
+ */
+function parseList(
+  lines: string[],
+  start: number,
+  kind: "ul" | "ol",
+  file: string,
+  offset: number,
+  options: ParseOptions,
+): { items: ListItem[]; next: number } {
+  const lineNo = (idx: number) => offset + idx + 1;
+  const pattern = kind === "ul" ? RE_UL : RE_OL;
+  const items: ListItem[] = [];
+  let expected = 1;
+  let j = start;
+
+  /** Collects the indented run that belongs to the item just read. */
+  const takeChildren = (from: number): { blocks: Block[]; next: number } => {
+    const collected: Array<{ raw: string; index: number }> = [];
+    let k = from;
+
+    while (k < lines.length) {
+      const current = lines[k]!;
+      if (current.trim() === "") {
+        // A blank line only continues the run if indented content follows.
+        const after = nextContentLine(lines, k);
+        if (after === -1 || !INDENT.test(lines[after]!)) break;
+        collected.push({ raw: "", index: k });
+        k++;
+        continue;
+      }
+      if (!INDENT.test(current)) break;
+      collected.push({ raw: current, index: k });
+      k++;
+    }
+
+    // Trailing blanks belong to the gap after the run, not inside it.
+    while (collected.length > 0 && collected.at(-1)!.raw.trim() === "") {
+      collected.pop();
+      k--;
+    }
+    if (collected.length === 0) return { blocks: [], next: from };
+
+    const body = collected.filter((l) => l.raw.trim() !== "");
+    const unit = Math.min(
+      ...body.map((l) => INDENT.exec(l.raw)![1]!.replace(/\t/g, "    ").length),
+    );
+    const dedented = collected.map((l) =>
+      l.raw === "" ? "" : l.raw.replace(/\t/g, "    ").slice(unit),
+    );
+
+    const blocks = parseBlocks(
+      dedented,
+      file,
+      collected[0]!.index + offset,
+      options,
+    );
+    for (const block of blocks) {
+      if (block.type === "h2" || block.type === "h3") {
+        throw new ContentError(
+          file,
+          lineNo(collected[0]!.index),
+          "列表项里不能放小标题，否则左侧目录的层级会乱掉",
+        );
+      }
+    }
+    return { blocks, next: k };
+  };
+
+  while (j < lines.length) {
+    const current = lines[j]!;
+
+    if (current.trim() === "") {
+      const resume = listContinuesAfterBlank(lines, j, pattern);
+      if (resume === -1) break;
+      j = resume;
+      continue;
+    }
+
+    const match = pattern.exec(current);
+    if (!match) {
+      // Unsupported constructs still fail. Anything else simply closes the
+      // list and becomes the next paragraph.
+      rejectKnownUnsupported(current, file, lineNo(j));
+      break;
+    }
+
+    if (kind === "ol") {
+      const num = Number(match[1]);
+      if (num !== expected) {
+        throw new ContentError(
+          file,
+          lineNo(j),
+          `有序列表的序号必须从 1 开始连续递增，这里应该是 ${expected}.，收到 ${num}.`,
+        );
+      }
+      expected++;
+    }
+
+    const text = (kind === "ol" ? match[2]! : match[1]!).trim();
+    if (text === "") {
+      throw new ContentError(file, lineNo(j), "列表项内容为空");
+    }
+
+    const item: ListItem = { content: parseInline(text, file, lineNo(j)) };
+    const children = takeChildren(j + 1);
+    if (children.blocks.length > 0) item.children = children.blocks;
+    items.push(item);
+    j = children.next;
+  }
+
+  return { items, next: j };
+}
+
+function parseBlocks(
+  lines: string[],
+  file: string,
+  offset: number,
+  options: ParseOptions,
+): Block[] {
   const blocks: Block[] = [];
   let i = 0;
 
@@ -455,6 +801,39 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
       continue;
     }
 
+    // ---- displayed formula ------------------------------------------
+    if (line.trim() === "$$") {
+      const body: string[] = [];
+      let j = i + 1;
+      let closed = false;
+      while (j < lines.length) {
+        if (lines[j]!.trim() === "$$") {
+          closed = true;
+          break;
+        }
+        body.push(lines[j]!);
+        j++;
+      }
+      if (!closed) {
+        throw new ContentError(file, lineNo(i), "$$ 公式块没有闭合");
+      }
+      const tex = body.join("\n").trim();
+      try {
+        blocks.push({
+          type: "mathBlock",
+          nodes: renderMath(tex, true),
+          tex,
+        });
+      } catch (err) {
+        if (err instanceof MathError) {
+          throw new ContentError(file, lineNo(i), err.message);
+        }
+        throw err;
+      }
+      i = j + 1;
+      continue;
+    }
+
     // ---- thematic break ---------------------------------------------
     if (line.trim() === "---") {
       blocks.push({ type: "hr" });
@@ -494,6 +873,48 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
         content: parseInline(text, file, lineNo(i)),
       });
       i++;
+      continue;
+    }
+
+    // ---- figure ------------------------------------------------------
+    const figure = RE_FIGURE.exec(line.trim());
+    if (figure) {
+      const alt = figure[1]!.trim();
+      const ref = figure[2]!;
+      const caption = figure[3]?.trim();
+
+      if (alt === "") {
+        throw new ContentError(
+          file,
+          lineNo(i),
+          "图片必须写替代文字：![这里描述图片内容](./图片.png)。读屏软件和图片加载失败时都靠它",
+        );
+      }
+      if (!options.resolveImage) {
+        throw new ContentError(file, lineNo(i), "当前环境不支持图片");
+      }
+
+      const resolved = options.resolveImage(ref, lineNo(i));
+      const block: Block = {
+        type: "figure",
+        src: resolved.src,
+        alt,
+        ...(resolved.width !== undefined ? { width: resolved.width } : {}),
+        ...(resolved.height !== undefined ? { height: resolved.height } : {}),
+        ...(caption
+          ? { caption: parseInline(caption, file, lineNo(i)) }
+          : {}),
+      };
+      blocks.push(block);
+      i++;
+      continue;
+    }
+
+    // ---- table -------------------------------------------------------
+    if (line.includes("|") && looksLikeTable(lines, i)) {
+      const table = parseTable(lines, i, file, offset);
+      blocks.push(table.block);
+      i = table.next;
       continue;
     }
 
@@ -547,73 +968,17 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
 
     // ---- unordered list ---------------------------------------------
     if (RE_UL.test(line)) {
-      const items: Inline[][] = [];
-      let j = i;
-      while (j < lines.length) {
-        const current = lines[j]!;
-        if (current.trim() === "") {
-          const resume = listContinuesAfterBlank(lines, j, RE_UL);
-          if (resume === -1) break;
-          j = resume;
-          continue;
-        }
-        const match = RE_UL.exec(current);
-        if (!match) {
-          // Indentation and the other unsupported constructs still fail here,
-          // because an indented line after an item is usually an attempt at a
-          // nested list. Anything else simply closes the list and becomes the
-          // next paragraph.
-          rejectKnownUnsupported(current, file, lineNo(j));
-          break;
-        }
-        const text = match[1]!.trim();
-        if (text === "") {
-          throw new ContentError(file, lineNo(j), "列表项内容为空");
-        }
-        items.push(parseInline(text, file, lineNo(j)));
-        j++;
-      }
-      blocks.push({ type: "ul", items });
-      i = j;
+      const list = parseList(lines, i, "ul", file, offset, options);
+      blocks.push({ type: "ul", items: list.items });
+      i = list.next;
       continue;
     }
 
     // ---- ordered list -----------------------------------------------
     if (RE_OL.test(line)) {
-      const items: Inline[][] = [];
-      let expected = 1;
-      let j = i;
-      while (j < lines.length) {
-        const current = lines[j]!;
-        if (current.trim() === "") {
-          const resume = listContinuesAfterBlank(lines, j, RE_OL);
-          if (resume === -1) break;
-          j = resume;
-          continue;
-        }
-        const match = RE_OL.exec(current);
-        if (!match) {
-          rejectKnownUnsupported(current, file, lineNo(j));
-          break;
-        }
-        const num = Number(match[1]);
-        if (num !== expected) {
-          throw new ContentError(
-            file,
-            lineNo(j),
-            `有序列表的序号必须从 1 开始连续递增，这里应该是 ${expected}.，收到 ${num}.`,
-          );
-        }
-        const text = match[2]!.trim();
-        if (text === "") {
-          throw new ContentError(file, lineNo(j), "列表项内容为空");
-        }
-        items.push(parseInline(text, file, lineNo(j)));
-        expected++;
-        j++;
-      }
-      blocks.push({ type: "ol", items });
-      i = j;
+      const list = parseList(lines, i, "ol", file, offset, options);
+      blocks.push({ type: "ol", items: list.items });
+      i = list.next;
       continue;
     }
 
@@ -641,6 +1006,9 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
           // actually type, and a line starting with ``` or ## or - is not
           // ambiguous, so there is nothing to protect against here.
           if (startsBlock(current)) break;
+          // A table needs the whole run to be recognised, so it cannot be
+          // detected from a single line the way the others can.
+          if (current.includes("|") && looksLikeTable(lines, j)) break;
         }
 
         rejectKnownUnsupported(current, file, lineNo(j));
@@ -662,7 +1030,11 @@ function parseBlocks(lines: string[], file: string, offset: number): Block[] {
  * Entry point
  * ------------------------------------------------------------------ */
 
-export function parseDocument(source: string, file: string): ParsedDoc {
+export function parseDocument(
+  source: string,
+  file: string,
+  options: ParseOptions = {},
+): ParsedDoc {
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
 
   if (lines[0]?.trim() !== "---") {
@@ -689,7 +1061,7 @@ export function parseDocument(source: string, file: string): ParsedDoc {
     file,
     2,
   );
-  const blocks = parseBlocks(lines.slice(end + 1), file, end + 1);
+  const blocks = parseBlocks(lines.slice(end + 1), file, end + 1, options);
 
   if (blocks.length === 0) {
     throw new ContentError(file, end + 1, "文章正文为空");

@@ -15,6 +15,7 @@ export const site = {
     "BLOG Collection By Telecommunications Integration Engineer and Software Engineering Student",
   email: "hello@example.com",
   github: "https://github.com/NorthOuterTowner",
+  linkedin: "https://www.linkedin.com/in/ruize-li-185964383/",
   /** Footer line. */
   since: 2026,
 } as const;

@@ -118,9 +118,15 @@ export function TableOfContents({
 
         <div className="toc__panel">
           <nav className="toc__group" aria-label="文章列表">
-            <span className="label label--ink toc__heading">
-              Entries · {String(posts.length).padStart(2, "0")}
-            </span>
+            {/* Label, hairline, count — the same device the section headings
+                use elsewhere, so the sidebar reads as part of the same grid. */}
+            <p className="toc__heading">
+              <span className="toc__heading-label">Entries</span>
+              <span className="toc__heading-rule" aria-hidden="true" />
+              <span className="toc__heading-count">
+                {String(posts.length).padStart(2, "0")}
+              </span>
+            </p>
             <ul>
               {posts.map((post, i) => (
                 <li key={post.slug}>
@@ -148,7 +154,13 @@ export function TableOfContents({
 
           {headings.length > 0 && (
             <nav className="toc__group" aria-label="本页小节">
-              <span className="label label--ink toc__heading">On this page</span>
+              <p className="toc__heading">
+                <span className="toc__heading-label">Contents</span>
+                <span className="toc__heading-rule" aria-hidden="true" />
+                <span className="toc__heading-count">
+                  {String(headings.length).padStart(2, "0")}
+                </span>
+              </p>
               <div className="toc__anchors">
                 {headings.map((h) => (
                   <button

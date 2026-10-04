@@ -914,9 +914,6 @@ export function CardsSection() {
               </svg>
             </button>
 
-            <p className="label streams__hint">
-              按住拖拽切换 · 当前 {centred?.titleEn}
-            </p>
           </div>
         </div>
       </div>

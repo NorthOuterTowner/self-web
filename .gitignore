@@ -11,6 +11,7 @@ shots
 
 # compiled from content/**/*.md by scripts/content.ts
 src/content/generated.ts
+src/content/assets.json
 
 # code coverage
 coverage
