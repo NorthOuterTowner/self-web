@@ -413,6 +413,8 @@ export function CardsSection() {
     progress: 0,
     /** Set once the pointer has travelled far enough to count as a drag. */
     moved: false,
+    /** Whether this gesture took *explicit* capture (mouse only, see below). */
+    captured: false,
   });
 
   const reduced = useRef(false);
@@ -565,6 +567,7 @@ export function CardsSection() {
     // and get swallowed.
     d.active = false;
     d.moved = false;
+    d.captured = false;
     d.progress = 0;
 
     if (event.pointerType === "mouse" && event.button !== 0) return;
@@ -594,13 +597,25 @@ export function CardsSection() {
       if (Math.hypot(dx, dy) < 6) return;
       d.moved = true;
       setDragging(true);
+
       // Now that this is definitely a drag, take the pointer so the gesture
       // survives leaving the stage — and so the trailing click is absorbed
       // rather than following a link.
-      try {
-        stageRef.current?.setPointerCapture(event.pointerId);
-      } catch {
-        /* capture is best effort */
+      //
+      // Mouse only. Touch and pen pointers are already captured implicitly by
+      // their pointerdown target, which here is the card's own <a>. Calling
+      // setPointerCapture on the stage would *move* that capture, and the
+      // browser announces the handoff with a `lostpointercapture` on the <a>
+      // that bubbles up to this very stage. That used to land on endDrag and
+      // tear the gesture down roughly 10px in, which is why dragging worked
+      // with a mouse and did nothing under a finger.
+      if (event.pointerType === "mouse") {
+        try {
+          stageRef.current?.setPointerCapture(event.pointerId);
+          d.captured = true;
+        } catch {
+          /* capture is best effort */
+        }
       }
     }
 
@@ -621,7 +636,8 @@ export function CardsSection() {
 
     d.active = false;
     setDragging(false);
-    if (d.moved) {
+    if (d.captured) {
+      d.captured = false;
       try {
         stageRef.current?.releasePointerCapture(event.pointerId);
       } catch {
@@ -788,9 +804,13 @@ export function CardsSection() {
             ref={stageRef}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
+            // pointerup and pointercancel are the only two ways a gesture
+            // ends, and the spec dispatches lostpointercapture *after* both of
+            // them — so listening for it adds nothing and, on touch, fires
+            // mid-gesture when implicit capture changes hands. See the note in
+            // onPointerMove.
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
-            onLostPointerCapture={endDrag}
           >
             <Sparks />
 
