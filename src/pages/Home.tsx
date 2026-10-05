@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { CardsSection } from "../components/CardsSection";
 import { Hero } from "../components/Hero";
+import { OthersSection } from "../components/OthersSection";
 import { SiteFooter } from "../components/SiteFooter";
 import { SmoothScroll } from "../components/SmoothScroll";
 import { site } from "../site.config";
@@ -16,6 +17,7 @@ export function Home() {
       <div className="page">
         <Hero />
         <CardsSection />
+        <OthersSection />
         <SiteFooter />
       </div>
     </SmoothScroll>

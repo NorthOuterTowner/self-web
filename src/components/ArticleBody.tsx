@@ -193,6 +193,24 @@ function Blocks({ blocks }: { blocks: Block[] }) {
               </div>
             );
 
+          // Each line is its own element rather than one block with <br>s, so
+          // a line that wraps on a narrow screen can be indented as a
+          // continuation instead of looking like a new line of the poem.
+          case "verse":
+            return (
+              <div className="prose__verse" key={i}>
+                {block.lines.map((line, k) =>
+                  line.length === 0 ? (
+                    <span className="prose__verse-break" key={k} />
+                  ) : (
+                    <p className="prose__verse-line" key={k}>
+                      <InlineNodes nodes={line} />
+                    </p>
+                  ),
+                )}
+              </div>
+            );
+
           case "figure":
             return (
               <figure className="prose__figure" key={i}>

@@ -80,6 +80,11 @@ export type Block =
     }
   /** `$$…$$` on its own lines. */
   | { type: "mathBlock"; nodes: MathNode[]; tex: string }
+  /**
+   * A poem, from a ```verse fence. One entry per line, so the breaks survive
+   * — a paragraph would join them. An empty entry is a stanza break.
+   */
+  | { type: "verse"; lines: Inline[][] }
   | { type: "hr" };
 
 export interface Post {
@@ -95,6 +100,126 @@ export interface Post {
   blocks: Block[];
   /** Source file, relative to the repo root. Useful in error messages. */
   source: string;
+  /**
+   * Slug of the series this article belongs to, taken from the directory it
+   * sits in. Absent for standalone articles, which is most of them.
+   *
+   * `series` and `order` are either both present or both absent — the compiler
+   * refuses to emit one without the other, so the UI can branch on `series`
+   * alone and treat `order` as given.
+   */
+  series?: string;
+  /** 1-based position inside the series. */
+  order?: number;
+}
+
+/**
+ * A note — one of the scattered short pieces under `content/others/`.
+ *
+ * Deliberately not a `Post`. The shape of the content differs, so the shape of
+ * the record does too: a 40-character aphorism has no standfirst to write, no
+ * place in a reading sequence, and nothing for a table of contents to index.
+ * Folding these into `Post` would mean every page that renders a Post has to
+ * ask "but is it actually a note?".
+ */
+export interface Note {
+  slug: string;
+  /** Genre, declared in `site.config.ts`. Drives the dot's tone. */
+  kind: string;
+  title: string;
+  /** ISO date (YYYY-MM-DD). The constellation's horizontal axis. */
+  date: string;
+  /** Optional one-liner. Most notes are shorter than their own standfirst. */
+  lede?: string;
+  /**
+   * Who wrote it, when that is not the site's author.
+   *
+   * Absent means "mine". Present means this is someone else's piece — a poem
+   * copied out, a line worth keeping — and the attribution has to be part of
+   * the record rather than smuggled into the title, so that every surface
+   * that shows the note shows the credit too.
+   */
+  author?: string;
+  tags: string[];
+  blocks: Block[];
+  source: string;
+  /**
+   * Length, measured at build time by `textLength` — one unit per CJK
+   * character or per Latin word.
+   *
+   * The constellation's vertical axis. `readingMinutes` cannot serve here:
+   * it floors at 1 and divides by 340, so every note from 20 to 300
+   * characters reports "1 min" and the whole field would collapse onto one
+   * row. Precomputed rather than derived in the browser so the layout does
+   * not have to walk every note's blocks on each render.
+   */
+  chars: number;
+}
+
+/** Everything a block tree says, as one string. */
+function collectText(blocks: Block[]): string {
+  const out: string[] = [];
+  for (const b of blocks) {
+    switch (b.type) {
+      case "p":
+      case "h2":
+      case "h3":
+      case "note":
+      case "quote":
+        out.push(inlineText(b.content));
+        break;
+      case "ul":
+      case "ol":
+        for (const item of b.items) {
+          out.push(inlineText(item.content));
+          if (item.children) out.push(collectText(item.children));
+        }
+        break;
+      case "verse":
+        for (const line of b.lines) out.push(inlineText(line));
+        break;
+      case "table":
+        for (const cell of b.head) out.push(inlineText(cell));
+        for (const row of b.rows) {
+          for (const cell of row) out.push(inlineText(cell));
+        }
+        break;
+      case "figure":
+        if (b.caption) out.push(inlineText(b.caption));
+        break;
+      case "code":
+      case "mathBlock":
+      case "hr":
+        break;
+    }
+  }
+  return out.join("\n");
+}
+
+/** CJK ideographs, kana, and the fullwidth / CJK punctuation blocks. */
+const RE_CJK =
+  /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/g;
+/** A run of Latin letters or digits, i.e. one word. */
+const RE_WORD = /[A-Za-z0-9][A-Za-z0-9'’-]*/g;
+
+/**
+ * Length of a note, in units that are comparable across scripts.
+ *
+ * One CJK character is one unit, and so is one Latin word — because a word is
+ * what a character is the rough equivalent of. Counting raw characters would
+ * make an English sonnet five times "longer" than a Chinese ci of the same
+ * substance, and on the constellation's vertical axis that is not a nuance:
+ * a single Shakespeare would stretch the domain far enough to flatten every
+ * Chinese note into a band along the top.
+ *
+ * Distinct from `readingMinutes`, which keeps its own weighting (code is
+ * skimmed, a figure costs a line) because it answers a different question.
+ */
+export function textLength(blocks: Block[]): number {
+  const text = collectText(blocks);
+  const cjk = text.match(RE_CJK)?.length ?? 0;
+  const words = text.match(RE_WORD)?.length ?? 0;
+  return cjk + words;
 }
 
 /** An entry in the in-article table of contents. */
@@ -189,6 +314,9 @@ function countChars(blocks: Block[]): number {
       case "figure":
         // Looking at a figure costs about as long as a line of text.
         chars += 40 + (b.caption ? inlineText(b.caption).length : 0);
+        break;
+      case "verse":
+        for (const line of b.lines) chars += inlineText(line).length;
         break;
       case "hr":
         break;

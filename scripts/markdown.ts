@@ -30,11 +30,22 @@ export class ContentError extends Error {
 
 export interface Frontmatter {
   title: string;
+  /** Required for articles, optional for notes. Empty string when absent. */
   lede: string;
   date: string;
   tags: string[];
   slug?: string;
   draft?: boolean;
+  /** Genre of a note. Required for notes, rejected on articles. */
+  kind?: string;
+  /** Attribution for a note that is someone else's. Notes only. */
+  author?: string;
+  /**
+   * Position inside a series, 1-based. Only meaningful for articles that sit
+   * in a series directory; `scripts/content.ts` is what enforces that pairing,
+   * because only it knows where the file came from.
+   */
+  order?: number;
 }
 
 export interface ParsedDoc {
@@ -49,6 +60,9 @@ const ALLOWED_KEYS = new Set([
   "tags",
   "slug",
   "draft",
+  "order",
+  "kind",
+  "author",
 ]);
 
 /* ------------------------------------------------------------------ *
@@ -270,6 +284,7 @@ function parseFrontmatter(
   raw: string,
   file: string,
   startLine: number,
+  doc: "post" | "note" = "post",
 ): Frontmatter {
   let data: unknown;
   try {
@@ -303,7 +318,7 @@ function parseFrontmatter(
   }
 
   const lede = typeof obj.lede === "string" ? obj.lede.trim() : "";
-  if (lede === "") {
+  if (lede === "" && doc === "post") {
     throw new ContentError(file, startLine, "frontmatter 缺少 lede（导语）");
   }
 
@@ -360,6 +375,38 @@ function parseFrontmatter(
     frontmatter.draft = obj.draft;
   }
 
+  // Only the shape is checked here. Whether the value names a declared genre
+  // is a question about the site, and `scripts/content.ts` owns those — the
+  // same split that keeps the series rules out of this module.
+  if (obj.kind !== undefined) {
+    if (typeof obj.kind !== "string" || obj.kind.trim() === "") {
+      throw new ContentError(file, startLine, "kind 必须是非空字符串");
+    }
+    frontmatter.kind = obj.kind.trim();
+  }
+
+  if (obj.author !== undefined) {
+    if (typeof obj.author !== "string" || obj.author.trim() === "") {
+      throw new ContentError(file, startLine, "author 必须是非空字符串");
+    }
+    frontmatter.author = obj.author.trim();
+  }
+
+  if (obj.order !== undefined) {
+    if (
+      typeof obj.order !== "number" ||
+      !Number.isInteger(obj.order) ||
+      obj.order < 1
+    ) {
+      throw new ContentError(
+        file,
+        startLine,
+        "order 必须是从 1 开始的正整数，它决定文章在专栏里的次序",
+      );
+    }
+    frontmatter.order = obj.order;
+  }
+
   return frontmatter;
 }
 
@@ -391,6 +438,15 @@ export interface ParseOptions {
     ref: string,
     line: number,
   ) => { src: string; width?: number; height?: number };
+  /**
+   * Which frontmatter contract to hold the file to. Defaults to `"post"`.
+   *
+   * Notes are short enough that a standfirst is usually longer than the piece,
+   * so `lede` is optional for them and `kind` takes its place as required.
+   * Branching here rather than relaxing the rules for everyone keeps the
+   * long-form articles as strict as they were.
+   */
+  doc?: "post" | "note";
 }
 
 /** Index of the next line that is not blank, or -1 if there is none. */
@@ -793,6 +849,39 @@ function parseBlocks(
       if (!closed) {
         throw new ContentError(file, lineNo(i), "``` 代码围栏没有闭合");
       }
+
+      // `verse` is the one info string that is not a language. Poetry is the
+      // only construct in this format where a line break is content rather
+      // than typography: a paragraph joins its lines (see joinLines), which is
+      // right for prose and destroys a poem. Reusing the fence rather than
+      // inventing a delimiter keeps the format's surface the same size, and
+      // unlike a real code fence the lines still get inline parsing.
+      if (info === "verse") {
+        const lines_ = body.map((l) => l.trimEnd());
+        // Trim blank lines off both ends so the fence can breathe in the
+        // source without pushing empty lines into the rendered stanza.
+        while (lines_.length > 0 && lines_[0]!.trim() === "") lines_.shift();
+        while (
+          lines_.length > 0 &&
+          lines_[lines_.length - 1]!.trim() === ""
+        ) {
+          lines_.pop();
+        }
+        if (lines_.length === 0) {
+          throw new ContentError(file, lineNo(i), "verse 围栏是空的");
+        }
+        blocks.push({
+          type: "verse",
+          // A blank line is kept as an empty array: that is the stanza break,
+          // and the renderer turns it into vertical space rather than a line.
+          lines: lines_.map((l, k) =>
+            l.trim() === "" ? [] : parseInline(l.trim(), file, lineNo(i + 1 + k)),
+          ),
+        });
+        i = j + 1;
+        continue;
+      }
+
       const block: Block = info
         ? { type: "code", lang: info, code: body.join("\n") }
         : { type: "code", code: body.join("\n") };
@@ -1060,6 +1149,7 @@ export function parseDocument(
     lines.slice(1, end).join("\n"),
     file,
     2,
+    options.doc ?? "post",
   );
   const blocks = parseBlocks(lines.slice(end + 1), file, end + 1, options);
 

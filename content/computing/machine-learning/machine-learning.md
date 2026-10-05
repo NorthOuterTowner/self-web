@@ -3,6 +3,7 @@ title: 几种集成学习模型的原理与使用方法
 lede: 近期在做 Machine Learning 相关的内容，发现对于很多 ML 的模型只是知道名字，但是对于其中的原理和应用很不了解，因此写一篇 blog 来简单记录。
 date: 2026-10-03
 tags: [Machine Learning, GBDT, XGBoost]
+order: 1
 ---
 
 对于很多 ML 的模型我只是知道名字，对其中的原理和应用并不了解。这里记录当前使用的几种集成学习的原理以及对应的使用方法。

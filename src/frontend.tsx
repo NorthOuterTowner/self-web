@@ -14,6 +14,7 @@ import "./styles/base.css";
 import "./styles/nav.css";
 import "./styles/hero.css";
 import "./styles/cards.css";
+import "./styles/others.css";
 import "./styles/blog.css";
 
 const elem = document.getElementById("root")!;

@@ -1,0 +1,521 @@
+/* Others — the notes field.
+ *
+ * A scatter plot that reads as a starfield: horizontal is the date, vertical
+ * is the length. The marks breathe but never drift, which is what keeps this
+ * on the same side of the line as the registration marks behind the card ring.
+ */
+
+.others {
+  position: relative;
+  padding-block: var(--sp-16) var(--sp-24);
+  border-top: 1px solid var(--line);
+}
+
+.others__head {
+  margin-bottom: var(--sp-8);
+}
+
+.others__intro {
+  max-width: 34rem;
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  line-height: 1.62;
+  color: var(--ink-2);
+  text-wrap: pretty;
+  margin-bottom: var(--sp-12);
+}
+
+/* ---- Frame ----------------------------------------------------------- */
+
+.others__frame {
+  position: relative;
+}
+
+.others__axis-note {
+  color: var(--ink-4);
+  margin-bottom: var(--sp-4);
+}
+
+/* The y labels sit in their own column so the field itself stays a clean
+   rectangle and the dots' percentages map to it directly. */
+.others__plot {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+
+.others__y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-block: 2px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  text-align: right;
+}
+
+.others__field {
+  position: relative;
+  height: clamp(260px, 30vw, 400px);
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink);
+  /* A faint grid. Four cells each way is enough to read a position off
+     without the lines competing with the marks. */
+  background-image:
+    linear-gradient(to right, var(--line-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size: 25% 25%;
+  background-position: left top;
+}
+
+.others__x-axis {
+  position: relative;
+  height: 1.4rem;
+  margin-left: calc(4.5rem + var(--sp-3));
+}
+
+.others__tick {
+  position: absolute;
+  top: var(--sp-2);
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+/* ---- Star ------------------------------------------------------------ */
+
+/* The hit area is deliberately much larger than the dot: the mark is 2–5px,
+   which is right visually and impossible to click. The button is a 28px
+   square centred on the position, and the dot is drawn by ::after. */
+.others__field .note-star {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.note-star::after {
+  content: "";
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  background: var(--star-tone);
+  /* opacity and transform only, so the field stays on the compositor. */
+  animation: spark-breathe 7s var(--ease-swiss) var(--star-delay) infinite;
+  transition: transform var(--dur-fast) var(--ease-out);
+  will-change: opacity;
+}
+
+/* A ring rather than a bigger dot. Growing the mark would shift the whole
+   field's visual weight; a ring says "this one" without moving anything. */
+.note-star::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--star-tone);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.note-star:hover::before,
+.note-star:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.note-star[data-tone="ink"] {
+  --star-tone: var(--ink);
+}
+.note-star[data-tone="fjord"] {
+  --star-tone: var(--fjord);
+}
+.note-star[data-tone="clay"] {
+  --star-tone: var(--clay);
+}
+.note-star[data-tone="birch"] {
+  --star-tone: var(--birch);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-star::after {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* ---- Popover --------------------------------------------------------- *
+ * Native `popover="auto"`, so light-dismiss, Esc and "one at a time" come
+ * from the platform. Position is written by JS from the star's rect, hence
+ * `position: fixed` with the insets neutralised — the browser's default
+ * centring would otherwise win.                                           */
+
+.note-pop {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(23rem, calc(100vw - 2 * var(--sp-6)));
+  padding: var(--sp-6) var(--sp-6) var(--sp-4);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 28px 56px -36px rgba(20, 23, 26, 0.5);
+  color: var(--ink);
+}
+
+.note-pop::backdrop {
+  background: none;
+}
+
+.note-pop[data-tone="ink"] {
+  --pop-tone: var(--ink);
+}
+.note-pop[data-tone="fjord"] {
+  --pop-tone: var(--fjord);
+}
+.note-pop[data-tone="clay"] {
+  --pop-tone: var(--clay);
+}
+.note-pop[data-tone="birch"] {
+  --pop-tone: var(--birch);
+}
+
+.note-pop__accent {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--pop-tone);
+}
+
+.note-pop__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-4);
+}
+
+.note-pop__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pop-tone);
+  margin-left: auto;
+}
+
+.note-pop__title {
+  font-size: var(--t-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+/* Attribution. Set in the serif at small size so it reads as a byline rather
+   than as part of the headline above it. */
+.note-pop__author {
+  margin-top: var(--sp-2);
+  font-family: var(--times);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+}
+
+.note-pop__author::before {
+  content: "—— ";
+  color: var(--pop-tone);
+}
+
+.note-pop__lede {
+  margin-top: var(--sp-3);
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.note-pop__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.note-pop__tags li {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.note-pop__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-soft);
+}
+
+.note-pop__meta {
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-pop__read {
+  color: var(--ink);
+  border-bottom: 1px solid var(--pop-tone);
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.note-pop__read:hover {
+  color: var(--pop-tone);
+}
+
+/* ---- List view ------------------------------------------------------- *
+ * Hidden while the field is up. Not a consolation prize: below 760px a 5px
+ * moving-ish target is not something a finger can hit, so this becomes the
+ * real interface. `display: none` keeps the hidden one out of the
+ * accessibility tree, so nothing is announced twice.                      */
+
+.others__list {
+  display: none;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.others__list--always {
+  display: block;
+}
+
+.others__row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding: var(--sp-4) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  color: var(--ink-3);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.others__row[data-tone="ink"] {
+  --row-tone: var(--ink);
+}
+.others__row[data-tone="fjord"] {
+  --row-tone: var(--fjord);
+}
+.others__row[data-tone="clay"] {
+  --row-tone: var(--clay);
+}
+.others__row[data-tone="birch"] {
+  --row-tone: var(--birch);
+}
+
+.others__row:hover,
+.others__row:focus-visible {
+  background: var(--fog);
+  border-left-color: var(--row-tone);
+  color: var(--ink);
+}
+
+.others__row-kind {
+  color: var(--row-tone);
+  white-space: nowrap;
+}
+
+.others__row-title {
+  font-family: var(--sans);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.others__row-author {
+  margin-left: var(--sp-3);
+  font-family: var(--times);
+  color: var(--ink-4);
+}
+
+.others__row-author::before {
+  content: "—— ";
+}
+
+.others__row-meta {
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.others__foot {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+.others__all {
+  color: var(--ink-3);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.others__all:hover {
+  color: var(--ink);
+}
+
+/* ---- Note page ------------------------------------------------------- */
+
+/* The three categories set `--accent` from `data-accent`. A note has no
+   category, so its genre's tone stands in — otherwise the accent would fall
+   back to plain ink and the page would lose the thread back to the dot you
+   clicked. */
+[data-accent-tone="ink"] {
+  --accent: var(--ink);
+}
+[data-accent-tone="fjord"] {
+  --accent: var(--fjord);
+}
+[data-accent-tone="clay"] {
+  --accent: var(--clay);
+}
+[data-accent-tone="birch"] {
+  --accent: var(--birch);
+}
+
+.note,
+.others-index {
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.note__body {
+  max-width: 42rem;
+  padding-top: var(--sp-8);
+}
+
+.note__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding-bottom: var(--sp-4);
+}
+
+.note__eyebrow-sep {
+  width: 14px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.note__title {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
+  font-size: var(--t-h1);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  max-width: 28ch;
+  text-wrap: balance;
+  padding-bottom: var(--sp-6);
+  border-bottom: 1px solid var(--ink);
+}
+
+.note__author {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  color: var(--ink);
+}
+
+.note__author .label {
+  color: var(--accent);
+}
+
+.note__lede {
+  margin-top: var(--sp-6);
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  line-height: 1.62;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.note__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--line);
+}
+
+.others-index__group + .others-index__group {
+  margin-top: var(--sp-12);
+}
+
+/* ---- Narrow ---------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .others {
+    padding-block: var(--sp-12) var(--sp-16);
+  }
+
+  /* The field goes away and the list takes over. */
+  .others__frame {
+    display: none;
+  }
+
+  .others__list {
+    display: block;
+  }
+
+  .others__intro {
+    margin-bottom: var(--sp-8);
+  }
+
+  .others__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--sp-1);
+  }
+
+  .others__row-kind {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .note__foot {
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-top: var(--sp-8);
+  }
+}

@@ -943,3 +943,337 @@
     border-top: 1px solid var(--line);
   }
 }
+
+/* ---- Series — 专栏 ---------------------------------------------------- *
+ * Three surfaces: a group header in the sidebar, a banner above an article
+ * that belongs to a run, and the index page for the run itself.            */
+
+/* Sidebar group header. The category's own groups use a mono label; a series
+   uses its Chinese title instead, because that is the thing being named — and
+   it is a link, so it gets the underline-on-hover treatment rather than the
+   label's flat colour. */
+.toc__heading-link {
+  font-size: var(--t-small);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toc__heading-link:hover,
+.toc__heading-link:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+/* A hairline down the left of a series' entries, so the run reads as one
+   bracketed block rather than as loose rows that happen to be adjacent. The
+   entries already carry a 2px transparent border for the active state, so the
+   rule lives on the list and the padding keeps the two from overlapping.
+
+   No bottom margin: `.toc__group + .toc__group` already spaces the groups, and
+   a margin here would survive the fold and leave a gap under a collapsed
+   series. Height and overflow are driven by GSAP, not declared here. */
+.toc__series-list {
+  border-left: 1px solid var(--line-soft);
+}
+
+.toc__series-list .toc__entry {
+  padding-left: var(--sp-3);
+}
+
+/* ---- Fold control ---------------------------------------------------- *
+ * A 20px target at the end of the series header. Deliberately quiet until
+ * hovered: it is a convenience, not a call to action, and the header's job is
+ * still to name the series.                                               */
+
+.toc__fold {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--ink-4);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.toc__group:hover .toc__fold,
+.toc__fold:hover,
+.toc__fold:focus-visible {
+  color: var(--ink);
+}
+
+.toc__fold-icon line {
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: square;
+}
+
+/* The vertical stroke is what distinguishes plus from minus, so it is the only
+   thing that moves: collapsed shows a plus, expanded a minus. Scaling from the
+   centre reads as the stroke retracting into the horizontal one. */
+.toc__fold-bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--dur) var(--ease-swiss);
+}
+
+.toc__fold[aria-expanded="true"] .toc__fold-bar {
+  transform: scaleY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toc__fold-bar {
+    transition: none;
+  }
+}
+
+/* ---- Banner above a series article ----------------------------------- */
+
+/* Sits above the eyebrow: knowing this is part 3 of 5 changes how the title
+   below it reads, so it comes first. */
+.article__series {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.article__series-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.article__series-title {
+  font-size: var(--t-small);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.article__series-link:hover .article__series-title,
+.article__series-link:focus-visible .article__series-title {
+  border-bottom-color: var(--accent);
+}
+
+.article__series-pos {
+  margin-left: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+/* ---- Series index page ----------------------------------------------- */
+
+.series {
+  max-width: 54rem;
+  padding-top: var(--sp-8);
+}
+
+.series__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding-bottom: var(--sp-4);
+}
+
+.series__eyebrow-sep {
+  width: 14px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.series__title {
+  font-family: var(--sans);
+  font-synthesis-weight: none;
+  font-size: var(--t-h1);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+.series__intro {
+  max-width: 34rem;
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--ink);
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  line-height: 1.62;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* Rows separated by hairlines, with the sequence number carrying the weight.
+   No list markers: the numbers *are* the markers, and they come from the
+   article's `order` rather than from document position. */
+.series__list {
+  margin-top: var(--sp-12);
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.series__item {
+  border-bottom: 1px solid var(--line);
+}
+
+.series__link {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-6) var(--sp-4) var(--sp-6) var(--sp-2);
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.series__link:hover,
+.series__link:focus-visible {
+  background: var(--fog);
+}
+
+/* Overrides .index-num's micro size: on this page the number is the primary
+   way you locate yourself in the run, so it is set as display figures. */
+.series__num {
+  font-size: var(--t-h2);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.series__link:hover .series__num,
+.series__link:focus-visible .series__num {
+  color: var(--accent);
+}
+
+.series__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.series__item-title {
+  font-size: var(--t-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.series__lede {
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+  /* Two lines is enough to decide whether to open it; the full standfirst is
+     on the article page. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.series__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  color: var(--ink-3);
+}
+
+.series__meta-sep {
+  width: 14px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.series__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 980px) {
+  .article__series-pos {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .series {
+    padding-top: var(--sp-4);
+  }
+
+  .series__list {
+    margin-top: var(--sp-8);
+  }
+
+  /* The number moves above the title rather than shrinking into illegibility
+     in a narrow first column. */
+  .series__link {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-2);
+  }
+
+  .series__num {
+    font-size: var(--t-h3);
+  }
+
+  .series__foot {
+    margin-top: var(--sp-8);
+    gap: var(--sp-3);
+    flex-direction: column;
+  }
+}
+
+/* ---- Verse ----------------------------------------------------------- *
+ * A poem from a ```verse fence. Line breaks are content here, so each line
+ * is its own element: a wrapped line can then be indented as a continuation
+ * instead of being mistaken for the next line of the poem.                */
+
+.prose .prose__verse {
+  margin-block: var(--sp-8);
+  padding-left: var(--sp-6);
+  border-left: 1px solid var(--line);
+}
+
+.prose .prose__verse-line {
+  font-family: var(--times);
+  font-size: var(--t-body);
+  /* Tighter than prose: verse lines are set close so the stanza reads as a
+     block, and there is no paragraph indent to undo. */
+  line-height: 1.9;
+  color: var(--ink);
+  text-indent: 0;
+  margin: 0;
+  /* The hanging indent that distinguishes a wrap from a new line. */
+  padding-left: 1.4em;
+  text-indent: -1.4em;
+}
+
+/* Blank line in the source: a stanza break, not a line. */
+.prose__verse-break {
+  display: block;
+  height: var(--sp-4);
+}

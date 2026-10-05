@@ -2,18 +2,27 @@ import { useEffect, useMemo, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArticleBody } from "../components/ArticleBody";
 import { TableOfContents } from "../components/TableOfContents";
-import { getNeighbours, getPost, getPosts } from "../content";
 import {
-  extractHeadings,
-  formatDate,
-  readingMinutes,
-} from "../content/types";
+  getNeighbours,
+  getOutline,
+  getPost,
+  getPosts,
+  getSeriesPost,
+  getSeriesPosts,
+  postPath,
+  seriesPath,
+} from "../content";
+import { extractHeadings, formatDate, readingMinutes } from "../content/types";
 import { gsap, setupGsap } from "../lib/gsapSetup";
-import { categoryById, isCategoryId, site } from "../site.config";
+import { categoryById, getSeries, isCategoryId, site } from "../site.config";
 import { NotFound } from "./NotFound";
 
 export function CategoryPage() {
-  const { category: categoryParam, slug } = useParams();
+  const {
+    category: categoryParam,
+    series: seriesParam,
+    slug,
+  } = useParams();
   const root = useRef<HTMLDivElement>(null);
 
   const valid = isCategoryId(categoryParam);
@@ -22,7 +31,27 @@ export function CategoryPage() {
     () => (valid ? getPosts(categoryParam) : []),
     [valid, categoryParam],
   );
-  const post = valid ? getPost(categoryParam, slug) : undefined;
+  const outline = useMemo(
+    () => (valid ? getOutline(categoryParam) : undefined),
+    [valid, categoryParam],
+  );
+
+  // `seriesParam` is only set by the three-segment route, so its presence is
+  // what distinguishes an instalment from a standalone piece.
+  const seriesMeta =
+    valid && seriesParam ? getSeries(categoryParam, seriesParam) : undefined;
+
+  const post = !valid
+    ? undefined
+    : seriesParam
+      ? // An undeclared series in the URL yields no meta and therefore no post,
+        // which falls through to NotFound below.
+        seriesMeta
+        ? getSeriesPost(categoryParam, seriesParam, slug)
+        : undefined
+      : // Bare `/<category>` shows the newest article in the category; a slug
+        // resolves against standalone articles only.
+        getPost(categoryParam, slug);
 
   const headings = useMemo(
     () => (post ? extractHeadings(post.blocks) : []),
@@ -68,7 +97,7 @@ export function CategoryPage() {
   }, [post, category]);
 
   // Unknown stream in the URL.
-  if (!valid || !category) {
+  if (!valid || !category || !outline) {
     return <NotFound />;
   }
 
@@ -104,13 +133,16 @@ export function CategoryPage() {
     );
   }
 
-  // Stream exists and has posts, but the requested slug does not match one.
+  // Stream exists and has posts, but the requested address does not match one.
   if (!post) {
     return <NotFound />;
   }
 
-  const { prev, next } = getNeighbours(category.id, post.slug);
+  const { prev, next } = getNeighbours(post);
   const minutes = readingMinutes(post.blocks);
+  const seriesTotal = post.series
+    ? getSeriesPosts(category.id, post.series).length
+    : 0;
 
   return (
     <div className="page page--reading" data-accent={category.id}>
@@ -131,12 +163,31 @@ export function CategoryPage() {
         <div className="blog__body">
           <TableOfContents
             category={category}
-            posts={posts}
-            activeSlug={post.slug}
+            outline={outline}
+            activePost={post}
             headings={headings}
           />
 
           <article className="article">
+            {/* Where this sits in a reading sequence comes before the article's
+                own metadata: it changes how you read what follows. */}
+            {seriesMeta && post.series && (
+              <div className="article__series">
+                <Link
+                  to={seriesPath(category.id, post.series)}
+                  className="article__series-link"
+                >
+                  <span className="label label--ink">Series</span>
+                  <span className="article__series-title">
+                    {seriesMeta.title}
+                  </span>
+                </Link>
+                <span className="label article__series-pos">
+                  第 {post.order} / {seriesTotal} 篇
+                </span>
+              </div>
+            )}
+
             <div className="article__eyebrow">
               <span className="label">{category.titleEn}</span>
               <span className="article__eyebrow-sep" aria-hidden="true" />
@@ -160,19 +211,21 @@ export function CategoryPage() {
 
             <ArticleBody blocks={post.blocks} />
 
-            <nav className="article__nav" aria-label="上一篇 / 下一篇">
+            <nav
+              className="article__nav"
+              aria-label={
+                post.series ? "专栏内的上一篇 / 下一篇" : "上一篇 / 下一篇"
+              }
+            >
               {prev && (
-                <Link
-                  to={`/${category.slug}/${prev.slug}`}
-                  className="article__nav-item"
-                >
+                <Link to={postPath(prev)} className="article__nav-item">
                   <span className="label">← 上一篇</span>
                   <span className="article__nav-title">{prev.title}</span>
                 </Link>
               )}
               {next && (
                 <Link
-                  to={`/${category.slug}/${next.slug}`}
+                  to={postPath(next)}
                   className="article__nav-item article__nav-item--next"
                 >
                   <span className="label">下一篇 →</span>
