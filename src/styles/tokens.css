@@ -63,6 +63,27 @@
     "Songti SC", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC",
     SimSun, serif;
 
+  /* The verse face, for ```verse blocks. Poetry is a different register from
+     prose and this is how each tradition marks it — not with a script face.
+
+     Chinese: 楷体. In Chinese typography Kai is the conventional face for
+     verse, colophons and quotation, the way italic is in Latin setting. It is
+     brush-derived but still a text face, and the system copies are everywhere
+     — KaiTi on Windows, Kaiti SC on macOS and iOS. A 行书 or 草书 webfont
+     would read as handwriting rather than as poetry, and a usable CJK one is
+     several megabytes: more bytes than the rest of the site, for thirteen
+     short poems.
+
+     Latin: the same Times as the body, set in italic by `blog.css`. Sonnets
+     were printed in roman and italic type; a cursive script is neither
+     historically right nor readable over fourteen lines.
+
+     Still no web fonts. Same bargain as everything else here. */
+  --kai:
+    "Times New Roman", Times, "Liberation Serif", Tinos, Kaiti, KaiTi,
+    "Kaiti SC", "STKaiti", "AR PL UKai CN", "WenQuanYi Zen Hei Sharp",
+    "Songti SC", SimSun, serif;
+
   /* Fluid modular scale, ratio ≈ 1.26 */
   --t-micro: 0.6875rem; /* 11px — labels, indices */
   --t-small: 0.8125rem; /* 13px — meta */

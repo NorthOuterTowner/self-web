@@ -1,7 +1,23 @@
 import { createElement, type ReactNode } from "react";
 import type { Block, Inline, ListItem, MathNode } from "../content/types";
-import { headingId } from "../content/types";
+import { headingId, inlineText } from "../content/types";
 import { withBase } from "../lib/basePath";
+
+const RE_CJK = /[\u3000-\u9fff\uff00-\uffef]/;
+
+/**
+ * Whether a verse line is Latin-only.
+ *
+ * Drives a `lang="en"` on the line, which is what lets the stylesheet slant
+ * Latin verse without slanting Chinese verse — synthesised oblique CJK is
+ * genuinely ugly, and `:lang()` cannot work off the document root here
+ * because that is `zh-CN`. Marking the language is also just correct for
+ * screen readers and hyphenation.
+ */
+function isLatinVerse(line: Inline[]): boolean {
+  const text = inlineText(line).trim();
+  return text.length > 0 && !RE_CJK.test(text);
+}
 
 /**
  * Renders the compiled block tree.
@@ -203,7 +219,11 @@ function Blocks({ blocks }: { blocks: Block[] }) {
                   line.length === 0 ? (
                     <span className="prose__verse-break" key={k} />
                   ) : (
-                    <p className="prose__verse-line" key={k}>
+                    <p
+                      className="prose__verse-line"
+                      lang={isLatinVerse(line) ? "en" : undefined}
+                      key={k}
+                    >
                       <InlineNodes nodes={line} />
                     </p>
                   ),

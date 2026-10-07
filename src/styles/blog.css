@@ -1253,23 +1253,37 @@
  * instead of being mistaken for the next line of the poem.                */
 
 .prose .prose__verse {
-  margin-block: var(--sp-8);
+  margin-block: var(--sp-12);
   padding-left: var(--sp-6);
   border-left: 1px solid var(--line);
 }
 
+/* Set in --kai: 楷体 for the Chinese, Times for the Latin. The register
+   change is carried by the face, the size and the leading together — any one
+   of them alone is too quiet to notice. */
 .prose .prose__verse-line {
-  font-family: var(--times);
-  font-size: var(--t-body);
-  /* Tighter than prose: verse lines are set close so the stanza reads as a
-     block, and there is no paragraph indent to undo. */
-  line-height: 1.9;
+  font-family: var(--kai);
+  /* A step above the body. Kai has a smaller apparent size than Song at the
+     same px, and verse is meant to be read slower than prose. */
+  font-size: calc(var(--t-body) * 1.12);
+  line-height: 2;
+  /* Kai's strokes are thinner than Song's, so it needs the full ink weight
+     rather than the body's --ink to hold the same presence. */
   color: var(--ink);
+  letter-spacing: 0.02em;
   text-indent: 0;
   margin: 0;
-  /* The hanging indent that distinguishes a wrap from a new line. */
+  /* The hanging indent that distinguishes a wrap from a new line of verse. */
   padding-left: 1.4em;
   text-indent: -1.4em;
+}
+
+/* Latin verse goes italic, which is the Western convention for the same job
+   Kai does in Chinese. Scoped to Latin-only lines by `lang`, so a Chinese
+   poem is not slanted — synthesised oblique CJK is genuinely ugly. */
+.prose .prose__verse-line:lang(en) {
+  font-style: italic;
+  letter-spacing: 0;
 }
 
 /* Blank line in the source: a stanza break, not a line. */
