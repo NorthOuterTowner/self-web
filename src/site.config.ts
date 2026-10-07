@@ -181,20 +181,14 @@ export const others = {
   slug: "others",
   title: "杂谈",
   titleEn: "Scattered Notes",
-  summary: "格言、诗词、生活里的小发现",
+  summary: "诗词、生活里的小发现、向内和向外的想法",
   intro:
     "不成篇的内容。",
   /** Shown under the constellation, explaining how to read the field. */
   axisNote: "点下任意一点星光",
 } as const;
 
-export type NoteKindId =
-  | "aphorism"
-  | "poem"
-  | "ci"
-  | "sonnet"
-  | "tip"
-  | "musing";
+export type NoteKindId = "poem" | "tip" | "musing" | "outlook";
 
 export interface NoteKindMeta {
   id: NoteKindId;
@@ -202,20 +196,32 @@ export interface NoteKindMeta {
   title: string;
   titleEn: string;
   /**
-   * Which design token colours the dot. There are four accent tones and six
-   * genres, so the three verse forms share one: on the field they read as a
-   * single family, and the popover names the exact form.
+   * Which design token colours the dot.
+   *
+   * Four genres, four accent tones, one each — so on the constellation a
+   * colour names a kind outright and there is nothing to disambiguate in the
+   * popover. Keep it that way: a fifth genre would either have to share a
+   * tone, which breaks the mapping, or add a token the whole site then has to
+   * answer for.
+   *
+   *   clay   诗            poem
+   *   birch  能照着做的     tip
+   *   fjord  向内          musing
+   *   ink    向外          outlook
    */
   tone: "ink" | "fjord" | "clay" | "birch";
 }
 
 export const noteKinds: NoteKindMeta[] = [
-  { id: "aphorism", title: "格言", titleEn: "Aphorism", tone: "ink" },
-  { id: "poem", title: "古诗", titleEn: "Classical Verse", tone: "clay" },
-  { id: "ci", title: "词", titleEn: "Ci", tone: "clay" },
-  { id: "sonnet", title: "十四行诗", titleEn: "Sonnet", tone: "clay" },
+  // 格言、古诗、词、十四行诗合成一类。它们在篇幅、语气和排版上是同一种东西 ——
+  // 压缩过的、一句顶一段的写法 —— 分成几个 kind 只是在给同一族贴几张标签。
+  // 具体是什么体裁，标题自己就说清楚了（「虞美人 · …」「Sonnet 18」）。
+  { id: "poem", title: "诗词", titleEn: "Verse", tone: "clay" },
   { id: "tip", title: "生活小 tips", titleEn: "Practical Note", tone: "birch" },
-  { id: "musing", title: "生活小感悟", titleEn: "Musing", tone: "fjord" },
+  // 感悟按朝向拆开，而不是按长短。向内的是具体的、自己的，迷茫归在这里；
+  // 向外的是宏观的，未来、世界、行业。同一件事往哪个方向想，读起来是两种东西。
+  { id: "musing", title: "向内", titleEn: "Inward", tone: "fjord" },
+  { id: "outlook", title: "向外", titleEn: "Outward", tone: "ink" },
 ];
 
 export const noteKindById: Record<NoteKindId, NoteKindMeta> = noteKinds.reduce(

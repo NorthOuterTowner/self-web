@@ -201,7 +201,11 @@ export function OthersSection() {
       // Short notes ride high: the vertical axis counts upwards from nothing.
       y: y.t(note.chars),
       tone: noteKindById[note.kind as NoteKindId].tone,
-      size: 2 + Math.round((note.chars / longest) * 3),
+      // 5–9px. The floor matters more than the range: length is already the
+      // vertical axis, so size is a redundant encoding and not worth shrinking
+      // a clickable mark to 2px for. Below about 4px a dot stops reading as a
+      // target at all.
+      size: 5 + Math.round((note.chars / longest) * 4),
       delay: -Number(((i * 1.37) % 7).toFixed(2)),
     }));
 

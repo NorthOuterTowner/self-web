@@ -113,18 +113,43 @@
   height: var(--star-size);
   border-radius: 50%;
   background: var(--star-tone);
+  /* A soft collar in the dot's own colour. Costs no layout and makes a 5px
+     mark findable without making it look heavier than it is. */
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--star-tone) 15%, transparent);
   /* opacity and transform only, so the field stays on the compositor. */
-  animation: spark-breathe 7s var(--ease-swiss) var(--star-delay) infinite;
+  animation: star-breathe 7s var(--ease-swiss) var(--star-delay) infinite;
   transition: transform var(--dur-fast) var(--ease-out);
   will-change: opacity;
 }
 
+/* Deliberately NOT `spark-breathe`.
+ *
+ * The marks behind the card ring are decoration, so that keyframe bottoms out
+ * at opacity 0.22 and scale 0.82 — disappearing is part of the effect. These
+ * dots are controls. A control that fades to near-invisible on a cycle you
+ * cannot predict is unusable, and at 5px the opacity trough was doing most of
+ * the damage. Same gesture, much shallower: it still breathes, it never goes
+ * away. */
+@keyframes star-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* A ring rather than a bigger dot. Growing the mark would shift the whole
    field's visual weight; a ring says "this one" without moving anything. */
+/* Loosened from 5px: the dot now runs to 9px and carries a 3px collar, so a
+   18px ring sat almost on top of it instead of around it. */
 .note-star::before {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 2px;
   border: 1px solid var(--star-tone);
   border-radius: 50%;
   opacity: 0;
@@ -140,23 +165,35 @@
   transform: scale(1);
 }
 
+/* Deepened versions of the accents, not the raw tokens.
+ *
+ * A 5px mark needs more contrast than a block of the same colour: `--birch`
+ * on `--bone` is about 2.6:1, under the 3:1 that non-text UI elements want,
+ * and the breathing trough takes it lower still. Mixing toward ink keeps each
+ * hue recognisable against its own popover accent while making the dot
+ * actually land on the page. birch gets the most because it starts lightest.
+ *
+ * Scoped to `--star-tone`, so the list rows and the popovers keep using the
+ * undiluted tokens at sizes where they work. */
 .note-star[data-tone="ink"] {
   --star-tone: var(--ink);
 }
 .note-star[data-tone="fjord"] {
-  --star-tone: var(--fjord);
+  --star-tone: color-mix(in srgb, var(--fjord) 82%, var(--ink));
 }
 .note-star[data-tone="clay"] {
-  --star-tone: var(--clay);
+  --star-tone: color-mix(in srgb, var(--clay) 84%, var(--ink));
 }
 .note-star[data-tone="birch"] {
-  --star-tone: var(--birch);
+  --star-tone: color-mix(in srgb, var(--birch) 74%, var(--ink));
 }
 
 @media (prefers-reduced-motion: reduce) {
   .note-star::after {
     animation: none;
-    opacity: 0.8;
+    /* Fully lit rather than the decorative marks' 0.6: with no breathing to
+       draw the eye, visibility is all these have. */
+    opacity: 1;
   }
 }
 
