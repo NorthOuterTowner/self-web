@@ -4,8 +4,16 @@ import { CategoryPage } from "./pages/CategoryPage";
 import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
+import { RoadmapPage } from "./pages/RoadmapPage";
 import { SeriesPage } from "./pages/SeriesPage";
-import { getSeries, isCategoryId, others } from "./site.config";
+import { StubPage } from "./pages/StubPage";
+import {
+  getSeries,
+  isCategoryId,
+  others,
+  roadmap,
+  skills,
+} from "./site.config";
 
 /**
  * `/<category>/<second>` has two meanings that share one shape: the second
@@ -38,6 +46,11 @@ export function App() {
               would land on NotFound. */}
           <Route path={`/${others.slug}`} element={<OthersIndex />} />
           <Route path={`/${others.slug}/:slug`} element={<NotePage />} />
+
+          {/* Declared but not built. Static segments outrank `/:category`, so
+              these resolve here rather than falling through to a NotFound. */}
+          <Route path={`/${skills.slug}`} element={<StubPage meta={skills} />} />
+          <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
 
           <Route path="/:category" element={<CategoryPage />} />
           <Route path="/:category/:slug" element={<CategoryChild />} />

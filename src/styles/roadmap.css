@@ -1,0 +1,423 @@
+/* Roadmap — one prerequisite DAG per cluster.
+ *
+ * Vertical position means "what has to come first" and nothing else. Status is
+ * a layer painted on top. Clusters are drawn apart because they are apart.
+ */
+
+.roadmap {
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+/* ---- Tally ----------------------------------------------------------- */
+
+.rm__tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8) var(--sp-12);
+  margin-top: var(--sp-8);
+  padding-block: var(--sp-6);
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.rm__tally dt {
+  color: var(--ink-4);
+  margin-bottom: var(--sp-2);
+}
+
+.rm__tally dd {
+  font-size: var(--t-h2);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.rm__tally [data-status="learning"] dd {
+  color: var(--fjord);
+}
+
+.rm__tally [data-status="dropped"] dd {
+  color: var(--ink-4);
+  text-decoration: line-through;
+  text-decoration-color: var(--clay);
+}
+
+.rm__hint {
+  margin-top: var(--sp-4);
+  max-width: 48rem;
+  line-height: 1.7;
+  color: var(--ink-4);
+}
+
+.rm__errors {
+  margin-top: var(--sp-6);
+  padding: var(--sp-4) var(--sp-6);
+  border-left: 2px solid var(--clay);
+  background: color-mix(in srgb, var(--clay) 8%, transparent);
+  font-size: var(--t-small);
+  color: var(--ink-2);
+}
+
+.rm__errors ul {
+  margin-top: var(--sp-2);
+  padding-left: var(--sp-4);
+}
+
+/* ---- Cluster tones --------------------------------------------------- */
+
+[data-tone="ink"] {
+  --group-tone: var(--ink);
+}
+[data-tone="fjord"] {
+  --group-tone: var(--fjord);
+}
+[data-tone="clay"] {
+  --group-tone: var(--clay);
+}
+[data-tone="birch"] {
+  --group-tone: var(--birch);
+}
+
+/* ---- Legend ---------------------------------------------------------- */
+
+.rm__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-6);
+  margin-top: var(--sp-6);
+  list-style: none;
+}
+
+.rm__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.rm__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--group-tone);
+}
+
+/* ---- Cluster field --------------------------------------------------- *
+ * What makes a group read as a group. A washed area behind its members, not
+ * a rule across the page: the clusters are neighbours on one figure, and a
+ * divider would claim they are separate figures. Proximity plus a tint does
+ * the grouping; the gap between bands does the separating.                 */
+
+.rm__field {
+  position: absolute;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--group-tone) 5%, transparent);
+  /* Dashed and very light: present enough to bound the group, quiet enough
+     that the nodes and wires stay the subject. */
+  border: 1px dashed color-mix(in srgb, var(--group-tone) 22%, transparent);
+  pointer-events: none;
+}
+
+/* Sits above the field's top edge, hanging outside it, so it never collides
+   with the first row of nodes. */
+.rm__field-name {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  white-space: nowrap;
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--group-tone);
+}
+
+.rm__field-en {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+
+.rm__group-note {
+  max-width: 40rem;
+  margin-top: var(--sp-3);
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ---- Canvas ---------------------------------------------------------- */
+
+/* Fixed pixel size from the layout, so it scrolls sideways rather than
+   reflowing — a DAG that rewraps is a different DAG. */
+.rm__canvas-wrap {
+  /* Room above for the field labels, which hang outside their boxes. */
+  margin-top: var(--sp-16);
+  padding-bottom: var(--sp-8);
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.rm__canvas {
+  position: relative;
+  margin-inline: auto;
+}
+
+.rm__wires {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* NOTE: `opacity` here is CSS-owned, for the dimming on hover. Nothing in
+   GSAP may animate it — the two interpolate the same inline value against
+   each other and the staggered nodes freeze part-way. */
+.rm__edge {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  transition:
+    stroke var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+/* An edge leaving its cluster. Dashed, because it is the exception — these
+   are the handful of places the groups actually touch, and they are worth
+   being able to count by eye. */
+.rm__edge.is-crossing {
+  stroke: var(--ink-4);
+  stroke-dasharray: 3 3;
+}
+
+.rm__edge.is-active {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-dasharray: none;
+}
+
+.rm__edge.is-dim {
+  opacity: 0.16;
+}
+
+/* ---- Node ------------------------------------------------------------ */
+
+/* Nodes paint over the wires: the SVG is first in the DOM and both are
+   absolutely positioned, so an opaque node masks the edges behind its label
+   without needing a z-index.
+ *
+ * Width is set inline, from the label — see `widthOf` in the page. Same note
+ * as `.rm__edge` about opacity. */
+.rm__node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--group-tone);
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.rm__node-label {
+  font-size: var(--t-small);
+  line-height: 1.3;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rm__node-en {
+  color: var(--ink-4);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Has an article behind it. */
+.rm__node-dot {
+  position: absolute;
+  bottom: 6px;
+  right: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--group-tone);
+}
+
+/* Prerequisite lives in another group, so no curve on this canvas reaches it.
+   The glyph says the dependency exists; the tooltip and the list name it. */
+.rm__node-ext {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  color: var(--ink-4);
+}
+
+/* ---- Status ---------------------------------------------------------- */
+
+/* Done is the default solid surface. The other three are departures from it,
+   which is the right way round — most of the graph is done. */
+.rm__node[data-status="learning"] {
+  border-color: var(--fjord);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fjord) 14%, transparent);
+}
+
+/* `--bone` rather than transparent: flush with the page, so it still reads as
+   "not solid yet", but it masks the wires passing underneath. A dashed rule
+   also reads lighter than a solid one, hence the stronger token. */
+.rm__node[data-status="planned"] {
+  background: var(--bone);
+  border-color: var(--line-strong);
+  border-style: dashed;
+  border-left-style: solid;
+  color: var(--ink-3);
+}
+
+.rm__node[data-status="dropped"] {
+  background: var(--bone);
+  border-color: var(--line);
+  color: var(--ink-4);
+}
+
+.rm__node[data-status="dropped"] .rm__node-label {
+  text-decoration: line-through;
+  text-decoration-color: var(--clay);
+  text-decoration-thickness: 1px;
+}
+
+/* ---- Hover roles ----------------------------------------------------- *
+ * Hovering answers two questions at once, and they are different relations,
+ * so they get different weights rather than one flat highlight. Upstream is
+ * filled because it is the ground you stand on; downstream is outlined
+ * because it is still ahead.                                              */
+
+.rm__node[data-role="focus"] {
+  border-color: var(--ink);
+  background: var(--snow);
+  box-shadow: 0 10px 24px -18px rgba(20, 23, 26, 0.55);
+}
+
+.rm__node[data-role="prereq"] {
+  border-color: var(--ink-3);
+  background: var(--fog);
+}
+
+.rm__node[data-role="unlocks"] {
+  border-color: var(--group-tone);
+}
+
+.rm__node[data-role="dim"] {
+  opacity: 0.28;
+}
+
+.rm__node:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ---- List view ------------------------------------------------------- */
+
+.rm__list-view {
+  display: none;
+  margin-top: var(--sp-12);
+}
+
+.rm__list-view section + section {
+  margin-top: var(--sp-12);
+}
+
+.rm__list {
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.rm__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-2) var(--sp-4) var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid var(--group-tone);
+}
+
+.rm__row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.rm__row-title {
+  font-size: var(--t-small);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.rm__row-status {
+  white-space: nowrap;
+  color: var(--ink-4);
+}
+
+.rm__row-status[data-status="learning"] {
+  color: var(--fjord);
+}
+
+.rm__row-status[data-status="dropped"] {
+  text-decoration: line-through;
+  text-decoration-color: var(--clay);
+}
+
+.rm__row-reqs {
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+.rm__row-note {
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+@media (max-width: 900px) {
+  .rm__canvas-wrap,
+  .rm__legend,
+  .rm__hint {
+    display: none;
+  }
+
+  .rm__list-view {
+    display: block;
+  }
+
+  .rm__tally {
+    gap: var(--sp-6) var(--sp-8);
+  }
+}

@@ -1,14 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { NavLink } from "react-router-dom";
-import { categories, site } from "../site.config";
+import { categories, navExtras, site } from "../site.config";
 
-const sections = [
+interface Section {
+  to: string;
+  label: string;
+  idx: string;
+  key: string;
+  /**
+   * Set only for the extras. Categories get their accent from the
+   * `[data-accent-key]` rules already in nav.css; driving the extras from a
+   * custom property instead keeps `navExtras` the only file to edit when one
+   * is added.
+   */
+  style?: CSSProperties;
+}
+
+/**
+ * Nav order: home, the three streams, then everything that is a destination
+ * without being a stream.
+ *
+ * The split matters because the home page ring is built from `categories` and
+ * has exactly three stations — so "in the nav" and "has a card" have to be
+ * separate lists, or adding a link takes the ring apart.
+ */
+const sections: Section[] = [
   { to: "/", label: "首页", idx: "00", key: "home" },
   ...categories.map((c) => ({
     to: `/${c.slug}`,
     label: c.titleEn,
     idx: c.index,
     key: c.id,
+  })),
+  ...navExtras.map((e) => ({
+    to: e.to,
+    label: e.label,
+    idx: e.idx,
+    key: e.key,
+    style: { "--accent-dot": `var(--${e.tone})` } as CSSProperties,
   })),
 ];
 
@@ -39,6 +68,7 @@ export function TopNav() {
                   to={s.to}
                   end={s.to === "/"}
                   data-accent-key={s.key}
+                  style={s.style}
                   className={({ isActive }) =>
                     `nav__link${isActive ? " is-active" : ""}`
                   }

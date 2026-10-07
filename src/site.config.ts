@@ -146,6 +146,22 @@ export const series: SeriesMeta[] = [
     summary: "记录各种不同的 ML 理论与应用",
     intro: "不仅包括当下最为流行的 Transformer 或者 LLM"
   },
+  {
+    slug: "data-structure",
+    category: "computing",
+    title: "数据结构理论",
+    titleEn: "Data Structure Theories",
+    summary: "描述各种不同的数据结构及其应用",
+    intro: "通过该专栏，记录常用的数据结构。"
+  },
+  {
+    slug: "database",
+    category: "computing",
+    title: "数据库系统",
+    titleEn: "Database System",
+    summary: "数据库系统的基本介绍和对应的原理",
+    intro: "尽管MySQL是当前最为广泛流行的db之一，但了解各种不同的SQL和NoSQL有助于软件工程师应对不同的情况。"
+  },
 ];
 
 /** Series declared under a given category, in declaration order. */
@@ -240,3 +256,81 @@ export function isNoteKindId(value: unknown): value is NoteKindId {
 
 /** Every declared genre id, for error messages in the content compiler. */
 export const noteKindIds: string[] = noteKinds.map((k) => k.id);
+
+/* ------------------------------------------------------------------ *
+ * Top nav
+ * ------------------------------------------------------------------ */
+
+/**
+ * Destinations in the top nav that are not categories.
+ *
+ * The nav used to be derived from `categories` alone, which tied two
+ * unrelated decisions together: appearing in the nav, and owning a card on
+ * the home page ring. The ring has exactly three stations and walks them with
+ * `mod3`, so anything that wants a nav entry but no card has nowhere to go —
+ * 杂谈 was the first case, reachable only from the home page band.
+ *
+ * Adding one is a single edit here. The accent is applied as an inline custom
+ * property rather than another `[data-accent-key]` rule in `nav.css`, so this
+ * list stays the only place to touch.
+ */
+export interface NavExtra {
+  /** Stable key, used for React keys and the active-state hook. */
+  key: string;
+  to: string;
+  /** Latin label, to match the categories' `titleEn` in the nav. */
+  label: string;
+  /** Sequence number shown before the label. */
+  idx: string;
+  /** Token that colours the index digit while the entry is active. */
+  tone: "ink" | "fjord" | "clay" | "birch";
+}
+
+/**
+ * A destination that is in the nav but has no content pipeline behind it yet.
+ *
+ * Rendered by `pages/StubPage.tsx`, which reuses the empty-category layout.
+ * The point is that the link is never dead: you get the masthead, the title
+ * and a line saying it is not built, rather than a 404 or a blank screen that
+ * reads as a bug.
+ */
+export interface StubMeta {
+  slug: string;
+  title: string;
+  titleEn: string;
+  /** One line under the title. Placeholder copy — rewrite when it is built. */
+  intro: string;
+}
+
+export const skills: StubMeta = {
+  slug: "skills",
+  title: "Skill与Prompt",
+  titleEn: "Skills and prompts",
+  intro: "可复用的Skill与Prompt，按用途归档，便于查找和日常使用。",
+};
+
+/**
+ * No longer a stub — `pages/RoadmapPage.tsx` renders it from the stages in
+ * `content/roadmap.ts`. It keeps the `StubMeta` shape because the page needs
+ * exactly these four fields and nothing more.
+ */
+export const roadmap: StubMeta = {
+  slug: "roadmap",
+  title: "路线图",
+  titleEn: "Roadmap",
+  intro: "通过roadmap来绘制已经掌握的知识以及打算学的知识",
+};
+
+export const navExtras: NavExtra[] = [
+  { key: "skills", to: `/${skills.slug}`, label: skills.titleEn, idx: "04", tone: "fjord" },
+  { key: "roadmap", to: `/${roadmap.slug}`, label: roadmap.titleEn, idx: "05", tone: "clay" },
+  {
+    key: "others",
+    to: `/${others.slug}`,
+    label: "Notes",
+    idx: "06",
+    // 杂谈 spans all four genre tones, so no single accent is truthful. Ink
+    // reads as "all of them" rather than picking a favourite.
+    tone: "ink",
+  },
+];
