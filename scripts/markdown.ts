@@ -53,6 +53,16 @@ export interface ParsedDoc {
   blocks: Block[];
 }
 
+/**
+ * An autolink's innards: a scheme, then anything but whitespace or a bracket.
+ *
+ * Requiring the scheme is what keeps `a < b` and `2 <3` from being read as
+ * the start of one, so `<` stays an ordinary character in prose.
+ */
+const RE_AUTOLINK = /^[a-z][a-z0-9+.-]*:[^\s<>]+$/i;
+/** The same shape anchored at the start of a line, for the HTML check. */
+const RE_AUTOLINK_AT_START = /^<[a-z][a-z0-9+.-]*:[^\s<>]+>/i;
+
 const ALLOWED_KEYS = new Set([
   "title",
   "lede",
@@ -240,6 +250,30 @@ export function parseInline(
       });
       i = paren + 1;
       continue;
+    }
+
+    // <https://example.com> — an autolink, where the URL is its own label.
+    //
+    // Worth having rather than insisting on [url](url): a bare URL is the
+    // commonest thing in technical prose, and writing it twice is duplication
+    // that goes stale. The href goes through the same validation as a normal
+    // link, so the protocol allowlist still applies.
+    if (ch === "<") {
+      const close = raw.indexOf(">", i + 1);
+      const inner = close === -1 ? "" : raw.slice(i + 1, close);
+      if (close !== -1 && RE_AUTOLINK.test(inner)) {
+        assertSafeHref(inner, file, line);
+        flush();
+        nodes.push({
+          type: "link",
+          href: inner,
+          children: [{ type: "text", text: inner }],
+        });
+        i = close + 1;
+        continue;
+      }
+      // Not an autolink, so `<` is just a character here — `a < b` has to
+      // keep working. Inline HTML is caught at block level instead.
     }
 
     // Images are block level only, so catch the inline form explicitly —
@@ -504,7 +538,11 @@ function rejectKnownUnsupported(
   }
 
 
-  if (/^<[a-z!/]/i.test(line)) {
+  // `<http://…>` is an autolink, not a tag, so a URI scheme has to get past
+  // this check — otherwise a pasted URL at the start of a line fails the
+  // build with a message about HTML, which is the wrong thing to be told.
+  // `<a href="…">` has no scheme straight after the `<`, so it still trips.
+  if (/^<[a-z!/]/i.test(line) && !RE_AUTOLINK_AT_START.test(line)) {
     throw new ContentError(file, lineNo, "不支持内嵌 HTML");
   }
   if (/^={3,}\s*$/.test(line)) {
