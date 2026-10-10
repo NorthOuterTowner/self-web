@@ -62,6 +62,9 @@ function InlineNodes({ nodes }: { nodes: Inline[] }) {
           case "code":
             return <code key={i}>{node.text}</code>;
 
+          case "break":
+            return <br key={i} />;
+
           case "math":
             return (
               <span className="math math--inline" key={i}>

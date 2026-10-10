@@ -32,7 +32,16 @@ export type Inline =
   | { type: "em"; children: Inline[] }
   | { type: "link"; href: string; children: Inline[] }
   /** `$…$`. `tex` is kept for the TOC, reading estimate and copy-paste. */
-  | { type: "math"; nodes: MathNode[]; tex: string };
+  | { type: "math"; nodes: MathNode[]; tex: string }
+  /**
+   * A hard line break inside a paragraph, from a backslash at end of line.
+   *
+   * Carries nothing: it is a position, not content. Distinct from a `verse`
+   * block, which is a whole different register — this is for prose that
+   * happens to need one break, such as an address or a pair of lines that
+   * belong to the same paragraph.
+   */
+  | { type: "break" };
 
 /**
  * One entry in a list. `children` holds blocks that were indented underneath
@@ -240,6 +249,11 @@ export function inlineText(nodes: Inline[]): string {
         break;
       case "math":
         out += node.tex;
+        break;
+      case "break":
+        // Flattened to a newline so the text still reads as two lines in a
+        // tooltip or a copy-paste, and counts as one character for length.
+        out += "\n";
         break;
       case "strong":
       case "em":

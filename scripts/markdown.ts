@@ -94,6 +94,23 @@ const CJK =
 export function joinLines(lines: string[]): string {
   return lines.reduce((acc, next) => {
     if (acc === "") return next;
+
+    /**
+     * A line ending in a backslash is a hard break: drop the backslash and
+     * join with a newline, which `parseInline` turns into a break node.
+     *
+     * It has to happen here. By the time `parseInline` runs the paragraph is
+     * one string and the line boundaries are gone, so "end of line" is not a
+     * thing it can see any more.
+     *
+     * Trailing backslashes are counted rather than tested, because `\\` is
+     * how a literal backslash is written. An odd count means the last one is
+     * the break marker; an even count means they are all escape pairs and the
+     * line wraps normally.
+     */
+    const trailing = /\\+$/.exec(acc)?.[0].length ?? 0;
+    if (trailing % 2 === 1) return `${acc.slice(0, -1)}\n${next}`;
+
     const left = acc.at(-1) ?? "";
     const right = next.at(0) ?? "";
     const glue = CJK.test(left) && CJK.test(right) ? "" : " ";
@@ -136,12 +153,40 @@ export function parseInline(
   while (i < raw.length) {
     const ch = raw[i]!;
 
-    // Backslash escapes the next character.
+    // A hard break. The only way a newline reaches here is `joinLines`
+    // putting one in where a line ended with a backslash — the source is
+    // split on newlines, so it cannot arrive any other way.
+    if (ch === "\n") {
+      flush();
+      nodes.push({ type: "break" });
+      i += 1;
+      continue;
+    }
+
+    // Backslash: either a hard break or an escape.
     if (ch === "\\") {
       const next = raw[i + 1];
-      if (next === undefined) {
-        throw new ContentError(file, line, "行尾有孤立的反斜杠");
+
+      /**
+       * Before whitespace, or at the very end, it is a line break.
+       *
+       * This spelling was free: escaping a space means nothing, so `\ ` had
+       * no prior meaning to collide with. And it is the only spelling that
+       * can work inside a table cell, which is a single-line construct —
+       * there is no line ending there for `joinLines` to turn into a break,
+       * and "three offers in one cell" is a real thing to want.
+       *
+       * The following whitespace is swallowed so the next line does not
+       * start with a stray space.
+       */
+      if (next === undefined || next === " " || next === "\t") {
+        flush();
+        nodes.push({ type: "break" });
+        i += 1;
+        while (raw[i] === " " || raw[i] === "\t") i += 1;
+        continue;
       }
+
       buf += next;
       i += 2;
       continue;
