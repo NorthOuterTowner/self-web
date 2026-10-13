@@ -309,6 +309,66 @@ export const skills: StubMeta = {
   intro: "可复用的Skill与Prompt，按用途归档，便于查找和日常使用。",
 };
 
+/* ------------------------------------------------------------------ *
+ * Resources — skill 与 prompt
+ * ------------------------------------------------------------------ */
+
+/**
+ * The two things that live under `/skills`.
+ *
+ * One directory and one URL namespace, with the kind in frontmatter rather
+ * than in the path. A skill and a prompt are the same shape of object — a
+ * reusable piece of instruction with a title and a body — and they are
+ * browsed together on one page, so splitting them across two directories
+ * would buy nothing and cost a second route namespace.
+ *
+ * That is the opposite of the call made for 专栏, where the directory *is*
+ * the grouping. The difference: a series is a place you put files, a kind is
+ * a property of the file.
+ */
+export type ResourceKindId = "skill" | "prompt";
+
+export interface ResourceKindMeta {
+  id: ResourceKindId;
+  title: string;
+  titleEn: string;
+  tone: "ink" | "fjord" | "clay" | "birch";
+  /** One line on what belongs under this kind. */
+  note: string;
+}
+
+export const resourceKinds: ResourceKindMeta[] = [
+  {
+    id: "skill",
+    title: "Skill",
+    titleEn: "Skill",
+    tone: "fjord",
+    note: "一套可复用的做法：什么时候用、步骤、以及容易踩的地方。",
+  },
+  {
+    id: "prompt",
+    title: "Prompt",
+    titleEn: "Prompt",
+    tone: "clay",
+    note: "可以直接抄走的提示词，连同它假设的上下文和已知的失效场景。",
+  },
+];
+
+export const resourceKindById: Record<ResourceKindId, ResourceKindMeta> =
+  resourceKinds.reduce(
+    (acc, k) => {
+      acc[k.id] = k;
+      return acc;
+    },
+    {} as Record<ResourceKindId, ResourceKindMeta>,
+  );
+
+export function isResourceKindId(value: unknown): value is ResourceKindId {
+  return value === "skill" || value === "prompt";
+}
+
+export const resourceKindIds: string[] = resourceKinds.map((k) => k.id);
+
 /**
  * No longer a stub — `pages/RoadmapPage.tsx` renders it from the stages in
  * `content/roadmap.ts`. It keeps the `StubMeta` shape because the page needs

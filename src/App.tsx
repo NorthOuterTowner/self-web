@@ -6,7 +6,7 @@ import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
 import { RoadmapPage } from "./pages/RoadmapPage";
 import { SeriesPage } from "./pages/SeriesPage";
-import { StubPage } from "./pages/StubPage";
+import { ResourcePage, SkillsPage } from "./pages/SkillsPage";
 import {
   getSeries,
   isCategoryId,
@@ -49,7 +49,8 @@ export function App() {
 
           {/* Declared but not built. Static segments outrank `/:category`, so
               these resolve here rather than falling through to a NotFound. */}
-          <Route path={`/${skills.slug}`} element={<StubPage meta={skills} />} />
+          <Route path={`/${skills.slug}`} element={<SkillsPage />} />
+          <Route path={`/${skills.slug}/:slug`} element={<ResourcePage />} />
           <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
 
           <Route path="/:category" element={<CategoryPage />} />

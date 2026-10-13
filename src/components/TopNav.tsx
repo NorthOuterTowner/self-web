@@ -1,5 +1,5 @@
-import { useEffect, useState, type CSSProperties } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { categories, navExtras, site } from "../site.config";
 
 interface Section {
@@ -43,6 +43,8 @@ const sections: Section[] = [
 
 export function TopNav() {
   const [stuck, setStuck] = useState(false);
+  const list = useRef<HTMLUListElement>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const onScroll = () => setStuck(window.scrollY > 8);
@@ -50,6 +52,32 @@ export function TopNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  /**
+   * Brings the current section into view when the bar is scrollable.
+   *
+   * Without this, arriving at a section whose link sits off to the right
+   * leaves the bar showing no active item at all — the indicator is there,
+   * just not on screen. Reads the DOM rather than tracking which link is
+   * active in state, because `NavLink` already decides that and duplicating
+   * the matching logic would be a second source of truth.
+   *
+   * `nearest` so it only moves when it has to, and no smooth scrolling under
+   * reduced motion.
+   */
+  useEffect(() => {
+    const el = list.current?.querySelector<HTMLElement>(".nav__link.is-active");
+    if (!el || !list.current) return;
+    // Nothing to do when everything already fits.
+    if (list.current.scrollWidth <= list.current.clientWidth) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({
+      behavior: reduce ? "auto" : "smooth",
+      inline: "nearest",
+      block: "nearest",
+    });
+  }, [pathname]);
 
   return (
     <header className={`nav${stuck ? " is-stuck" : ""}`}>
@@ -61,7 +89,7 @@ export function TopNav() {
         </NavLink>
 
         <nav aria-label="站点分区">
-          <ul className="nav__list">
+          <ul className="nav__list" ref={list}>
             {sections.map((s) => (
               <li key={s.key}>
                 <NavLink

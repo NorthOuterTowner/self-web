@@ -1,7 +1,11 @@
 import type { CategoryId, SeriesMeta } from "../site.config";
-import { categoryById, others, seriesIn } from "../site.config";
-import { notes as generatedNotes, posts as generated } from "./generated";
-import type { Note, Post } from "./types";
+import { categoryById, others, seriesIn, skills } from "../site.config";
+import {
+  notes as generatedNotes,
+  resources as generatedResources,
+  posts as generated,
+} from "./generated";
+import type { Note, Post, Resource } from "./types";
 
 /**
  * Query layer over the compiled content.
@@ -185,3 +189,41 @@ export function getNoteNeighbours(note: Note) {
 }
 
 export type { Note };
+
+/* ------------------------------------------------------------------ *
+ * Resources — skill 与 prompt
+ * ------------------------------------------------------------------ */
+
+/** Every skill and prompt, newest first. The stack puts [0] on top. */
+export const allResources: Resource[] = generatedResources;
+
+export function resourcePath(resource: Resource): string {
+  return `/${skills.slug}/${resource.slug}`;
+}
+
+export function getResource(slug: string | undefined): Resource | undefined {
+  if (!slug) return undefined;
+  return allResources.find((r) => r.slug === slug);
+}
+
+export function resourcesOfKind(kind: string): Resource[] {
+  return allResources.filter((r) => r.kind === kind);
+}
+
+/**
+ * Previous / next within the resources, by date.
+ *
+ * Over the whole set rather than within a kind: the sidebar lists everything
+ * together, so paging that skipped the other kind would disagree with what is
+ * on screen.
+ */
+export function getResourceNeighbours(resource: Resource) {
+  const i = allResources.findIndex((r) => r.slug === resource.slug);
+  return {
+    prev: i > 0 ? allResources[i - 1] : undefined,
+    next:
+      i >= 0 && i < allResources.length - 1 ? allResources[i + 1] : undefined,
+  };
+}
+
+export type { Resource };

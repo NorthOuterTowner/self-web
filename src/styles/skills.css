@@ -1,0 +1,286 @@
+/* Skills & prompts — a pile of sheets rather than a grid of cards.
+ *
+ * The point of the pile is that it says "there are several of these" before
+ * you read a word. A single card cannot, and a grid of equal cards turns
+ * reference material into a product listing.
+ */
+
+.skills {
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.skills__head {
+  margin-top: var(--sp-8);
+}
+
+.skills__kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.skills__kinds li {
+  border-left: 2px solid var(--kind-tone);
+  padding-left: var(--sp-4);
+}
+
+.skills__kind-name {
+  display: block;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--kind-tone);
+}
+
+.skills__kind-note {
+  display: block;
+  margin-top: var(--sp-2);
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+[data-tone="ink"] {
+  --kind-tone: var(--ink);
+}
+[data-tone="fjord"] {
+  --kind-tone: var(--fjord);
+}
+[data-tone="clay"] {
+  --kind-tone: var(--clay);
+}
+[data-tone="birch"] {
+  --kind-tone: var(--birch);
+}
+
+/* ---- The pile -------------------------------------------------------- */
+
+/* Height is reserved by the wrapper, because the sheets are absolutely
+   positioned and would otherwise collapse it. The extra room at the bottom is
+   for the deepest sheet's offset plus the fan. */
+.skills__stack {
+  position: relative;
+  margin-top: var(--sp-16);
+  height: clamp(320px, 34vw, 400px);
+  /* The fan needs somewhere to go without clipping. */
+  padding-bottom: var(--sp-16);
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: min(100%, 34rem);
+  /* Paper, tinted toward the page the deeper it sits — the pile reads as
+     depth rather than as six identical rectangles. */
+  background: color-mix(in srgb, var(--paper) calc(100% - var(--sheet-tint)), var(--fog));
+  border: 1px solid var(--line);
+  padding: var(--sp-6);
+  text-decoration: none;
+  color: var(--ink);
+  /* One shadow, softened with depth so the lower sheets do not stack up into
+     a dark band at the bottom. */
+  box-shadow: 0 calc(10px + var(--sheet-depth) * 2px)
+    calc(26px + var(--sheet-depth) * 4px) -22px rgba(20, 23, 26, 0.5);
+  transform-origin: 20% 0;
+  /* GSAP owns `transform`. Nothing here may transition it, or the two fight
+     and the pile judders mid-fan. */
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+  will-change: transform;
+}
+
+/* The accent down the leading edge, which is the only part of a buried sheet
+   you can see. That is what makes the kinds countable in the pile. */
+.sheet__edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kind-tone);
+}
+
+/* Only the top sheet reacts to being pointed at; the others are brought
+   forward by the fan, not by hover, so they must not flicker. */
+.skills__stack .sheet:first-child:hover,
+.skills__stack .sheet:first-child:focus-visible {
+  border-color: var(--ink-3);
+}
+
+.sheet:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.sheet__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-6);
+}
+
+.sheet__kind {
+  color: var(--kind-tone);
+}
+
+.sheet__date {
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet__title {
+  font-size: var(--t-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.sheet__use {
+  margin-top: var(--sp-3);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.sheet__lede {
+  margin-top: var(--sp-4);
+  font-family: var(--times);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.sheet__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-soft);
+  color: var(--ink-4);
+}
+
+.sheet__open {
+  color: var(--ink);
+}
+
+/* How many more are not in the pile. Sits past the bottom-right corner of the
+   deepest sheet. */
+.skills__more {
+  position: absolute;
+  left: calc(min(100%, 34rem) + var(--sp-4));
+  bottom: var(--sp-16);
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- The full list --------------------------------------------------- */
+
+.skills__list {
+  margin-top: var(--sp-12);
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.skills__row {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto;
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding: var(--sp-4) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid transparent;
+  text-decoration: none;
+  color: var(--ink-3);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.skills__row:hover,
+.skills__row:focus-visible {
+  background: var(--fog);
+  border-left-color: var(--kind-tone);
+  color: var(--ink);
+}
+
+.skills__row-kind {
+  color: var(--kind-tone);
+  white-space: nowrap;
+}
+
+.skills__row-title {
+  font-family: var(--sans);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.skills__row-meta {
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Reading view ---------------------------------------------------- */
+
+/* The "what for" line, between the title rule and the standfirst. */
+.skills__use {
+  margin-top: var(--sp-4);
+  color: var(--ink-3);
+}
+
+/* ---- Narrow ---------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  /* The fan needs room to the right that a phone does not have, and a pile
+     you cannot fan is a pile you cannot get into. So the newest sheet stands
+     alone and the list does the rest. */
+  .skills__stack {
+    height: auto;
+    padding-bottom: 0;
+    margin-top: var(--sp-12);
+  }
+
+  .sheet {
+    position: relative;
+    width: 100%;
+    /* Kill the lie: inline styles set a transform per sheet, so it has to be
+       overridden rather than just left out. */
+    transform: none !important;
+  }
+
+  .skills__stack .sheet:not(:first-child) {
+    display: none;
+  }
+
+  .skills__more {
+    position: static;
+    margin-top: var(--sp-4);
+  }
+
+  .skills__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--sp-1);
+  }
+
+  .skills__row-kind {
+    grid-column: 1 / -1;
+  }
+}

@@ -231,6 +231,32 @@ export function textLength(blocks: Block[]): number {
   return cjk + words;
 }
 
+/**
+ * A reusable skill or prompt, from `content/skills/`.
+ *
+ * Shaped like a `Post` rather than a `Note`, because these are read the same
+ * way an article is: a sidebar of siblings, headings, a body you work
+ * through. What they do not have is a category or a reading sequence — they
+ * are reference material, newest first, and that is the whole ordering.
+ */
+export interface Resource {
+  slug: string;
+  /** `skill` or `prompt`, declared in `site.config.ts`. */
+  kind: string;
+  title: string;
+  /** Required here, unlike notes: a reference entry needs a one-line "why". */
+  lede: string;
+  date: string;
+  tags: string[];
+  blocks: Block[];
+  source: string;
+  /**
+   * What this is for, in a few words. Shown on the stacked sheet, where
+   * there is room for a line but not for the lede.
+   */
+  use?: string;
+}
+
 /** An entry in the in-article table of contents. */
 export interface Heading {
   id: string;

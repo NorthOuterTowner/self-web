@@ -161,6 +161,59 @@
   --accent-dot: var(--birch);
 }
 
+/* ---- Narrow: the bar scrolls ----------------------------------------- *
+ * Seven destinations do not fit a phone, and the compaction steps below can
+ * only buy so much. So the list becomes its own scroll container.
+ *
+ * It has to be the list and not the page: `body` is `overflow-x: clip`, which
+ * means an overflowing bar is silently cut off instead of becoming
+ * scrollable — that is exactly the symptom this fixes.
+ *
+ * 900px rather than something smaller: "Skills and prompts" plus the other
+ * six add up to roughly 730px of links, and the step engages before anything
+ * actually gets clipped rather than after.                                  */
+
+@media (max-width: 900px) {
+  .nav__list {
+    /* `margin-left: auto` pushed it right; now it takes the space that is
+       left and `min-width: 0` is what lets a flex item shrink below its
+       content width. Without that it simply refuses to overflow. */
+    margin-left: 0;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Keep a sideways swipe inside the bar instead of letting it turn into a
+       page scroll or a browser back gesture. */
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* Only the right edge fades. A symmetric mask would dim 首页 while the
+       bar is at rest, which reads as a rendering fault rather than as a hint
+       that there is more to the right. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - 26px),
+      transparent
+    );
+  }
+
+  .nav__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The bar is short, so a link scrolled half out of view is a link you
+     cannot read. Snapping lands them whole. */
+  .nav__list {
+    scroll-snap-type: x proximity;
+  }
+
+  .nav__link {
+    scroll-snap-align: center;
+  }
+}
+
 @media (max-width: 700px) {
   :root {
     --nav-h: 58px;
@@ -180,9 +233,9 @@
 }
 
 /* The serif runs wider than the grotesque it replaced, so the compact step has
-   to start earlier than it used to: "Communications" is the binding item and
-   body uses `overflow-x: clip`, which would silently cut it off rather than
-   produce a scrollbar. */
+   to start earlier than it used to. These steps still matter with the bar
+   scrollable — they decide how much scrolling is needed, and a bar you can
+   read without swiping is better than one you can. */
 @media (max-width: 520px) {
   .nav__link {
     padding-inline: 0.45rem;

@@ -40,6 +40,8 @@ export interface Frontmatter {
   kind?: string;
   /** Attribution for a note that is someone else's. Notes only. */
   author?: string;
+  /** What a skill or prompt is for, in a few words. Resources only. */
+  use?: string;
   /**
    * Position inside a series, 1-based. Only meaningful for articles that sit
    * in a series directory; `scripts/content.ts` is what enforces that pairing,
@@ -73,6 +75,7 @@ const ALLOWED_KEYS = new Set([
   "order",
   "kind",
   "author",
+  "use",
 ]);
 
 /* ------------------------------------------------------------------ *
@@ -469,6 +472,13 @@ function parseFrontmatter(
       throw new ContentError(file, startLine, "author 必须是非空字符串");
     }
     frontmatter.author = obj.author.trim();
+  }
+
+  if (obj.use !== undefined) {
+    if (typeof obj.use !== "string" || obj.use.trim() === "") {
+      throw new ContentError(file, startLine, "use 必须是非空字符串");
+    }
+    frontmatter.use = obj.use.trim();
   }
 
   if (obj.order !== undefined) {

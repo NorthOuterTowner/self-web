@@ -17,12 +17,15 @@ import { Glob } from "bun";
 import {
   categories,
   isNoteKindId,
+  isResourceKindId,
   noteKindIds,
   others,
+  resourceKindIds,
   series,
   seriesIn,
+  skills,
 } from "../src/site.config";
-import type { Note, Post } from "../src/content/types";
+import type { Note, Post, Resource } from "../src/content/types";
 import { textLength } from "../src/content/types";
 import { IMAGE_EXTENSIONS, imageSize } from "./image";
 import { ContentError, parseDocument } from "./markdown";
@@ -56,6 +59,8 @@ export interface CompileResult {
   posts: Post[];
   /** Short pieces from content/others/, newest first. */
   notes: Note[];
+  /** Skills and prompts from content/skills/, newest first. */
+  resources: Resource[];
   errors: string[];
   drafts: string[];
   /** Slugs of declared categories that currently have no articles. */
@@ -97,12 +102,16 @@ export async function compile(): Promise<CompileResult> {
   const files: Found[] = [];
   /** Paths under content/others/, handled by a separate pass below. */
   const noteFiles: string[] = [];
+  /** Paths under content/skills/, likewise. */
+  const resourceFiles: string[] = [];
 
   for (const raw of scanned) {
     const rel = raw.replace(/\\/g, "/");
     const display = `content/${rel}`;
     const parts = rel.split("/");
-    const dirs = [...slugToCategory.keys(), others.slug].join(", ");
+    const dirs = [...slugToCategory.keys(), others.slug, skills.slug].join(
+      ", ",
+    );
 
     // A stray .md at the top level of content/ is almost always a misplaced
     // article, except for the format spec itself.
@@ -132,6 +141,18 @@ export async function compile(): Promise<CompileResult> {
         continue;
       }
       noteFiles.push(rel);
+      continue;
+    }
+
+    // Same for content/skills/: reference material, flat, its own pass.
+    if (categorySlug === skills.slug) {
+      if (parts.length !== 2) {
+        errors.push(
+          `${display}  skill 和 prompt 是平铺的，不分子目录。请直接放在 content/${skills.slug}/ 下`,
+        );
+        continue;
+      }
+      resourceFiles.push(rel);
       continue;
     }
 
@@ -422,6 +443,92 @@ export async function compile(): Promise<CompileResult> {
     (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug),
   );
 
+  /* ---- Resources ------------------------------------------------------ *
+   * Reference material: `lede` is required as for an article, `kind` names
+   * which of the two things it is, and there is no category, series or
+   * order to speak of.                                                    */
+
+  const resources: Resource[] = [];
+  const seenResources = new Map<string, string>();
+
+  for (const rel of resourceFiles) {
+    const display = `content/${rel}`;
+    const name = rel.split("/")[1]!;
+    const mdPath = resolve(CONTENT_DIR, rel);
+
+    let doc;
+    try {
+      // The "post" contract: a reference entry does need its one-line why.
+      doc = parseDocument(await Bun.file(mdPath).text(), display, {
+        resolveImage: makeResolver(mdPath, display),
+      });
+    } catch (err) {
+      errors.push(
+        err instanceof ContentError ? err.message : `${display}  ${String(err)}`,
+      );
+      continue;
+    }
+
+    const slug = doc.frontmatter.slug ?? name.replace(/\.md$/, "");
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+      errors.push(
+        `${display}  文件名 "${name}" 不能作为 slug。请用小写字母、数字和连字符，或在 frontmatter 里显式写 slug`,
+      );
+      continue;
+    }
+
+    if (doc.frontmatter.draft) {
+      drafts.push(display);
+      continue;
+    }
+
+    if (doc.frontmatter.order !== undefined) {
+      errors.push(`${display}  skill 和 prompt 没有次序，不要写 order`);
+      continue;
+    }
+
+    const kind = doc.frontmatter.kind;
+    if (kind === undefined) {
+      errors.push(
+        `${display}  必须写 kind，它决定这是 skill 还是 prompt。可用：${resourceKindIds.join(", ")}`,
+      );
+      continue;
+    }
+    if (!isResourceKindId(kind)) {
+      errors.push(
+        `${display}  kind "${kind}" 不可用。content/${skills.slug}/ 下只有：${resourceKindIds.join(", ")}`,
+      );
+      continue;
+    }
+
+    const previous = seenResources.get(slug);
+    if (previous) {
+      errors.push(
+        `${display}  与 ${previous} 的地址 /${skills.slug}/${slug} 重复`,
+      );
+      continue;
+    }
+    seenResources.set(slug, display);
+
+    resources.push({
+      slug,
+      kind,
+      title: doc.frontmatter.title,
+      lede: doc.frontmatter.lede,
+      date: doc.frontmatter.date,
+      tags: doc.frontmatter.tags,
+      blocks: doc.blocks,
+      source: display,
+      ...(doc.frontmatter.use ? { use: doc.frontmatter.use } : {}),
+    });
+  }
+
+  // Newest first: the stacked sheets put the most recent on top, and that is
+  // the only ordering these have.
+  resources.sort(
+    (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug),
+  );
+
   /* ---- Series level checks -------------------------------------------- *
    * These need the whole set, so they run after the per-file pass.        */
 
@@ -490,6 +597,7 @@ export async function compile(): Promise<CompileResult> {
   return {
     posts,
     notes,
+    resources,
     errors,
     drafts,
     empty,
@@ -498,16 +606,22 @@ export async function compile(): Promise<CompileResult> {
   };
 }
 
-function render(posts: Post[], notes: Note[]): string {
+function render(
+  posts: Post[],
+  notes: Note[],
+  resources: Resource[],
+): string {
   return `// GENERATED FILE — do not edit.
 // Produced from content/**/*.md by scripts/content.ts.
 // Run \`bun run content\` to refresh, or just \`bun dev\` (it watches).
 
-import type { Note, Post } from "./types";
+import type { Note, Post, Resource } from "./types";
 
 export const posts: Post[] = ${JSON.stringify(posts, null, 2)};
 
 export const notes: Note[] = ${JSON.stringify(notes, null, 2)};
+
+export const resources: Resource[] = ${JSON.stringify(resources, null, 2)};
 `;
 }
 
@@ -525,7 +639,10 @@ export async function generate(): Promise<CompileResult> {
   const result = await compile();
   if (result.errors.length > 0) return result;
   await mkdir(resolve(ROOT, "src/content"), { recursive: true });
-  await Bun.write(OUT_FILE, render(result.posts, result.notes));
+  await Bun.write(
+    OUT_FILE,
+    render(result.posts, result.notes, result.resources),
+  );
   await Bun.write(ASSET_FILE, renderAssets(result.assets));
   return result;
 }
@@ -576,6 +693,12 @@ function report(result: CompileResult, wrote: boolean): void {
     console.log(
       `  空专栏: ${result.emptySeries.join(", ")}  (页面会显示占位状态)`,
     );
+  }
+  if (result.resources.length > 0) {
+    const byKind = resourceKindIds
+      .map((id) => `${id} ${result.resources.filter((r) => r.kind === id).length}`)
+      .join(" · ");
+    console.log(`  ${result.resources.length} 份参考  (${byKind})`);
   }
   if (result.notes.length > 0) {
     const lengths = result.notes.map((n) => n.chars);

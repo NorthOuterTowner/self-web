@@ -305,6 +305,44 @@ function SeriesGroup({
   );
 }
 
+/**
+ * The "on this page" navigation.
+ *
+ * Exported so other reading layouts can have it without reimplementing
+ * `useActiveHeading` and `scrollToHeading` — those are the fiddly parts, and a
+ * second copy would drift. Used by the skills reading page.
+ */
+export function HeadingNav({ headings }: { headings: Heading[] }) {
+  const active = useActiveHeading(headings);
+  if (headings.length === 0) return null;
+
+  return (
+    <nav className="toc__group" aria-label="本页小节">
+      <p className="toc__heading">
+        <span className="toc__heading-label">Contents</span>
+        <span className="toc__heading-rule" aria-hidden="true" />
+        <span className="toc__heading-count">
+          {String(headings.length).padStart(2, "0")}
+        </span>
+      </p>
+      <div className="toc__anchors">
+        {headings.map((h) => (
+          <button
+            type="button"
+            key={h.id}
+            onClick={() => scrollToHeading(h.id)}
+            className={`toc__anchor${
+              h.level === 3 ? " toc__anchor--sub" : ""
+            }${active === h.id ? " is-current" : ""}`}
+          >
+            {h.text}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 interface Props {
   category: CategoryMeta;
   outline: CategoryOutline;
