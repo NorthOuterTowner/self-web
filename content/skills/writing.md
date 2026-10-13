@@ -2,6 +2,8 @@
 title: 英语写作 Prompt
 lede: 练习雅思写作
 date: 2026-10-13
+kind: prompt
+use: 需要练习写作的时候可以生成一篇范文进行学习
 tags: [英语]
 ---
 

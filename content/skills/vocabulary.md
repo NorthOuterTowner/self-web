@@ -2,6 +2,8 @@
 title: 单词翻译 Prompt
 lede: 快速进行单词翻译并生成 Markdown
 date: 2026-10-12
+kind: prompt
+use: 快速完成生词查询
 tags: [英语]
 ---
 
