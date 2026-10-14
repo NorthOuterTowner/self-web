@@ -1,8 +1,9 @@
 ---
 title: GPG Key 的配置
 lede: 本文将介绍如何在Git提交的过程中进行GPG key的配置。
-date: 2026-10-014
+date: 2026-10-14
 tags: [Git, Gerrit]
+order: 1
 ---
 
 在一些代码提交情况下，尤其是 Gerrit 进行代码提交，需要进行签名认证提交者的身份，在这种情况下，一般需要进行 GPG 私钥和公钥的配置。
@@ -38,12 +39,12 @@ keysize表示RSA密钥长度，一般来说，2048更加常用，速度更快，
 然后设置一个 passphrase，完成后将显示
 
 ```bash
-sec rsa4096/<secret key id > [SC]
+sec rsa4096/<secret key id > \[SC\]
 uid <your uid >
-ssb rsa4096/<secret subkey id > [E]
+ssb rsa4096/<secret subkey id > \[E\]
 ```
 
-其中的 sec 表示主密钥，ssb 表示子密钥。方括号中的 [SC] 或者 [E] 表示密钥的用途，S 表示 Sign（签名），C 表示 Certify（认证/签发子密钥），E 表示 Encrypt（加密）
+其中的 sec 表示主密钥，ssb 表示子密钥。方括号中的 \[SC\] 或者 \[E\] 表示密钥的用途，S 表示 Sign（签名），C 表示 Certify（认证/签发子密钥），E 表示 Encrypt（加密）
 
 ```bash
 git config --global user.name "<your name>"

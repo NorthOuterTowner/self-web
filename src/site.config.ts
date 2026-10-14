@@ -162,6 +162,14 @@ export const series: SeriesMeta[] = [
     summary: "数据库系统的基本介绍和对应的原理",
     intro: "尽管MySQL是当前最为广泛流行的db之一，但了解各种不同的SQL和NoSQL有助于软件工程师应对不同的情况。"
   },
+  {
+    slug: "git-use",
+    category: "computing",
+    title: "版本控制",
+    titleEn: "Version Control",
+    summary: "介绍版本控制的工作原理和工作事项",
+    intro: "本专栏将以Git为基础详细介绍在代码协作过程中的协作模式以及工作中可能遇到的小问题"
+  }
 ];
 
 /** Series declared under a given category, in declaration order. */

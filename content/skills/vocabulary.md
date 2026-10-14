@@ -19,4 +19,4 @@ adj. xxx
 
 文章如下：
 
-The restoration of *degraded* ecosystems has become a central concern of modern environmental policy. While the protection of *intact* habitats remains essential, a growing number of scientists argue that repairing landscapes already damaged by human activity may *yield* greater long-term benefits. 
+The restoration of *degraded* ecosystems has become a central concern of modern environmental policy. While the protection of *intact* habitats remains essential, a growing number of scientists argue that repairing landscapes already damaged by human activity may *yield* greater long-term benefits.
