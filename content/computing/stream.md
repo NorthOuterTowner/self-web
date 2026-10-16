@@ -157,7 +157,7 @@ data: [DONE]
 
 完成后端API后，现在开始编写前端API。注意，不同于后端，此处使用`typeScript`语法，而不是`javaScript`语法。
 一般来说，我喜欢在前端使用`axios`进行接口编写，通过`AxiosInstance`创建实例执行操作，但此处面临的问题是：
-    - axios 在浏览器端无法稳定读取 response body 流
+- axios 在浏览器端无法稳定读取 response body 流
 所以，我们这里直接使用原生的 fetch 完成工作。
 
 ```ts
