@@ -165,22 +165,35 @@
  * Seven destinations do not fit a phone, and the compaction steps below can
  * only buy so much. So the list becomes its own scroll container.
  *
- * It has to be the list and not the page: `body` is `overflow-x: clip`, which
- * means an overflowing bar is silently cut off instead of becoming
- * scrollable — that is exactly the symptom this fixes.
+ * Two things have to hold for that to work, and the first version only got
+ * one of them:
  *
- * 900px rather than something smaller: "Skills and prompts" plus the other
- * six add up to roughly 730px of links, and the step engages before anything
+ *   1. Something has to scroll. `body` is `overflow-x: clip`, so an
+ *      overflowing bar is cut off rather than becoming scrollable; the list
+ *      has to be a scroll container itself.
+ *
+ *   2. The scroll container has to be narrower than its content. The flex
+ *      item in `.nav__inner` is the <nav>, not the list, and a flex item's
+ *      automatic minimum width is its min-content width — here, every link
+ *      end to end. So the <nav> refused to shrink and ran off the right edge
+ *      of the screen, and the list inside it was exactly as wide as its own
+ *      content: `overflow-x: auto` with nothing to scroll. The `min-width: 0`
+ *      that fixes it was on the list, one element too deep.
+ *
+ * 900px: the links plus the wordmark run wider than that, so the step engages
+ * before anything
  * actually gets clipped rather than after.                                  */
 
 @media (max-width: 900px) {
-  .nav__list {
-    /* `margin-left: auto` pushed it right; now it takes the space that is
-       left and `min-width: 0` is what lets a flex item shrink below its
-       content width. Without that it simply refuses to overflow. */
-    margin-left: 0;
-    flex: 1;
+  /* The flex item — the element that has to be allowed to shrink, see the
+     note above. `flex: 1` hands it whatever the wordmark leaves. */
+  .nav__sections {
+    flex: 1 1 auto;
     min-width: 0;
+  }
+
+  .nav__list {
+    --nav-fade: 26px;
     overflow-x: auto;
     overflow-y: hidden;
     /* Keep a sideways swipe inside the bar instead of letting it turn into a
@@ -191,16 +204,31 @@
     /* Only the right edge fades. A symmetric mask would dim 首页 while the
        bar is at rest, which reads as a rendering fault rather than as a hint
        that there is more to the right. */
-    mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent);
+    mask-image: linear-gradient(
+      to right,
+      #000 calc(100% - var(--nav-fade)),
+      transparent
+    );
     -webkit-mask-image: linear-gradient(
       to right,
-      #000 calc(100% - 26px),
+      #000 calc(100% - var(--nav-fade)),
       transparent
     );
   }
 
   .nav__list::-webkit-scrollbar {
     display: none;
+  }
+
+  /* The fade is pinned to the bar's right edge, not to the content, so with
+     nothing after the last link it would sit under the fade even when
+     scrolled all the way — permanently half-dimmed. A spacer as wide as the
+     fade lets it come clear. A flex item rather than `padding-right`, because
+     end padding on a flex scroll container has not always counted towards
+     its scrollable width. */
+  .nav__list::after {
+    content: "";
+    flex: 0 0 var(--nav-fade);
   }
 
   /* The bar is short, so a link scrolled half out of view is a link you

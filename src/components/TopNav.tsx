@@ -88,7 +88,10 @@ export function TopNav() {
           <span className="nav__name nav__name--short">{site.monogram}</span>
         </NavLink>
 
-        <nav aria-label="站点分区">
+        {/* `nav__sections` is the flex item in `.nav__inner`, so it — not the
+            list inside it — is what has to be allowed to shrink for the bar
+            to scroll on narrow screens. See nav.css. */}
+        <nav className="nav__sections" aria-label="站点分区">
           <ul className="nav__list" ref={list}>
             {sections.map((s) => (
               <li key={s.key}>

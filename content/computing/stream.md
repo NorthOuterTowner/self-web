@@ -14,9 +14,11 @@ tags: [Stream, SSE, LLM, Vue]
 ## 构建后端
 
 ## 了解LLM API的使用
+
 首先完成后端API，我们需要先进行LLM API的熟悉工作，了解如何获取他的信息。
 经过一定的了解后，我们这里使用了一个第三方的平台来进行AI数据的访问，首先指定url，之后构建`options json`, 在请求头中以指定格式携带自己的`API token`作为验证请求头。之后构建请求体，其中`use_model`在这里是一个变量，如果需要指定固定模型只需直接输入想要的model即可，在messages信息中需要填入自己输入的内容以及用户角色。你的输入是`user`角色的（LLM的是什么我不记得了，也许是`assistant`吧，或者是`ai`之类的，总之看他的官方文档就可以了）。
 **注意:`stream`字段的值必须为`true`，这一点确保了官方API以`stream`方式进行传输，如果不保证这一点则在之后一定不可能完成流式数据的获取。**
+
 ```js
 const url = "https://api.siliconflow.cn/v1/chat/completions";
 const options = {
@@ -101,6 +103,7 @@ Response {
 很容易发现，我们需要的实际内容正是在body中的，而他直接显示为`ReadableStream { locked: false, state: 'readable', supportsBYOB: true }`，即一个`ReadableStream`。而仅关键信息和请求头是完备的。
 
 启动后端后，通过Bruno进行请求，观察得到的访问数据（以下是其中一条，这里将`id`和`created`信息隐去）：
+
 ```json
 data: {
     "id":"***",
@@ -132,17 +135,18 @@ data: {
         "prompt_cache_hit_tokens":0,"prompt_cache_miss_tokens":10
     }
 }
-
-
 ```
+
 很明显，`data`中的`reasoning_content`是模型输出的内容，但是这并不是我们要找的内容，因为这一个`reasoning_content`字段，是模型思考时的输出，他也会使用模型的token并返回到前端，但是不会被输出（如果你想要渲染思考过程的话也可以把他输出出来），在思考完成后，真正需要输入的信息在`content`这个字段中。
 
 以上的一个`json`，就是后端返回的其中一个`chunk`。那么最后一个`chunk`是什么样子呢，只需看一看Bruno最后一次返回的内容：
+
 ```json
 data: [DONE]
 
 
 ```
+
 因此，看到这个`[Done]`的标识，就知道大模型已经完成了回答，可以通过`res.end()`结束连接了。
 
 ### 增加鲁棒性
@@ -153,7 +157,7 @@ data: [DONE]
 
 完成后端API后，现在开始编写前端API。注意，不同于后端，此处使用`typeScript`语法，而不是`javaScript`语法。
 一般来说，我喜欢在前端使用`axios`进行接口编写，通过`AxiosInstance`创建实例执行操作，但此处面临的问题是：
-- axios 在浏览器端无法稳定读取 response body 流
+    - axios 在浏览器端无法稳定读取 response body 流
 所以，我们这里直接使用原生的 fetch 完成工作。
 
 ```ts
@@ -287,6 +291,7 @@ export function sendMessageStreamApi(
 ## 前端调用
 
 在完成API后，我们进入我们的Vue文件实现对其的调用，由于是通过流式进行调用，前文已经提到，`onChunk()`回调函数是会被大量调用的。
+
 ```ts
 const onSend = async () => {
   const text = input.value?.trim();
@@ -329,5 +334,5 @@ const onSend = async () => {
   }
 };
 ```
+
 完成这个调用流程后，只需在发送按钮处绑定事件即可，不再赘述。
-*Written in 4/19/2026 By Ruize Li*
