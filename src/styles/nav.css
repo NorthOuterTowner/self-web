@@ -114,14 +114,20 @@
   color: var(--ink);
 }
 
-.nav__link-idx {
-  font-family: var(--serif);
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
-  /* Lining figures on purpose: the serif's old-style zero sits at x-height and
-     reads as "oo" at this size. Tabular keeps the indices from shifting. */
-  font-variant-numeric: lining-nums tabular-nums;
-  color: var(--ink-4);
+/* Sized in em so it follows the label through the compact steps below, which
+   shrink the font rather than the layout. 1.1em because a Phosphor glyph only
+   fills about 80% of its box: at 1em it read smaller than the Latin capitals
+   beside it.
+
+   No colour of its own — the svg fills with currentColor, so it takes the
+   link's colour and hover and active cover mark and label together. The old
+   index digit was a step lighter (--ink-4), but that is under 3:1 against
+   the page, which is fine for a numeral next to a word and too faint for a
+   shape that has to be recognised. */
+.nav__icon {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
   transition: color var(--dur-fast) var(--ease-out);
 }
 
@@ -147,8 +153,10 @@
   transform: scaleX(1);
 }
 
-.nav__link.is-active .nav__link-idx {
-  color: var(--accent-dot, var(--ink-3));
+/* The active section's icon takes its accent, the same job the index digit
+   used to do. Home has no accent and stays ink. */
+.nav__link.is-active .nav__icon {
+  color: var(--accent-dot, var(--ink));
 }
 
 .nav__link[data-accent-key="journal"] {
@@ -255,9 +263,10 @@
   .nav__link {
     padding-inline: var(--sp-3);
   }
-  .nav__link-idx {
-    display: none;
-  }
+  /* The index digit used to be hidden from here down to save room. The icon
+     stays: the bar scrolls at this width now, so room is no longer the
+     constraint, and a shape is quicker to find than a word in a strip that
+     is moving under your thumb. */
 }
 
 /* The serif runs wider than the grotesque it replaced, so the compact step has

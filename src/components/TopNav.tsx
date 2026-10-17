@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { sectionIcon, type Icon } from "../lib/icons";
 import { categories, navExtras, site } from "../site.config";
 
 interface Section {
   to: string;
   label: string;
-  idx: string;
   key: string;
+  /**
+   * Sits where the 00–06 index used to. Replacing rather than adding keeps
+   * each link the same width: index plus icon plus label would have pushed
+   * the bar past the edge on laptop widths, above the 900px point where it
+   * starts to scroll.
+   */
+  icon?: Icon;
   /**
    * Set only for the extras. Categories get their accent from the
    * `[data-accent-key]` rules already in nav.css; driving the extras from a
@@ -25,18 +32,18 @@ interface Section {
  * separate lists, or adding a link takes the ring apart.
  */
 const sections: Section[] = [
-  { to: "/", label: "首页", idx: "00", key: "home" },
+  { to: "/", label: "首页", key: "home", icon: sectionIcon("home") },
   ...categories.map((c) => ({
     to: `/${c.slug}`,
     label: c.titleEn,
-    idx: c.index,
     key: c.id,
+    icon: sectionIcon(c.id),
   })),
   ...navExtras.map((e) => ({
     to: e.to,
     label: e.label,
-    idx: e.idx,
     key: e.key,
+    icon: sectionIcon(e.key),
     style: { "--accent-dot": `var(--${e.tone})` } as CSSProperties,
   })),
 ];
@@ -93,7 +100,7 @@ export function TopNav() {
             to scroll on narrow screens. See nav.css. */}
         <nav className="nav__sections" aria-label="站点分区">
           <ul className="nav__list" ref={list}>
-            {sections.map((s) => (
+            {sections.map(({ icon: Glyph, ...s }) => (
               <li key={s.key}>
                 <NavLink
                   to={s.to}
@@ -104,9 +111,8 @@ export function TopNav() {
                     `nav__link${isActive ? " is-active" : ""}`
                   }
                 >
-                  <span className="nav__link-idx" aria-hidden="true">
-                    {s.idx}
-                  </span>
+                  {/* Decorative: the label beside it already names the link. */}
+                  {Glyph && <Glyph className="nav__icon" aria-hidden="true" />}
                   <span>{s.label}</span>
                 </NavLink>
               </li>

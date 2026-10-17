@@ -288,9 +288,12 @@ export interface NavExtra {
   to: string;
   /** Latin label, to match the categories' `titleEn` in the nav. */
   label: string;
-  /** Sequence number shown before the label. */
-  idx: string;
-  /** Token that colours the index digit while the entry is active. */
+  /**
+   * Token that colours the icon and the underline while the entry is active.
+   * The icon itself is chosen in `src/lib/icons.ts`, by `key` — kept out of
+   * this file because the content compiler imports it and has no use for
+   * React components.
+   */
   tone: "ink" | "fjord" | "clay" | "birch";
 }
 
@@ -390,13 +393,12 @@ export const roadmap: StubMeta = {
 };
 
 export const navExtras: NavExtra[] = [
-  { key: "skills", to: `/${skills.slug}`, label: skills.titleEn, idx: "04", tone: "fjord" },
-  { key: "roadmap", to: `/${roadmap.slug}`, label: roadmap.titleEn, idx: "05", tone: "clay" },
+  { key: "skills", to: `/${skills.slug}`, label: skills.titleEn, tone: "fjord" },
+  { key: "roadmap", to: `/${roadmap.slug}`, label: roadmap.titleEn, tone: "clay" },
   {
     key: "others",
     to: `/${others.slug}`,
     label: "Notes",
-    idx: "06",
     // 杂谈 spans all four genre tones, so no single accent is truthful. Ink
     // reads as "all of them" rather than picking a favourite.
     tone: "ink",

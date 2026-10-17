@@ -17,6 +17,7 @@
     "start": "bun run scripts/content.ts && NODE_ENV=production bun src/index.ts"
   },
   "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
     "gsap": "3.13.0",
     "react": "^19",
     "react-dom": "^19",
