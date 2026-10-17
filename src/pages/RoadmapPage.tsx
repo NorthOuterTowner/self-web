@@ -4,16 +4,15 @@ import {
   bridges,
   clusterById,
   clusterOrder,
+  levels,
   requiresMap,
   roadmapSource,
   skillById,
   skillGraph,
   skillLayout,
-  statusMeta,
   tally,
   type ClusterId,
   type Skill,
-  type SkillStatus,
 } from "../content/roadmap";
 import { ancestorsOf, descendantsOf } from "../lib/dag";
 import { gsap, setupGsap } from "../lib/gsapSetup";
@@ -29,8 +28,8 @@ import { roadmap, site } from "../site.config";
  *
  * What makes a group read as a group is a faint field behind it plus the
  * proximity of its members, not a rule across the page. A divider would say
- * "these are separate figures"; they are not — the whole point is that you
- * can see 基站集成 reaching back into 桌面 for PySide.
+ * "these are separate figures"; they are not — the edges between groups are
+ * the point, and they have to stay visible.
  *
  * Nothing in the geometry is random. Box widths come from label length and
  * odd columns sit slightly lower, which is enough to break the grid without
@@ -56,7 +55,20 @@ const HULL_PAD = 20;
  * the varied widths are there to break up.
  */
 const MIN_W = 56;
-const MAX_W = 216;
+
+/**
+ * A box's horizontal chrome. Must match `.rm__node` in roadmap.css: 12px of
+ * padding each side, a 2px rule on the left and a 1px rule on the right.
+ *
+ * Exactness matters here. A Chinese name is exactly 13px a character, so the
+ * estimate below is exact for it, and a chrome figure one short — this was 26
+ * — leaves every all-Chinese box 1px narrower than its own name: the browser
+ * swaps the last character for an ellipsis.
+ */
+const CHROME = 12 + 12 + 2 + 1;
+
+/** Extra right padding on a box with an article, to keep its dot clear. */
+const DOT_ROOM = 8;
 
 /** Rough advance width in em: CJK is full width, Latin about half. */
 function textWidth(s: string): number {
@@ -67,12 +79,21 @@ function textWidth(s: string): number {
   return w;
 }
 
+/**
+ * A box's width, for placing it.
+ *
+ * Still a guess for Latin names: real widths depend on the visitor's font,
+ * and capitals run wider than half an em, so a name like MongoDB can need a
+ * few pixels more. That cannot cut a label off any more — `.rm__node` has
+ * `min-width: max-content`, so the box grows to fit — it only eats into the
+ * gap to the next box.
+ *
+ * No upper clamp, for the same reason: a clamp here would only make the
+ * placement wrong, since the box would grow past it anyway.
+ */
 function widthOf(skill: Skill): number {
   const text = Math.ceil(textWidth(skill.label) * 13);
-  // A linked topic carries a dot in its corner. Without room of its own it
-  // sits right against the end of the name, like a full stop.
-  const dot = skill.link ? 8 : 0;
-  return Math.min(MAX_W, Math.max(MIN_W, text + 26 + dot));
+  return Math.max(MIN_W, text + CHROME + (skill.link ? DOT_ROOM : 0));
 }
 
 interface Spot {
@@ -193,9 +214,26 @@ function place() {
 
 export function RoadmapPage() {
   const root = useRef<HTMLDivElement>(null);
-  const [focus, setFocus] = useState<string | null>(null);
+
+  /**
+   * Two sources for the topic being shown. `hovered` follows the pointer and
+   * keyboard focus; `locked` is set by a click and holds until another click
+   * moves or releases it. A lock wins, so while one is set the highlighted
+   * chain stays put however the pointer moves.
+   */
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [locked, setLocked] = useState<string | null>(null);
+  const focus = locked ?? hovered;
+
   const counts = useMemo(() => tally(), []);
   const geo = useMemo(place, []);
+
+  // The locked topic's article, if it has one, and the box to hang its link
+  // under. See `.rm__open`.
+  const lockedTopic = locked ? skillById.get(locked) : undefined;
+  const lockedLink = lockedTopic?.link;
+  const openAt =
+    lockedTopic && lockedLink ? geo.at.get(lockedTopic.id) : undefined;
 
   const highlight = useMemo(() => {
     if (!focus) return null;
@@ -216,6 +254,72 @@ export function RoadmapPage() {
     if (highlight.down.has(id)) return "unlocks";
     return "dim";
   };
+
+  /**
+   * Clicking a topic locks it, which also moves a lock off whatever held it.
+   * Clicking the locked one again releases it.
+   *
+   * Releasing clears the hover too. The pointer is still on that box, so
+   * otherwise the highlight would pass straight from the lock to the hover
+   * on the same box, and the second click would look like it did nothing.
+   * The hover comes back by itself once the pointer leaves and returns.
+   */
+  const pick = (id: string) => {
+    if (locked === id) {
+      setLocked(null);
+      setHovered(null);
+    } else {
+      setLocked(id);
+    }
+  };
+
+  /**
+   * While something is locked, a click anywhere that is not a topic box
+   * releases it, and so does Esc.
+   *
+   * On the document rather than the canvas so that "anywhere else" really is
+   * anywhere: a click beside the canvas, on the legend or the text around it,
+   * would never reach a canvas listener. Clicks on the fields and wires do
+   * land on the canvas, since neither takes pointer events.
+   *
+   * Topic boxes are skipped by checking the target, not by stopping
+   * propagation in their handlers, so the rule lives in one place. That also
+   * covers the click that set the lock: React can attach this listener while
+   * that same click is still on its way up to the document.
+   */
+  useEffect(() => {
+    if (!locked) return;
+
+    const release = () => {
+      setLocked(null);
+      // Hover is sticky inside the canvas — it only clears when the pointer
+      // leaves it — so without this the last box the pointer crossed would
+      // light up the instant the lock let go.
+      setHovered(null);
+    };
+    const onClick = (event: MouseEvent) => {
+      const target = event.target;
+      // The 读文章 link is skipped too: it navigates away, and releasing the
+      // lock first would pull the link out from under the click.
+      if (
+        target instanceof Element &&
+        target.closest(".rm__node, .rm__open")
+      ) {
+        return;
+      }
+      release();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") release();
+    };
+
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [locked]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -267,12 +371,17 @@ export function RoadmapPage() {
         )}
 
         <dl className="rm__tally">
-          {(Object.keys(statusMeta) as SkillStatus[]).map((status) => (
-            <div key={status} data-status={status}>
-              <dt className="label">{statusMeta[status].title}</dt>
-              <dd className="index-num">{counts[status]}</dd>
-            </div>
-          ))}
+          <div>
+            <dt className="label">平均掌握</dt>
+            <dd className="index-num">
+              {counts.average.toFixed(1)}
+              <span className="rm__tally-of">/10</span>
+            </dd>
+          </div>
+          <div>
+            <dt className="label">未开始</dt>
+            <dd className="index-num">{counts.untouched}</dd>
+          </div>
           <div>
             <dt className="label">跨组依赖</dt>
             <dd className="index-num">{bridges.length}</dd>
@@ -291,9 +400,26 @@ export function RoadmapPage() {
           })}
         </ul>
 
+        {/* The colour key, and under it what the numbers mean. Both stay on
+            narrow screens, unlike the group legend: the list view shows
+            "掌握 6/10" and the same swatches. */}
+        <div className="rm__scale">
+          <span className="label">掌握程度</span>
+          <span className="rm__scale-end">0</span>
+          <span className="rm__scale-bar" aria-hidden="true">
+            {levels.map((n) => (
+              <span className="rm__scale-cell" data-level={n} key={n} />
+            ))}
+          </span>
+          <span className="rm__scale-end">10</span>
+        </div>
+
         <p className="rm__hint label">
-          纵向是前置深度，横向按组分带。连线是知识依赖，不是我学习的顺序 ——
-          跨组的那几条会穿过色域。悬停任意一项，看它压在什么上面。
+          1 为略有了解，知道如何开始学习；
+          2~3 为可以进行进一步学习之后了解如何投入工程的知识水平；
+          4~5 为可以投入工程，但是需要再进行一些 study；
+          6~8 为可以立刻投入使用当中；
+          9~10 为精通。
         </p>
 
         <div className="rm__canvas-wrap">
@@ -305,7 +431,7 @@ export function RoadmapPage() {
                 height: `${geo.canvasH}px`,
               } as CSSProperties
             }
-            onMouseLeave={() => setFocus(null)}
+            onMouseLeave={() => setHovered(null)}
           >
             {/* Fields first, so everything else sits on top of them. */}
             {geo.hulls.map((hull) => {
@@ -376,10 +502,31 @@ export function RoadmapPage() {
                   skill={skill}
                   spot={spot}
                   role={roleOf(skill.id)}
-                  onFocus={() => setFocus(skill.id)}
+                  isLocked={locked === skill.id}
+                  onHover={() => setHovered(skill.id)}
+                  onPick={() => pick(skill.id)}
                 />
               );
             })}
+
+            {/* The way into a locked topic's article. A second click on the
+                box releases it, so the article needs a target of its own. */}
+            {lockedTopic && lockedLink && openAt && (
+              <Link
+                to={lockedLink}
+                className="rm__open"
+                style={
+                  {
+                    left: `${openAt.x}px`,
+                    top: `${openAt.y + NODE_H + 6}px`,
+                  } as CSSProperties
+                }
+              >
+                读文章
+                <span aria-hidden="true">→</span>
+                <span className="sr-only">：{lockedTopic.label}</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -398,17 +545,18 @@ export function RoadmapPage() {
                     {String(own.length).padStart(2, "0")}
                   </span>
                 </p>
-                <p className="rm__group-note">{meta.note}</p>
                 <ol className="rm__list">
                   {own.map((skill) => (
                     <li className="rm__row" key={skill.id}>
                       <span className="rm__row-head">
                         <span className="rm__row-title">{skill.label}</span>
-                        <span
-                          className="label rm__row-status"
-                          data-status={skill.status}
-                        >
-                          {statusMeta[skill.status].title}
+                        <span className="label rm__row-level">
+                          <span
+                            className="rm__row-swatch"
+                            data-level={skill.level}
+                            aria-hidden="true"
+                          />
+                          掌握 {skill.level}/10
                         </span>
                       </span>
                       {skill.requires.length > 0 && (
@@ -435,7 +583,7 @@ export function RoadmapPage() {
 
         <div className="note__foot">
           <Link to={roadmapSource.to} className="toc__back">
-            ← 这些状态是怎么来的：{roadmapSource.title}
+            ← 这些掌握程度背后的经历：{roadmapSource.title}
           </Link>
           <Link to="/" className="toc__back">
             ← 返回首页
@@ -450,12 +598,16 @@ function NodeBox({
   skill,
   spot,
   role,
-  onFocus,
+  isLocked,
+  onHover,
+  onPick,
 }: {
   skill: Skill;
   spot: Spot;
   role: string;
-  onFocus: () => void;
+  isLocked: boolean;
+  onHover: () => void;
+  onPick: () => void;
 }) {
   const meta = clusterById.get(skill.cluster)!;
   // `requires` already holds labels, so there is nothing to look up.
@@ -464,7 +616,10 @@ function NodeBox({
   const shared = {
     className: "rm__node",
     "data-tone": meta.tone,
-    "data-status": skill.status,
+    // Drives the fill. See the level scale in roadmap.css.
+    "data-level": skill.level,
+    // Widens the right padding for the dot; see DOT_ROOM.
+    "data-linked": skill.link ? "true" : undefined,
     "data-role": role,
     style: {
       left: `${spot.x}px`,
@@ -472,12 +627,9 @@ function NodeBox({
       width: `${spot.w}px`,
       height: `${NODE_H}px`,
     } as CSSProperties,
-    onMouseEnter: onFocus,
-    onFocus,
-    title: [
-      `${skill.label} · ${statusMeta[skill.status].title}`,
-      reqs && `需要：${reqs}`,
-    ]
+    onMouseEnter: onHover,
+    onFocus: onHover,
+    title: [`${skill.label} · 掌握 ${skill.level}/10`, reqs && `需要：${reqs}`]
       .filter(Boolean)
       .join("\n"),
   };
@@ -485,17 +637,46 @@ function NodeBox({
   const body = (
     <>
       <span className="rm__node-label">{skill.label}</span>
+      {/* On the canvas the level is only a colour; this says it in words. */}
+      <span className="sr-only">，掌握 {skill.level}/10</span>
       {skill.link && <span className="rm__node-dot" aria-hidden="true" />}
     </>
   );
 
-  return skill.link ? (
-    <Link to={skill.link} {...shared}>
+  if (skill.link) {
+    return (
+      <Link
+        to={skill.link}
+        {...shared}
+        onClick={(event) => {
+          // A plain click locks and releases like any other box; with a
+          // pointer, the article opens from the 读文章 link that appears under
+          // the box while it is locked. Two kinds of click still go through
+          // as the link this is: keyboard activation (detail is 0), and a
+          // modified click asking for a new tab or window.
+          if (
+            event.detail === 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+          event.preventDefault();
+          onPick();
+        }}
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  // A button rather than a focusable div: Enter and Space work, the locked
+  // state is announced, and the cursor says it can be clicked.
+  return (
+    <button type="button" {...shared} aria-pressed={isLocked} onClick={onPick}>
       {body}
-    </Link>
-  ) : (
-    <div {...shared} tabIndex={0}>
-      {body}
-    </div>
+    </button>
   );
 }

@@ -5,36 +5,38 @@
  *
  * One line per topic, written under the group it belongs to:
  *
- *     { label: "C++", status: "done", requires: ["C", "面向对象程序设计"] },
+ *     { label: "C++", level: 6, requires: ["C", "面向对象程序设计"] },
  *
  *   label     The name on the box. It is also how other topics point at
  *             this one in their `requires`, so it has to be unique, and
  *             renaming a topic means renaming it wherever it is required.
- *   status    "done" | "learning" | "planned" | "dropped"
+ *   level     How well I know it: a whole number from 0 to 10, which
+ *             colours the box — 0 white, 5 light blue, 10 purple. Something
+ *             on the plan but not started is 0. Anything else, 11 or 6.5, is
+ *             a type error, so `bun run typecheck` and CI catch it.
  *   requires  Optional. The topics this one rests on, by label, from any
  *             group. Leave it out for a starting point.
- *   link      Optional. An article on this site: the box links to it and
- *             gets a dot in its corner.
+ *   link      Optional. An article on this site; the box gets a dot in its
+ *             corner. Clicking it locks it like any other box, and while it
+ *             is locked a 读文章 link appears under it.
  *
  * A topic's group is the one it is written under. Groups are drawn left to
- * right in the order they appear here, and this order puts the heaviest
- * cross-group edges between neighbours: 语言与系统 feeds 服务端 five times and
- * sits next to it, and 桌面 sits next to 通信 because 基站集成 needs PySide.
- * Reordering only changes how tangled the long edges look, never what the
- * graph says.
+ * right in the order they appear here. Groups that share many edges are best
+ * kept next to each other, which keeps the long edges short; reordering only
+ * changes how tangled those look, never what the graph says.
  *
- * Mistakes do not fail the build. A `requires` name that matches no topic, a
- * label used twice, or a cycle shows up in a box at the top of the roadmap
- * page, naming the topic, and the rest of the graph still draws.
+ * Mistakes in the graph itself do not fail the build. A `requires` name that
+ * matches no topic, a label used twice, or a cycle shows up in a box at the
+ * top of the roadmap page, naming the topic, and the rest still draws.
  *
  * ---- What belongs in it -------------------------------------------------
  *
  * 1. `requires` is knowledge dependency, authored from domain knowledge, with
  *    nothing to do with anyone's history. React sits above DOM → JavaScript
  *    whether or not the person who wrote this learned them in that order.
- *    The test for an edge: set every status to "planned" and ask whether the
- *    graph is still a usable path for a stranger. If an edge only makes sense
- *    as "I happened to do X first", it belongs in the prose, not here.
+ *    The test for an edge: set every level to 0 and ask whether the graph is
+ *    still a usable path for a stranger. If an edge only makes sense as "I
+ *    happened to do X first", it belongs in the prose, not here.
  *
  * 2. A topic is a named technology, or a named discipline with a literature
  *    behind it. Not a step invented to bridge two real things: an earlier
@@ -46,20 +48,24 @@
  *    almost no concepts, and the page draws them apart. Cross-group edges
  *    exist and are drawn, but they are the exception and are marked as such.
  *
- * `status` is the only part about one particular person, and it comes from
- * `content/journal/learning.md`.
+ * `level` is the only part about one particular person. The story behind it
+ * is in `content/journal/learning.md`.
  */
 
 import { layerDag } from "../lib/dag";
 
-export type SkillStatus = "done" | "learning" | "planned" | "dropped";
+/** 0 is not started; 10 is as well as I know anything. */
+export type Level = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+/** Every level, low to high. The page draws its colour key from this. */
+export const levels: Level[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 type Tone = "ink" | "fjord" | "clay" | "birch";
 
 /** One topic, as written below. */
 interface TopicEntry {
   label: string;
-  status: SkillStatus;
+  level: Level;
   requires?: string[];
   link?: string;
 }
@@ -69,8 +75,6 @@ interface GroupEntry {
   title: string;
   titleEn: string;
   tone: Tone;
-  /** One line on what holds the group together. Shown in the list view. */
-  note: string;
   topics: TopicEntry[];
 }
 
@@ -79,141 +83,129 @@ const groups: GroupEntry[] = [
     title: "智能",
     titleEn: "Intelligence",
     tone: "fjord",
-    note: "入口是数学而不是代码，所以它和前端那条线没有交集。",
     topics: [
-      { label: "线性代数", status: "done" },
-      { label: "微积分", status: "done" },
-      { label: "概率论与数理统计", status: "done" },
+      { label: "线性代数", level: 5 },
+      { label: "微积分", level: 5 },
+      { label: "概率论与数理统计", level: 4 },
       {
         label: "机器学习",
-        status: "done",
+        level: 7,
         requires: ["线性代数", "概率论与数理统计", "Python", "微积分"],
         link: "/computing/machine-learning/machine-learning",
       },
-      { label: "深度学习", status: "done", requires: ["机器学习"] },
-      { label: "LLM 与 Agent", status: "done", requires: ["深度学习", "HTTP"] },
+      { label: "深度学习", level: 6, requires: ["机器学习"] },
+      { label: "LLM 与 Agent", level: 9, requires: ["深度学习", "HTTP"] },
     ],
   },
   {
     title: "语言与系统",
     titleEn: "Languages & Systems",
     tone: "ink",
-    note: "下面所有组都从这里取东西。它自己几乎不依赖别人。",
     topics: [
-      { label: "C", status: "done" },
-      { label: "面向对象程序设计", status: "done" },
-      { label: "Python", status: "done" },
-      { label: "Git", status: "done" },
-      { label: "软件测试", status: "done" },
-      { label: "C++", status: "done", requires: ["C", "面向对象程序设计"] },
-      { label: "Java", status: "done", requires: ["面向对象程序设计"] },
+      { label: "C", level: 6 },
+      { label: "Python", level: 8 },
+      { label: "Git", level: 6 },
+      { label: "软件测试", level: 5 },
+      { label: "C++", level: 6, requires: ["C"] },
+      { label: "Java", level: 5 },
       {
         label: "数据结构与算法",
-        status: "done",
-        requires: ["C"],
+        level: 8,
+        requires: ["C++"],
         link: "/computing/data-structure/skip-list",
       },
-      { label: "操作系统", status: "done", requires: ["C"] },
-      { label: "Linux", status: "done", requires: ["操作系统"] },
-      { label: "并发编程", status: "done", requires: ["操作系统"] },
-      { label: "计算机网络", status: "done", requires: ["操作系统"] },
-      { label: "Docker", status: "done", requires: ["Linux"] },
-      { label: "网络安全", status: "done", requires: ["计算机网络", "Linux"] },
+      { label: "操作系统", level: 4 },
+      { label: "Linux", level: 5, requires: ["操作系统"] },
+      { label: "计算机网络", level: 6, requires: ["操作系统"] },
+      { label: "Docker", level: 4, requires: ["Linux"] },
+      { label: "网络安全", level: 5, requires: ["计算机网络", "Linux"] },
       {
         label: "CI/CD",
-        status: "done",
-        requires: ["Git", "Docker", "软件测试"],
+        level: 6,
+        requires: ["Git", "软件测试"],
         link: "/computing/web-arch/arch-config",
       },
-      { label: "制品仓库", status: "planned", requires: ["CI/CD"] },
-      { label: "算法竞赛", status: "dropped", requires: ["数据结构与算法"] },
+      {
+        label: "K8s",
+        level: 1,
+        requires: ["CI/CD", "Docker"]
+      }
     ],
   },
   {
     title: "服务端与数据",
     titleEn: "Server & Data",
     tone: "clay",
-    note: "跨组前置最多的一组，语言、协议、系统三头都要借。",
     topics: [
-      { label: "数据库系统原理", status: "done", link: "/computing/database/mysql" },
-      { label: "MySQL", status: "done", requires: ["数据库系统原理"] },
-      { label: "Redis", status: "done", requires: ["数据库系统原理"] },
-      { label: "MongoDB", status: "done", requires: ["数据库系统原理"] },
-      { label: "ORM", status: "done", requires: ["数据库系统原理", "面向对象程序设计"] },
-      { label: "Node.js", status: "done", requires: ["JavaScript"], link: "/computing/stream" },
-      { label: "Express", status: "done", requires: ["Node.js", "HTTP"] },
-      { label: "Spring Boot", status: "done", requires: ["Java", "HTTP"] },
-      { label: "Flask 与 FastAPI", status: "done", requires: ["Python", "HTTP"] },
-      { label: "认证协议", status: "done", requires: ["HTTP"] },
-      { label: "分布式系统", status: "planned", requires: ["计算机网络", "并发编程"] },
-      { label: "Kafka", status: "planned", requires: ["分布式系统"] },
-      { label: "Flink", status: "planned", requires: ["Kafka"] },
-      { label: "Doris", status: "planned", requires: ["分布式系统", "数据库系统原理"] },
-      { label: "ElasticSearch 栈", status: "planned", requires: ["分布式系统"] },
+      { label: "数据库系统", level: 8, link: "/computing/database/mysql" },
+      { label: "MySQL", level: 7, requires: ["数据库系统"] },
+      { label: "Redis", level: 8, requires: ["数据库系统"] },
+      { label: "MongoDB", level: 5, requires: ["数据库系统"] },
+      { label: "ORM", level: 5, requires: ["数据库系统"] },
+      { label: "Node.js", level: 8, requires: ["JavaScript"], link: "/computing/stream" },
+      { label: "Express", level: 8, requires: ["Node.js", "HTTP"] },
+      { label: "Spring Boot", level: 5, requires: ["Java", "HTTP"] },
+      { label: "Flask 与 FastAPI", level: 7, requires: ["Python", "HTTP"] },
+      { label: "Auth", level: 7, requires: ["HTTP"] },
+      { label: "微服务", level: 4, requires: ["计算机网络"] },
+      { label: "分布式系统", level: 3, requires: ["计算机网络"] },
+      { label: "Kafka", level: 1, requires: ["分布式系统"] },
+      { label: "Flink", level: 0, requires: ["Kafka"] },
+      { label: "Doris", level: 0, requires: ["分布式系统", "数据库系统"] },
+      { label: "ElasticSearch", level: 2, requires: ["分布式系统"] },
     ],
   },
   {
     title: "Web 与前端",
     titleEn: "Web & Frontend",
     tone: "fjord",
-    note: "两个根：HTML/CSS 不需要编程，JavaScript 不需要排版。它们在 DOM 汇合。",
     topics: [
-      { label: "HTML 与 CSS", status: "done" },
-      { label: "JavaScript", status: "done" },
-      { label: "TypeScript", status: "done", requires: ["JavaScript"] },
+      { label: "HTML & CSS", level: 6 },
+      { label: "JavaScript", level: 8 },
+      { label: "TypeScript", level: 8, requires: ["JavaScript"] },
       {
         label: "DOM",
-        status: "done",
-        requires: ["HTML 与 CSS", "JavaScript"],
+        level: 7,
+        requires: ["HTML & CSS", "JavaScript"],
         link: "/computing/web-arch/bs-evolution",
       },
-      { label: "HTTP", status: "done", requires: ["计算机网络"] },
-      { label: "WebSocket", status: "done", requires: ["HTTP"] },
-      { label: "前端构建工具链", status: "done", requires: ["JavaScript"] },
-      { label: "Vue", status: "done", requires: ["DOM", "前端构建工具链"] },
-      { label: "React", status: "done", requires: ["DOM", "前端构建工具链"] },
-      { label: "Angular", status: "done", requires: ["DOM", "TypeScript"] },
-      { label: "跨端与小程序", status: "done", requires: ["Vue"] },
-      { label: "Playwright", status: "done", requires: ["DOM", "TypeScript"] },
+      { label: "HTTP", level: 7, requires: ["计算机网络"] },
+      { label: "WebSocket", level: 4, requires: ["HTTP"] },
+      { label: "前端构建工具链", level: 2, requires: ["JavaScript"] },
+      { label: "Vue", level: 8, requires: ["DOM", "前端构建工具链"] },
+      { label: "React", level: 2, requires: ["DOM", "前端构建工具链"] },
+      { label: "Angular", level: 4, requires: ["DOM", "TypeScript"] },
+      { label: "uniapp", level: 5, requires: ["Vue"] },
+      { label: "Playwright", level: 7, requires: ["DOM", "TypeScript"] },
     ],
   },
   {
-    title: "桌面与移动",
+    title: "桌面与移动端",
     titleEn: "Desktop & Mobile",
     tone: "clay",
-    note: "靠语言组供给，自己不向外输出。两条分支都搁下了。",
     topics: [
-      { label: "Qt", status: "done", requires: ["C++"] },
-      { label: "PySide", status: "done", requires: ["Qt", "Python"] },
-      { label: "Kotlin", status: "dropped", requires: ["Java"] },
-      { label: "Android", status: "dropped", requires: ["Kotlin"] },
+      { label: "Qt", level: 7, requires: ["C++", "Python"] },
+      { label: "PySide", level: 7, requires: ["Qt", "Python"] },
+      { label: "Kotlin", level: 2, requires: ["Java"] },
+      { label: "Android", level: 2, requires: ["Kotlin"] },
+      { label: "Electron", level: 3, requires: ["Vue"] },
+      { label: "tauri", level: 1, requires: ["Electron"] }
     ],
   },
   {
     title: "通信与硬件",
     titleEn: "Communications & Hardware",
     tone: "birch",
-    note: "和软件那几组真正的交集只有测试和脚本，概念上不相通。",
     topics: [
-      { label: "信号与系统", status: "learning" },
-      { label: "通信原理", status: "learning", requires: ["信号与系统"] },
-      { label: "射频与功放", status: "learning", requires: ["通信原理"], link: "/comms/trx-rru" },
-      {
-        label: "基站集成与测试",
-        status: "learning",
-        requires: ["射频与功放", "软件测试", "PySide"],
-      },
-      { label: "卫星定位", status: "dropped", requires: ["信号与系统"] },
+      { label: "信号与系统", level: 1 },
+      { label: "数字信号处理", level: 1 },
+      { label: "通信原理", level: 1, requires: ["信号与系统", "数字信号处理"] },
+      { label: "射频与功放", level: 1, requires: ["通信原理"], link: "/comms/trx-rru" },
+      { label: "基站集成与校验", level: 3, requires: ["射频与功放"] },
+      { label: "6G", level: 1, requires: ["信号与系统"] }
     ],
   },
 ];
-
-export const statusMeta: Record<SkillStatus, { title: string }> = {
-  done: { title: "已掌握" },
-  learning: { title: "正在学" },
-  planned: { title: "计划" },
-  dropped: { title: "放下了" },
-};
 
 export const roadmapSource = {
   to: "/journal/learning",
@@ -232,7 +224,6 @@ export interface ClusterMeta {
   title: string;
   titleEn: string;
   tone: Tone;
-  note: string;
 }
 
 export interface Skill {
@@ -240,7 +231,7 @@ export interface Skill {
   id: string;
   label: string;
   cluster: ClusterId;
-  status: SkillStatus;
+  level: Level;
   requires: string[];
   link?: string;
 }
@@ -250,7 +241,6 @@ export const clusters: ClusterMeta[] = groups.map((g) => ({
   title: g.title,
   titleEn: g.titleEn,
   tone: g.tone,
-  note: g.note,
 }));
 
 export const clusterById = new Map(clusters.map((c) => [c.id, c]));
@@ -263,7 +253,7 @@ export const skillGraph: Skill[] = groups.flatMap((g) =>
     id: t.label,
     label: t.label,
     cluster: g.title,
-    status: t.status,
+    level: t.level,
     requires: t.requires ?? [],
     link: t.link,
   })),
@@ -293,14 +283,22 @@ export const bridges = skillGraph.flatMap((s) =>
 
 export interface RoadmapTally {
   total: number;
-  done: number;
-  learning: number;
-  planned: number;
-  dropped: number;
+  /** Mean level across every topic, 0–10. */
+  average: number;
+  /** Topics at level 0: on the map, not started. */
+  untouched: number;
 }
 
 export function tally(): RoadmapTally {
-  const counts = { done: 0, learning: 0, planned: 0, dropped: 0 };
-  for (const skill of skillGraph) counts[skill.status]++;
-  return { total: skillGraph.length, ...counts };
+  let sum = 0;
+  let untouched = 0;
+  for (const skill of skillGraph) {
+    sum += skill.level;
+    if (skill.level === 0) untouched++;
+  }
+  return {
+    total: skillGraph.length,
+    average: skillGraph.length > 0 ? sum / skillGraph.length : 0,
+    untouched,
+  };
 }
