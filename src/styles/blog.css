@@ -541,13 +541,18 @@
   /* No max-width here on purpose: `.prose > *` already holds it to the reading
      measure. It used to carry `max-width: 100%`, which beat that rule on
      source order and let code blocks run the full column width while the
-     prose beside them stopped much earlier. A long line scrolls instead. */
-  overflow-x: auto;
+     prose beside them stopped much earlier.
+
+     A long line scrolls instead, but the scroller is the <code> inside, not
+     this box. If the <pre> scrolled, the copy button in its top row would
+     scroll away with the line. */
 }
 
 /* Higher specificity than `.prose code`, so this is what strips the inline
    treatment back off inside a fence. */
 .prose pre code {
+  display: block;
+  overflow-x: auto;
   font-family: var(--mono);
   font-size: 0.8125rem;
   line-height: 1.72;
@@ -558,14 +563,69 @@
   tab-size: 2;
 }
 
+/* Language on the left, copy on the right.
+ *
+ * The row is always there, because the button always is. That gives a block
+ * without a language the same header, and it means the button never sits on
+ * top of the first line of code — which an absolutely positioned one would,
+ * as soon as that line ran long.
+ *
+ * Not selectable, so dragging across the whole block by hand still picks up
+ * only the code, not "TS 复制". */
+.prose__code-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .prose__code-lang {
-  display: block;
   font-family: var(--mono);
   font-size: 0.625rem;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--ink-4);
-  margin-bottom: var(--sp-3);
+}
+
+.prose__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-left: auto;
+  /* The negative margins hand the padding back, so the row keeps the height
+     of its text while the hit area reaches out into the block's own padding:
+     about 26px tall, enough for a thumb, with the label still flush with the
+     code's right edge. */
+  margin-block: -0.35rem;
+  margin-right: -0.5rem;
+  padding: 0.35rem 0.5rem;
+  /* The sans stack, not the mono one: the label is Chinese, and --mono has no
+     CJK face to fall back to. */
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-3);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.prose__copy:hover {
+  color: var(--ink);
+  background: var(--fog);
+}
+
+.prose__copy[data-state="copied"] {
+  color: var(--ink);
+}
+
+.prose__copy-icon {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
 }
 
 /* ---- Figures --------------------------------------------------------- *
@@ -1290,4 +1350,97 @@
 .prose__verse-break {
   display: block;
   height: var(--sp-4);
+}
+
+/* ---- Site map (404) -------------------------------------------------- *
+ * Every top-level destination, from the same list as the top bar. A ruled
+ * grid of tiles rather than a list: seven destinations read faster as a
+ * block you take in at once, and the rules are the same hairlines as the
+ * tables. Four across gives 4 + 3, two across on a phone gives 2 + 2 + 2 + 1. */
+
+.sitemap {
+  margin-top: var(--sp-12);
+}
+
+.sitemap__list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Top and left on the grid, right and bottom on each cell, so every
+     interior rule is drawn once rather than doubled. */
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  list-style: none;
+}
+
+.sitemap__list > li {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.sitemap__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  height: 100%;
+  padding: var(--sp-6);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.sitemap__item:hover {
+  background: var(--fog);
+}
+
+/* Drawn inside the tile, so the neighbouring cell's rule does not cut it. */
+.sitemap__item:focus-visible {
+  outline-offset: -3px;
+}
+
+/* The section's accent: the same colour its icon takes in the top bar when
+   that section is active. Home has none and stays ink. */
+.sitemap__icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-bottom: var(--sp-4);
+  color: var(--accent-dot, var(--ink));
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.sitemap__item:hover .sitemap__icon {
+  transform: translateY(-2px);
+}
+
+.sitemap__title {
+  font-size: var(--t-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  font-weight: 500;
+}
+
+.sitemap__en {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+@media (max-width: 860px) {
+  .sitemap {
+    margin-top: var(--sp-8);
+  }
+
+  .sitemap__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sitemap__item {
+    padding: var(--sp-4);
+  }
+
+  .sitemap__icon {
+    margin-bottom: var(--sp-3);
+  }
 }

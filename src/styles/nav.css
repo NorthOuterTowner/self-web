@@ -159,13 +159,17 @@
   color: var(--accent-dot, var(--ink));
 }
 
-.nav__link[data-accent-key="journal"] {
+/* Each section's accent. Not scoped to `.nav__link`: the 404 page's site map
+   marks its tiles with the same `data-accent-key` and colours their icons
+   from this, so there is one mapping rather than two that can drift. The
+   extras set `--accent-dot` inline instead (see lib/sections.ts). */
+[data-accent-key="journal"] {
   --accent-dot: var(--clay);
 }
-.nav__link[data-accent-key="computing"] {
+[data-accent-key="computing"] {
   --accent-dot: var(--fjord);
 }
-.nav__link[data-accent-key="comms"] {
+[data-accent-key="comms"] {
   --accent-dot: var(--birch);
 }
 

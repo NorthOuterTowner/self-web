@@ -289,6 +289,11 @@ export interface NavExtra {
   /** Latin label, to match the categories' `titleEn` in the nav. */
   label: string;
   /**
+   * Chinese name, matching the categories' `title`. The nav does not show
+   * it; the 404 page's site map, which has room for both, does.
+   */
+  title: string;
+  /**
    * Token that colours the icon and the underline while the entry is active.
    * The icon itself is chosen in `src/lib/icons.ts`, by `key` — kept out of
    * this file because the content compiler imports it and has no use for
@@ -393,12 +398,25 @@ export const roadmap: StubMeta = {
 };
 
 export const navExtras: NavExtra[] = [
-  { key: "skills", to: `/${skills.slug}`, label: skills.titleEn, tone: "fjord" },
-  { key: "roadmap", to: `/${roadmap.slug}`, label: roadmap.titleEn, tone: "clay" },
+  {
+    key: "skills",
+    to: `/${skills.slug}`,
+    label: skills.titleEn,
+    title: skills.title,
+    tone: "fjord",
+  },
+  {
+    key: "roadmap",
+    to: `/${roadmap.slug}`,
+    label: roadmap.titleEn,
+    title: roadmap.title,
+    tone: "clay",
+  },
   {
     key: "others",
     to: `/${others.slug}`,
     label: "Notes",
+    title: others.title,
     // 杂谈 spans all four genre tones, so no single accent is truthful. Ink
     // reads as "all of them" rather than picking a favourite.
     tone: "ink",

@@ -30,7 +30,9 @@
  */
 
 import { CellTowerIcon } from "@phosphor-icons/react/CellTower";
+import { CheckIcon } from "@phosphor-icons/react/Check";
 import { CodeIcon } from "@phosphor-icons/react/Code";
+import { CopyIcon } from "@phosphor-icons/react/Copy";
 import { FeatherIcon } from "@phosphor-icons/react/Feather";
 import { FilesIcon } from "@phosphor-icons/react/Files";
 import { GithubLogoIcon } from "@phosphor-icons/react/GithubLogo";
@@ -38,6 +40,7 @@ import { GraphIcon } from "@phosphor-icons/react/Graph";
 import { HouseIcon } from "@phosphor-icons/react/House";
 import { LinkedinLogoIcon } from "@phosphor-icons/react/LinkedinLogo";
 import { StarFourIcon } from "@phosphor-icons/react/StarFour";
+import { XIcon } from "@phosphor-icons/react/X";
 import type { Icon } from "@phosphor-icons/react/lib";
 import type { CategoryId } from "../site.config";
 
@@ -78,3 +81,10 @@ export const socialIcons = {
   github: GithubLogoIcon,
   linkedin: LinkedinLogoIcon,
 } satisfies Record<string, Icon>;
+
+/** The code block copy button, by state. */
+export const copyIcons = {
+  idle: CopyIcon,
+  copied: CheckIcon,
+  failed: XIcon,
+} satisfies Record<"idle" | "copied" | "failed", Icon>;

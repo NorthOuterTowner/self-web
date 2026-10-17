@@ -2,6 +2,7 @@ import { createElement, type ReactNode } from "react";
 import type { Block, Inline, ListItem, MathNode } from "../content/types";
 import { headingId, inlineText } from "../content/types";
 import { withBase } from "../lib/basePath";
+import { CodeBlock } from "./CodeBlock";
 
 const RE_CJK = /[\u3000-\u9fff\uff00-\uffef]/;
 
@@ -187,15 +188,11 @@ function Blocks({ blocks }: { blocks: Block[] }) {
               </blockquote>
             );
 
+          // Stateful (the copy button), so it is its own component. The same
+          // case renders fences nested under list items, so those get the
+          // button too.
           case "code":
-            return (
-              <pre key={i}>
-                {block.lang && (
-                  <span className="prose__code-lang">{block.lang}</span>
-                )}
-                <code>{block.code}</code>
-              </pre>
-            );
+            return <CodeBlock key={i} lang={block.lang} code={block.code} />;
 
           case "note":
             return (
