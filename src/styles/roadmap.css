@@ -248,15 +248,6 @@
   text-overflow: ellipsis;
 }
 
-.rm__node-en {
-  color: var(--ink-4);
-  font-size: 0.625rem;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* Has an article behind it. */
 .rm__node-dot {
   position: absolute;
@@ -397,13 +388,6 @@
 .rm__row-reqs {
   color: var(--ink-3);
   line-height: 1.6;
-}
-
-.rm__row-note {
-  font-family: var(--times);
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  color: var(--ink-2);
 }
 
 @media (max-width: 900px) {

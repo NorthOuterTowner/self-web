@@ -37,7 +37,8 @@ import { roadmap, site } from "../site.config";
  * the figure changing between renders.
  */
 
-const NODE_H = 52;
+/** One line of label plus the box's padding. */
+const NODE_H = 36;
 const GAP_X = 18;
 const GAP_Y = 58;
 const ROW = NODE_H + GAP_Y;
@@ -48,7 +49,13 @@ const BAND_GAP = 52;
 /** Breathing room between a cluster's nodes and its field's edge. */
 const HULL_PAD = 20;
 
-const MIN_W = 112;
+/**
+ * Low on purpose. A floor near 112px was room for an English second line; with
+ * only the label to fit, a high floor would give every short name — C, Git,
+ * Qt, DOM — the same box, and the graph would go back to the uniform grid
+ * the varied widths are there to break up.
+ */
+const MIN_W = 56;
 const MAX_W = 216;
 
 /** Rough advance width in em: CJK is full width, Latin about half. */
@@ -61,9 +68,11 @@ function textWidth(s: string): number {
 }
 
 function widthOf(skill: Skill): number {
-  const zh = textWidth(skill.label) * 13;
-  const en = textWidth(skill.labelEn) * 6.8;
-  return Math.min(MAX_W, Math.max(MIN_W, Math.ceil(Math.max(zh, en)) + 26));
+  const text = Math.ceil(textWidth(skill.label) * 13);
+  // A linked topic carries a dot in its corner. Without room of its own it
+  // sits right against the end of the name, like a full stop.
+  const dot = skill.link ? 8 : 0;
+  return Math.min(MAX_W, Math.max(MIN_W, text + 26 + dot));
 }
 
 interface Spot {
@@ -135,8 +144,11 @@ function place() {
 
   const at = new Map<string, Spot>();
   for (const [k, run] of runs) {
-    const [cluster, layerText] = k.split(":") as [ClusterId, string];
-    const layer = Number(layerText);
+    // Split at the last colon. The layer is a number, but the cluster key is a
+    // group's title, and nothing stops a title from containing one.
+    const cut = k.lastIndexOf(":");
+    const cluster: ClusterId = k.slice(0, cut);
+    const layer = Number(k.slice(cut + 1));
     const band = bandX.get(cluster)!;
     let x = band + (bandW.get(cluster)! - runWidth(run)) / 2;
     run.forEach((skill, i) => {
@@ -413,9 +425,6 @@ export function RoadmapPage() {
                             .join("、")}
                         </span>
                       )}
-                      {skill.detail && (
-                        <span className="rm__row-note">{skill.detail}</span>
-                      )}
                     </li>
                   ))}
                 </ol>
@@ -449,9 +458,8 @@ function NodeBox({
   onFocus: () => void;
 }) {
   const meta = clusterById.get(skill.cluster)!;
-  const reqs = skill.requires
-    .map((id) => skillById.get(id)?.label ?? id)
-    .join("、");
+  // `requires` already holds labels, so there is nothing to look up.
+  const reqs = skill.requires.join("、");
 
   const shared = {
     className: "rm__node",
@@ -469,7 +477,6 @@ function NodeBox({
     title: [
       `${skill.label} · ${statusMeta[skill.status].title}`,
       reqs && `需要：${reqs}`,
-      skill.detail,
     ]
       .filter(Boolean)
       .join("\n"),
@@ -478,7 +485,6 @@ function NodeBox({
   const body = (
     <>
       <span className="rm__node-label">{skill.label}</span>
-      <span className="rm__node-en label">{skill.labelEn}</span>
       {skill.link && <span className="rm__node-dot" aria-hidden="true" />}
     </>
   );

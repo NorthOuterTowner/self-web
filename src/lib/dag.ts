@@ -52,7 +52,7 @@ export function layerDag<T extends DagInput>(
 
   for (const item of items) {
     if (byId.has(item.id)) {
-      errors.push(`节点 id "${item.id}" 重复`);
+      errors.push(`"${item.id}" 出现了不止一次，名字必须唯一`);
       continue;
     }
     byId.set(item.id, item);
@@ -65,7 +65,11 @@ export function layerDag<T extends DagInput>(
     const kept: string[] = [];
     for (const dep of item.requires) {
       if (!byId.has(dep)) {
-        errors.push(`"${item.id}" 的前置 "${dep}" 不存在`);
+        // Names are typed by hand, so the likeliest cause is a near miss —
+        // a space around 与, a different case — rather than a missing topic.
+        errors.push(
+          `"${item.id}" 的前置 "${dep}" 不存在，要和那一项的名字一字不差`,
+        );
         continue;
       }
       if (dep === item.id) {
