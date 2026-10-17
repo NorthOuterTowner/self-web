@@ -88,3 +88,15 @@ export const copyIcons = {
   copied: CheckIcon,
   failed: XIcon,
 } satisfies Record<"idle" | "copied" | "failed", Icon>;
+
+/**
+ * The one outsized glyph beside the hero line: the mast, for the thing the
+ * whole site is named after.
+ *
+ * Drawn a couple of hundred pixels tall, where the default `regular` weight
+ * would be a 12px stroke, so it is given `thin` — 1/32 of its size — and
+ * lands near the site's own hairline. See `.hero__icon` in hero.css.
+ */
+export const heroIcons = {
+  tower: CellTowerIcon,
+} satisfies Record<"tower", Icon>;

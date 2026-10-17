@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react";
 import { gsap, setupGsap } from "../lib/gsapSetup";
+import { heroIcons } from "../lib/icons";
 import { useTypewriter } from "../lib/useTypewriter";
 import { allPosts } from "../content";
 import { categories, site } from "../site.config";
 
 const GRID_COLUMNS = 12;
+
+const { tower: TowerIcon } = heroIcons;
 
 export function Hero() {
   const line = useTypewriter(site.heroLine);
@@ -42,6 +45,11 @@ export function Hero() {
           0.1,
         )
         .from(".hero__dots", { opacity: 0, duration: 1.4 }, 0.2)
+        .from(
+          ".hero__icon",
+          { y: 28, opacity: 0, duration: 1.2, stagger: 0.14 },
+          0.3,
+        )
         .from(
           ".hero__eyebrow > *",
           { yPercent: 120, opacity: 0, duration: 0.7, stagger: 0.08 },
@@ -97,6 +105,14 @@ export function Hero() {
             )}
           </span>
         </h1>
+
+        {/* A mast in the open ground to the right of the headline. A grid
+            item in the headline's own row, flush right and sitting on its
+            baseline, so it stands on the rule above the facts rather than
+            floating free of the layout. */}
+        <div className="hero__icons" aria-hidden="true">
+          <TowerIcon className="hero__icon hero__icon--tower" weight="thin" />
+        </div>
 
         <div className="hero__meta">
           <p className="hero__sub">{site.heroSub}</p>

@@ -16,14 +16,19 @@
  *             a type error, so `bun run typecheck` and CI catch it.
  *   requires  Optional. The topics this one rests on, by label, from any
  *             group. Leave it out for a starting point.
- *   link      Optional. An article on this site; the box gets a dot in its
- *             corner. Clicking it locks it like any other box, and while it
- *             is locked a 读文章 link appears under it.
+ *   link      Optional. An article on this site; the box gets a dot. A
+ *             click locks it like any other box, and while it is locked the
+ *             dot turns into a → that opens the article.
  *
- * A topic's group is the one it is written under. Groups are drawn left to
- * right in the order they appear here. Groups that share many edges are best
- * kept next to each other, which keeps the long edges short; reordering only
- * changes how tangled those look, never what the graph says.
+ * A topic's group is the one it is written under. Each group is drawn as one
+ * clump: its own topics, each prerequisite to the left of what it unlocks.
+ * The clumps are packed into columns in the order they are written here,
+ * each into whichever column is shortest so far, so moving a group moves its
+ * clump and never changes what the graph says.
+ *
+ * Edges inside a group are always drawn. Edges between groups only appear
+ * while a hovered or locked topic's chain runs through them: drawn all the
+ * time, they would cross the whole page.
  *
  * Mistakes in the graph itself do not fail the build. A `requires` name that
  * matches no topic, a label used twice, or a cycle shows up in a box at the
@@ -46,7 +51,8 @@
  *
  * 3. Groups are separate worlds. 通信 and 软件 share a handful of tools and
  *    almost no concepts, and the page draws them apart. Cross-group edges
- *    exist and are drawn, but they are the exception and are marked as such.
+ *    exist, but they are the exception: the page shows them only for the
+ *    chain being looked at.
  *
  * `level` is the only part about one particular person. The story behind it
  * is in `content/journal/learning.md`.
@@ -79,24 +85,6 @@ interface GroupEntry {
 }
 
 const groups: GroupEntry[] = [
-  {
-    title: "智能",
-    titleEn: "Intelligence",
-    tone: "fjord",
-    topics: [
-      { label: "线性代数", level: 5 },
-      { label: "微积分", level: 5 },
-      { label: "概率论与数理统计", level: 4 },
-      {
-        label: "机器学习",
-        level: 7,
-        requires: ["线性代数", "概率论与数理统计", "Python", "微积分"],
-        link: "/computing/machine-learning/machine-learning",
-      },
-      { label: "深度学习", level: 6, requires: ["机器学习"] },
-      { label: "LLM 与 Agent", level: 9, requires: ["深度学习", "HTTP"] },
-    ],
-  },
   {
     title: "语言与系统",
     titleEn: "Languages & Systems",
@@ -180,6 +168,24 @@ const groups: GroupEntry[] = [
     ],
   },
   {
+    title: "智能",
+    titleEn: "Intelligence",
+    tone: "fjord",
+    topics: [
+      { label: "线性代数", level: 5 },
+      { label: "微积分", level: 5 },
+      { label: "概率论与数理统计", level: 4 },
+      {
+        label: "机器学习",
+        level: 7,
+        requires: ["线性代数", "概率论与数理统计", "Python", "微积分"],
+        link: "/computing/machine-learning/machine-learning",
+      },
+      { label: "深度学习", level: 6, requires: ["机器学习"] },
+      { label: "LLM 与 Agent", level: 9, requires: ["深度学习", "HTTP"] },
+    ],
+  },
+  {
     title: "桌面与移动端",
     titleEn: "Desktop & Mobile",
     tone: "clay",
@@ -245,7 +251,11 @@ export const clusters: ClusterMeta[] = groups.map((g) => ({
 
 export const clusterById = new Map(clusters.map((c) => [c.id, c]));
 
-/** Left to right on the canvas: the order the groups are written in. */
+/**
+ * The order the groups are written in. The canvas packs its clumps in this
+ * order, and the legend and the list view use it too, so on a phone the
+ * groups come in the same order as on a desktop.
+ */
 export const clusterOrder: ClusterId[] = clusters.map((c) => c.id);
 
 export const skillGraph: Skill[] = groups.flatMap((g) =>
@@ -266,13 +276,14 @@ export const requiresMap = new Map<string, string[]>(
 );
 
 /**
- * One layout over the whole graph.
- *
- * Layered globally rather than per group: the rows have to mean the same
- * thing everywhere for a cross-group edge to be drawable. The page then
- * bands the result horizontally by group, in `clusterOrder`.
+ * The whole graph, checked once: unknown names, repeated labels and cycles,
+ * including a cycle that runs between groups. Where each box goes is worked
+ * out per group, in `lib/roadmapLayout.ts`.
  */
 export const skillLayout = layerDag(skillGraph);
+
+/** Everything the page reports in its error box. */
+export const roadmapErrors: string[] = skillLayout.errors;
 
 /** Edges whose two ends live in different groups. The exceptions. */
 export const bridges = skillGraph.flatMap((s) =>

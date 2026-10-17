@@ -119,6 +119,10 @@
 
 .hero__display {
   grid-column: 1 / span 11;
+  /* Stated, not left to auto-placement: the mast shares this row, and an
+     auto-placed headline needing 11 columns would be bumped to a row of its
+     own by the four the mast takes. */
+  grid-row: 2;
   font-family: var(--times);
   /* Times has no 500, and `font-synthesis-weight: none` on body means asking
      for one would just snap to regular anyway. Stated explicitly so the
@@ -200,6 +204,44 @@
     opacity: 0;
     scale: 1 0.4;
   }
+}
+
+/* The mast, in the open ground right of the headline.
+ *
+ * A grid item in the headline's own row, rather than something floating on
+ * the background: the last four columns, bottom-aligned, so it ends where
+ * the rule under the headline ends. Both positions are grid positions, not
+ * percentages guessed against the viewport.
+ *
+ * It then drops onto the rule itself. That rule is the top border of
+ * `.hero__meta`, one row down, so the distance is the grid's row gap plus
+ * the margin above the meta block — both named here rather than measured,
+ * so the mast follows them if either changes.
+ *
+ * `thin` is 1/32 of the icon's size, so at this size the stroke lands near
+ * the site's own hairline. Anything heavier reads as an illustration. */
+.hero__icons {
+  grid-column: 9 / span 4;
+  grid-row: 2;
+  justify-self: end;
+  align-self: end;
+  margin-bottom: calc(-1 * (var(--col-gap) + var(--sp-8)));
+  display: flex;
+  pointer-events: none;
+}
+
+/* The SVG is 1em square, so font-size is its size. */
+.hero__icon {
+  display: block;
+  flex: none;
+}
+
+.hero__icon--tower {
+  font-size: clamp(88px, 9vw, 164px);
+  /* The glyph's feet sit about 7.8% above the bottom of its own square, so
+     the square has to hang that much lower for them to stand on the rule. */
+  margin-bottom: -0.078em;
+  color: color-mix(in srgb, var(--birch) 72%, transparent);
 }
 
 .hero__meta {
@@ -284,6 +326,10 @@
 }
 
 @media (max-width: 860px) {
+  /* The headline takes the whole width here; no empty half to fill. */
+  .hero__icons {
+    display: none;
+  }
   .hero__display {
     grid-column: 1 / span 6;
   }
