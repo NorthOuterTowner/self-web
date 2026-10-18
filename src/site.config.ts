@@ -422,3 +422,22 @@ export const navExtras: NavExtra[] = [
     tone: "ink",
   },
 ];
+
+/**
+ * The gated page, reached from the lock in the footer.
+ *
+ * Deliberately absent from `sections`, and so from the top bar and from the
+ * site map the 404 page prints. The code is public and the ciphertext is
+ * public, so this hides nothing from anyone who looks — it just declines to
+ * point the way.
+ *
+ * Only the wiring is here — the slug the router and the footer have to agree
+ * on, and the word the lock is labelled with. What the page itself says is in
+ * `pages/SecretPage.tsx`, next to the markup that says it: nobody editing a
+ * sentence on one page should have to open the file that describes the whole
+ * site.
+ */
+export const secret = {
+  slug: "secret",
+  label: "secret",
+} as const;

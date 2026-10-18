@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "content": "bun run scripts/content.ts",
+    "secret": "bun run scripts/secret.ts",
     "content:check": "bun run scripts/content.ts --check",
     "content:watch": "bun run scripts/content.ts --watch",
     "build": "bun run scripts/build.ts",
@@ -19,6 +20,7 @@
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
     "gsap": "3.13.0",
+    "hash-wasm": "4.12.0",
     "react": "^19",
     "react-dom": "^19",
     "react-router-dom": "7.9.1"

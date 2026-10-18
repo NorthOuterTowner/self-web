@@ -5,6 +5,7 @@ import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
 import { RoadmapPage } from "./pages/RoadmapPage";
+import { SecretPage } from "./pages/SecretPage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { ResourcePage, SkillsPage } from "./pages/SkillsPage";
 import {
@@ -12,6 +13,7 @@ import {
   isCategoryId,
   others,
   roadmap,
+  secret,
   skills,
 } from "./site.config";
 
@@ -52,6 +54,11 @@ export function App() {
           <Route path={`/${skills.slug}`} element={<SkillsPage />} />
           <Route path={`/${skills.slug}/:slug`} element={<ResourcePage />} />
           <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
+
+          {/* Reached from the lock in the footer, and from nowhere else: it
+              is not in `sections`, so it is neither in the top bar nor in
+              the site map the 404 page prints. */}
+          <Route path={`/${secret.slug}`} element={<SecretPage />} />
 
           <Route path="/:category" element={<CategoryPage />} />
           <Route path="/:category/:slug" element={<CategoryChild />} />

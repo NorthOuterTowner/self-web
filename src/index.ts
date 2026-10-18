@@ -43,9 +43,49 @@ async function media(req: Request): Promise<Response> {
   });
 }
 
+/**
+ * The gated page's Argon2id worker.
+ *
+ * `src/index.html` is the only thing the dev server bundles, and the worker is
+ * not in its import graph — it is loaded by URL, because Bun's bundler does
+ * not rewrite `new Worker(new URL("./x.ts", import.meta.url))`. So it is
+ * compiled here on first request, the same way `scripts/build.ts` compiles it
+ * for the deploy, and kept for the life of the process: it is a second of
+ * bundling, and nothing but a restart changes its contents in practice.
+ */
+let workerJs: Promise<string> | undefined;
+
+function secretWorker(): Promise<Response> {
+  workerJs ??= Bun.build({
+    entrypoints: ["./src/lib/secretWorker.ts"],
+    target: "browser",
+    format: "esm",
+  }).then(async (built) => {
+    if (!built.success) throw new AggregateError(built.logs, "worker build");
+    return built.outputs[0]!.text();
+  });
+
+  return workerJs.then(
+    (js) =>
+      new Response(js, {
+        headers: {
+          "content-type": "text/javascript; charset=utf-8",
+          "cache-control": "no-cache",
+        },
+      }),
+    (error) => {
+      // Reset, so a fixed syntax error does not need a server restart.
+      workerJs = undefined;
+      console.error("secret worker build failed:", error);
+      return new Response("worker build failed", { status: 500 });
+    },
+  );
+}
+
 const server = serve({
   routes: {
     "/media/*": media,
+    "/secret-worker.js": secretWorker,
 
     // SPA fallback — matches the 404.html trick used on GitHub Pages.
     "/*": index,

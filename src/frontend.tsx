@@ -17,6 +17,7 @@ import "./styles/cards.css";
 import "./styles/others.css";
 import "./styles/roadmap.css";
 import "./styles/skills.css";
+import "./styles/secret.css";
 import "./styles/blog.css";
 
 const elem = document.getElementById("root")!;

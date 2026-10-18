@@ -39,3 +39,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# the plaintext of the gated page, and the list of who may read it.
+# scripts/secret.ts turns these into src/content/secret.enc.json, which is
+# the only one of the three that is committed and deployed.
+private

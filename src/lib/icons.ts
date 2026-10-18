@@ -39,6 +39,7 @@ import { GithubLogoIcon } from "@phosphor-icons/react/GithubLogo";
 import { GraphIcon } from "@phosphor-icons/react/Graph";
 import { HouseIcon } from "@phosphor-icons/react/House";
 import { LinkedinLogoIcon } from "@phosphor-icons/react/LinkedinLogo";
+import { LockIcon } from "@phosphor-icons/react/Lock";
 import { StarFourIcon } from "@phosphor-icons/react/StarFour";
 import { XIcon } from "@phosphor-icons/react/X";
 import type { Icon } from "@phosphor-icons/react/lib";
@@ -76,10 +77,16 @@ export function sectionIcon(key: string): Icon | undefined {
   return (sectionIcons as Record<string, Icon>)[key];
 }
 
-/** Footer contact links. */
+/**
+ * The footer row. Two contact links and the way into the gated page — which
+ * belongs here rather than in the nav: it is not a section of the site, and
+ * the nav is built from `sections`, which the 404 page also prints as a site
+ * map.
+ */
 export const socialIcons = {
   github: GithubLogoIcon,
   linkedin: LinkedinLogoIcon,
+  secret: LockIcon,
 } satisfies Record<string, Icon>;
 
 /** The code block copy button, by state. */

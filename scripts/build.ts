@@ -52,6 +52,36 @@ if (!result.success) {
   process.exit(1);
 }
 
+/**
+ * The gated page's Argon2id worker, built as its own entry point.
+ *
+ * Bun's bundler does not follow `new Worker(new URL("./x.ts", import.meta.url))`
+ * — the path survives verbatim into the output and nothing is emitted for it,
+ * so the browser would request a `.ts` file and receive the SPA fallback.
+ * Naming it here is what puts a real script at the URL the page asks for.
+ *
+ * Unhashed on purpose: the page has to be able to write the URL down. The
+ * message protocol is the only thing it has to agree with the bundle about,
+ * and a reader holding a stale copy of this file from cache still gets a
+ * correct answer, because the parameters travel in the message rather than
+ * being compiled in.
+ */
+const worker = await Bun.build({
+  entrypoints: ["./src/lib/secretWorker.ts"],
+  outdir,
+  target: "browser",
+  format: "esm",
+  minify: true,
+  naming: "secret-worker.[ext]",
+  publicPath: `${base}/`,
+  define: { "process.env.NODE_ENV": JSON.stringify("production") },
+});
+
+if (!worker.success) {
+  for (const log of worker.logs) console.error(log);
+  process.exit(1);
+}
+
 // GitHub Pages has no server-side rewrite. Serving the same document for
 // unknown paths lets the client router handle deep links such as
 // /self-web/computing/false-sharing on a cold load.
@@ -72,8 +102,9 @@ for (const asset of content.assets) {
   mediaBytes += bytes.length;
 }
 
-const total = result.outputs.reduce((n, o) => n + o.size, 0) + mediaBytes;
-for (const out of result.outputs) {
+const built = [...result.outputs, ...worker.outputs];
+const total = built.reduce((n, o) => n + o.size, 0) + mediaBytes;
+for (const out of built) {
   console.log(
     `  ${out.path.replace(/^.*[\\/]/, "").padEnd(24)} ${(out.size / 1024).toFixed(1).padStart(8)} KB  ${out.kind}`,
   );

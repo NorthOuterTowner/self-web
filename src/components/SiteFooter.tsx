@@ -1,5 +1,6 @@
+import { Link } from "react-router-dom";
 import { socialIcons } from "../lib/icons";
-import { site } from "../site.config";
+import { secret, site } from "../site.config";
 
 /**
  * The marks are Phosphor's GitHub and LinkedIn logos.
@@ -13,10 +14,20 @@ import { site } from "../site.config";
  * inline SVG, bundled with the rest of the JS. And the regular weight is an
  * outline, so it keeps the hairline look the hand-drawn pair was going for —
  * the filled brand logo would sit heavier than anything else in the footer.
+ *
+ * The third is the lock, which is a route rather than an outside link, so
+ * the row holds both kinds: `to` for somewhere on this site, `href` for
+ * somewhere else.
  */
-const SOCIAL = [
+const LINKS: Array<{
+  label: string;
+  href?: string;
+  to?: string;
+  Icon: (typeof socialIcons)[keyof typeof socialIcons];
+}> = [
   { label: "GitHub", href: site.github, Icon: socialIcons.github },
   { label: "LinkedIn", href: site.linkedin, Icon: socialIcons.linkedin },
+  { label: secret.label, to: `/${secret.slug}`, Icon: socialIcons.secret },
 ];
 
 export function SiteFooter() {
@@ -29,17 +40,24 @@ export function SiteFooter() {
         </span>
 
         <ul className="site-footer__social">
-          {SOCIAL.map(({ label, href, Icon }) => (
+          {LINKS.map(({ label, href, to, Icon }) => (
             <li key={label}>
-              <a
-                className="site-footer__link"
-                href={href}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <Icon className="site-footer__icon" aria-hidden="true" />
-                <span>{label}</span>
-              </a>
+              {to ? (
+                <Link className="site-footer__link" to={to}>
+                  <Icon className="site-footer__icon" aria-hidden="true" />
+                  <span>{label}</span>
+                </Link>
+              ) : (
+                <a
+                  className="site-footer__link"
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <Icon className="site-footer__icon" aria-hidden="true" />
+                  <span>{label}</span>
+                </a>
+              )}
             </li>
           ))}
         </ul>
