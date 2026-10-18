@@ -8,17 +8,36 @@ import { Glob } from "bun";
 
 const expectedBase = process.argv[2] ?? "/self-web";
 
-const jsFiles = await Array.fromAsync(new Glob("dist/*.js").scan());
-const cssFiles = await Array.fromAsync(new Glob("dist/*.css").scan());
-
-if (jsFiles.length === 0) {
-  console.error("no js in dist/ — run `bun run build:pages` first");
+if (!(await Bun.file("dist/index.html").exists())) {
+  console.error("no dist/index.html — run `bun run build:pages` first");
   process.exit(1);
 }
-
-const js = await Bun.file(jsFiles[0]!).text();
-const css = cssFiles[0] ? await Bun.file(cssFiles[0]).text() : "";
 const html = await Bun.file("dist/index.html").text();
+
+/**
+ * The entry bundle is whichever script index.html loads — not "the first
+ * .js in dist/". There is more than one now (`secret-worker.js` sits beside
+ * it), and glob order is whatever the filesystem returns: alphabetical on
+ * Windows, so the entry happened to come first locally, and directory order
+ * on the Linux runner, where it did not.
+ */
+const entry = html.match(/<script[^>]*\ssrc="([^"]+\.js)"/)?.[1];
+if (!entry) {
+  console.error("dist/index.html loads no script");
+  process.exit(1);
+}
+const entryFile = `dist/${entry.replace(/^.*\//, "")}`;
+if (!(await Bun.file(entryFile).exists())) {
+  console.error(`index.html loads ${entry}, but ${entryFile} does not exist`);
+  process.exit(1);
+}
+const js = await Bun.file(entryFile).text();
+
+const cssFiles = await Array.fromAsync(new Glob("dist/*.css").scan());
+const css = cssFiles[0] ? await Bun.file(cssFiles[0]).text() : "";
+
+const workerFile = Bun.file("dist/secret-worker.js");
+const worker = (await workerFile.exists()) ? await workerFile.text() : "";
 
 const count = (haystack: string, needle: string) =>
   haystack.split(needle).length - 1;
@@ -51,6 +70,13 @@ const checks: Array<[string, boolean, string]> = [
     count(js, "ScrollSmoother") > 0,
     "ScrollSmoother missing",
   ],
+  [
+    "js: secret worker emitted",
+    // The page asks for this URL by name; without the file the gate falls
+    // back to deriving on the main thread and freezes for the whole wait.
+    worker.length > 0 && count(worker, "onmessage") > 0,
+    "dist/secret-worker.js missing — see the second Bun.build in scripts/build.ts",
+  ],
   ["css: tokens emitted", count(css, "--fjord") > 0, "design tokens missing"],
   [
     "css: all layers emitted",
@@ -73,7 +99,7 @@ for (const [name, ok, hint] of checks) {
 }
 
 console.log(
-  `\n${checks.length - failed}/${checks.length} checks passed  (js ${(js.length / 1024).toFixed(0)} KB, css ${(css.length / 1024).toFixed(0)} KB)`,
+  `\n${checks.length - failed}/${checks.length} checks passed  (js ${entryFile.replace("dist/", "")} ${(js.length / 1024).toFixed(0)} KB, worker ${(worker.length / 1024).toFixed(0)} KB, css ${(css.length / 1024).toFixed(0)} KB)`,
 );
 
 process.exit(failed === 0 ? 0 : 1);

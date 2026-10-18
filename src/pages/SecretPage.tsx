@@ -52,7 +52,8 @@ const copy = {
   intro:
     "您正在尝试访问加密区的内容，本区域内容需要您输入相关信息打开，" +
     "本网站为静态资源托管，不会对您的数据进行存储，" +
-    "同时使用 https 进行信息传输的加密操作，具备一定安全性。" +
+    "同时使用 https 进行信息传输的加密操作，具备一定安全性。",
+  intro2:
     "如果您仍不希望输入包括您的个人姓名和出生时间等任何个人信息，" +
     "您可以通过 Administrator 沟通，通过当天有效的密钥进行访问。",
 } as const;
@@ -184,6 +185,7 @@ export function SecretPage() {
           <p className="label secret__kicker">{secret.label}</p>
           <h1 className="secret__title">{copy.title}</h1>
           <p className="secret__intro">{copy.intro}</p>
+          <p className="secret__intro">{copy.intro2}</p>
 
           <div className="secret__fields">
             <div className="secret__field">
