@@ -1,0 +1,315 @@
+﻿/* Daily — the /daily page: a month calendar and the days it holds.
+ *
+ * Nothing above the body but the nav. The calendar takes the left five
+ * columns and the panel the right six. With no day selected the panel lists
+ * the whole month; selecting a day swaps it for that day. Hairlines, no
+ * radii, no shadows.
+ */
+
+.daily {
+  /* Birch is the nav's tone for this page. Deepened toward ink, as the notes
+     field does, because the raw token is under 3:1 on bone and the entry dots
+     are only 4px. */
+  --daily-tone: color-mix(in srgb, var(--birch) 74%, var(--ink));
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.daily__body {
+  align-items: start;
+}
+
+/* ---- Calendar -------------------------------------------------------- */
+
+.daily__cal {
+  grid-column: 1 / span 5;
+}
+
+.daily__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--ink);
+}
+
+.daily__month {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 7.5rem;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily__year {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  color: var(--ink-3);
+}
+
+.daily__mon {
+  font-family: var(--times);
+  font-size: var(--t-h3);
+  line-height: 1;
+}
+
+.daily__step {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--ink-3);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.daily__step:hover {
+  color: var(--ink);
+}
+
+.daily__icon {
+  width: 15px;
+  height: 15px;
+}
+
+.daily__today {
+  margin-left: auto;
+  padding-bottom: 1px;
+  border-bottom: 1px solid currentColor;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.daily__today:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.daily__today:disabled {
+  color: var(--ink-4);
+  border-bottom-color: transparent;
+  cursor: default;
+}
+
+.daily__week,
+.daily__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.daily__week {
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  color: var(--ink-4);
+  text-align: center;
+}
+
+/* Weekend columns a step quieter, so a week reads as a shape. */
+.daily__week span:nth-child(n + 6) {
+  color: var(--line-strong);
+}
+
+.daily__grid {
+  padding-top: var(--sp-2);
+  row-gap: 2px;
+}
+
+.daily__day,
+.daily__pad {
+  aspect-ratio: 1;
+  max-height: 3.25rem;
+}
+
+.daily__day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+  /* Quick repeated clicks would otherwise select the number as text. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.daily__day:hover {
+  background: var(--fog);
+  color: var(--ink);
+}
+
+/* A day with an entry: a dot under the figure, in the fjord accent. */
+.daily__day[data-has]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--daily-tone);
+}
+
+/* Today: a hairline box rather than a fill, so it never reads as selected. */
+.daily__day[data-today]::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--ink);
+  pointer-events: none;
+}
+
+/* Selected: ink ground, white figure. One at a time. */
+.daily__day[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.daily__day[aria-pressed="true"]:hover {
+  background: var(--ink-2);
+  color: #fff;
+}
+
+.daily__day[aria-pressed="true"][data-has]::after {
+  background: #fff;
+}
+
+.daily__day[aria-pressed="true"][data-today]::before {
+  border-color: color-mix(in srgb, #fff 55%, transparent);
+}
+
+/* ---- Panel ----------------------------------------------------------- *
+ * The month list and the selected day share one frame — the same title
+ * rule, no box — so selecting a day swaps the text and nothing moves.     */
+
+.daily__side {
+  grid-column: 7 / span 6;
+}
+
+.daily__day-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-4) var(--sp-2);
+  border-bottom: 1px solid var(--line-soft);
+  border-left: 2px solid transparent;
+  text-align: left;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.daily__day-row:hover,
+.daily__day-row:focus-visible {
+  background: var(--fog);
+  border-left-color: var(--daily-tone);
+}
+
+.daily__day-date {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+
+.daily__day-date .index-num {
+  font-size: var(--t-small);
+  color: var(--ink);
+}
+
+.daily__day-things {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.daily__day-things .daily__thing {
+  font-size: var(--t-body);
+}
+
+.daily__panel,
+.daily__month-list {
+  animation: daily-in var(--dur) var(--ease-out);
+}
+
+@keyframes daily-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Same height and rule as the calendar's month bar, so the two columns
+   start on one line. */
+.daily__panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 2rem;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--times);
+  font-size: var(--t-h3);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.daily__panel-week {
+  margin-left: auto;
+}
+
+.daily__empty {
+  padding-block: var(--sp-6) var(--sp-4);
+  font-family: var(--times);
+  color: var(--ink-3);
+}
+
+.daily__things li {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: baseline;
+  padding-block: var(--sp-4);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.daily__things li:last-child {
+  border-bottom: 0;
+}
+
+.daily__thing {
+  font-family: var(--times);
+  font-size: var(--t-lede);
+  line-height: 1.6;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* ---- Narrow ---------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .daily__cal {
+    grid-column: 1 / span 6;
+  }
+  .daily__side {
+    grid-column: 7 / span 6;
+  }
+}
+
+@media (max-width: 860px) {
+  .daily {
+    padding-block: var(--sp-12) var(--sp-8);
+  }
+  .daily__cal,
+  .daily__side {
+    grid-column: 1 / span 6;
+  }
+  .daily__side {
+    margin-top: var(--sp-8);
+  }
+}

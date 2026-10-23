@@ -29,6 +29,9 @@
  * Size is set in CSS next to each usage.
  */
 
+import { CalendarBlankIcon } from "@phosphor-icons/react/CalendarBlank";
+import { CaretLeftIcon } from "@phosphor-icons/react/CaretLeft";
+import { CaretRightIcon } from "@phosphor-icons/react/CaretRight";
 import { CellTowerIcon } from "@phosphor-icons/react/CellTower";
 import { CheckIcon } from "@phosphor-icons/react/Check";
 import { CodeIcon } from "@phosphor-icons/react/Code";
@@ -71,6 +74,7 @@ export const sectionIcons = {
   roadmap: GraphIcon,
   // Four-pointed, like the registration marks around the notes field.
   others: StarFourIcon,
+  daily: CalendarBlankIcon,
 } satisfies Record<"home" | CategoryId, Icon> & Record<string, Icon>;
 
 export function sectionIcon(key: string): Icon | undefined {
@@ -107,3 +111,9 @@ export const copyIcons = {
 export const heroIcons = {
   tower: CellTowerIcon,
 } satisfies Record<"tower", Icon>;
+
+/** The daily calendar's month steppers. */
+export const dailyIcons = {
+  prev: CaretLeftIcon,
+  next: CaretRightIcon,
+} satisfies Record<"prev" | "next", Icon>;

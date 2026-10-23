@@ -397,6 +397,16 @@ export const roadmap: StubMeta = {
   intro: "通过roadmap来绘制已经掌握的知识以及打算学的知识",
 };
 
+/**
+ * The daily log at `/daily`: a calendar over `content/daily/YYYY-MM.json`,
+ * rendered by `pages/DailyPage.tsx`. No masthead or intro, so only the wiring
+ * lives here.
+ */
+export const daily = {
+  slug: "daily",
+  label: "Daily",
+} as const;
+
 export const navExtras: NavExtra[] = [
   {
     key: "skills",
@@ -420,6 +430,13 @@ export const navExtras: NavExtra[] = [
     // 杂谈 spans all four genre tones, so no single accent is truthful. Ink
     // reads as "all of them" rather than picking a favourite.
     tone: "ink",
+  },
+  {
+    key: "daily",
+    to: `/${daily.slug}`,
+    label: daily.label,
+    title: "日常",
+    tone: "birch",
   },
 ];
 

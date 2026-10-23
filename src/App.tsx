@@ -1,6 +1,7 @@
 import { Route, Routes, useParams } from "react-router-dom";
 import { TopNav } from "./components/TopNav";
 import { CategoryPage } from "./pages/CategoryPage";
+import { DailyPage } from "./pages/DailyPage";
 import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
@@ -9,6 +10,7 @@ import { SecretPage } from "./pages/SecretPage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { ResourcePage, SkillsPage } from "./pages/SkillsPage";
 import {
+  daily,
   getSeries,
   isCategoryId,
   others,
@@ -54,6 +56,7 @@ export function App() {
           <Route path={`/${skills.slug}`} element={<SkillsPage />} />
           <Route path={`/${skills.slug}/:slug`} element={<ResourcePage />} />
           <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
+          <Route path={`/${daily.slug}`} element={<DailyPage />} />
 
           {/* Reached from the lock in the footer, and from nowhere else: it
               is not in `sections`, so it is neither in the top bar nor in

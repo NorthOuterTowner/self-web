@@ -44,6 +44,27 @@ async function media(req: Request): Promise<Response> {
 }
 
 /**
+ * Daily log months, straight from content/daily/. The build copies them to
+ * dist/data/daily/; here they are read on every request so an edit shows up on the
+ * next month switch without a rebuild. The name is checked against the one
+ * shape a month file can have, which also rules out any path traversal.
+ */
+async function daily(req: Request): Promise<Response> {
+  const name = new URL(req.url).pathname.slice("/data/daily/".length);
+  if (!/^\d{4}-(0[1-9]|1[0-2])\.json$/.test(name)) {
+    return new Response("Not found", { status: 404 });
+  }
+  const file = Bun.file(`./content/daily/${name}`);
+  if (!(await file.exists())) return new Response("Not found", { status: 404 });
+  return new Response(file, {
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-cache",
+    },
+  });
+}
+
+/**
  * The gated page's Argon2id worker.
  *
  * `src/index.html` is the only thing the dev server bundles, and the worker is
@@ -85,6 +106,7 @@ function secretWorker(): Promise<Response> {
 const server = serve({
   routes: {
     "/media/*": media,
+    "/data/daily/*": daily,
     "/secret-worker.js": secretWorker,
 
     // SPA fallback — matches the 404.html trick used on GitHub Pages.

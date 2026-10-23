@@ -27,6 +27,7 @@ import {
 } from "../src/site.config";
 import type { Note, Post, Resource } from "../src/content/types";
 import { textLength } from "../src/content/types";
+import { compileDaily } from "./daily";
 import { IMAGE_EXTENSIONS, imageSize } from "./image";
 import { ContentError, parseDocument } from "./markdown";
 
@@ -69,6 +70,10 @@ export interface CompileResult {
   emptySeries: string[];
   /** Images to copy into the build output. Deduplicated by content hash. */
   assets: Asset[];
+  /** Month files from content/daily/, copied to dist/data/daily/. */
+  daily: Asset[];
+  /** Total days with an entry, across all months. */
+  dailyDays: number;
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -594,6 +599,11 @@ export async function compile(): Promise<CompileResult> {
   posts.sort(
     (a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug),
   );
+
+  // content/daily/*.json: copied, not compiled, so validated here.
+  const daily = await compileDaily(CONTENT_DIR);
+  errors.push(...daily.errors);
+
   return {
     posts,
     notes,
@@ -603,6 +613,8 @@ export async function compile(): Promise<CompileResult> {
     empty,
     emptySeries,
     assets: [...assets.values()],
+    daily: daily.files,
+    dailyDays: daily.days,
   };
 }
 
@@ -673,6 +685,11 @@ function report(result: CompileResult, wrote: boolean): void {
   if (result.assets.length > 0) {
     console.log(`  ${result.assets.length} 张图片待复制到 dist/${MEDIA_DIR}/`);
   }
+  if (result.daily.length > 0) {
+    console.log(
+      `  daily: ${result.daily.length} 个月，${result.dailyDays} 天有记录`,
+    );
+  }
   if (result.empty.length > 0) {
     console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);
   }
@@ -738,7 +755,11 @@ export async function startWatcher(): Promise<void> {
   await run();
 
   watch(CONTENT_DIR, { recursive: true }, (_event, filename) => {
-    if (filename && !filename.endsWith(".md")) return;
+    // Daily JSON is served straight from disk in dev; re-running here is
+    // only so a malformed month is reported as soon as it is saved.
+    if (filename && !filename.endsWith(".md") && !filename.endsWith(".json")) {
+      return;
+    }
     clearTimeout(timer);
     timer = setTimeout(run, 80);
   });

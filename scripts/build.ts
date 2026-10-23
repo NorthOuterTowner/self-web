@@ -102,6 +102,16 @@ for (const asset of content.assets) {
   mediaBytes += bytes.length;
 }
 
+// Daily log months. Fetched by URL at runtime, one month at a time, so they
+// stay out of the bundle; re-serialised to drop the authoring whitespace.
+let dailyBytes = 0;
+for (const file of content.daily) {
+  const json = JSON.stringify(await Bun.file(file.from).json());
+  await Bun.write(`${outdir}/${file.to}`, json);
+  dailyBytes += Buffer.byteLength(json);
+}
+mediaBytes += dailyBytes;
+
 const built = [...result.outputs, ...worker.outputs];
 const total = built.reduce((n, o) => n + o.size, 0) + mediaBytes;
 for (const out of built) {
@@ -116,6 +126,11 @@ for (const asset of content.assets) {
   const size = Bun.file(asset.from).size;
   console.log(
     `  ${asset.to.replace(/^.*\//, "").padEnd(24)} ${(size / 1024).toFixed(1).padStart(8)} KB  media`,
+  );
+}
+if (content.daily.length > 0) {
+  console.log(
+    `  ${`data/daily/ (${content.daily.length} 个月)`.padEnd(24)} ${(dailyBytes / 1024).toFixed(1).padStart(8)} KB  daily`,
   );
 }
 console.log(

@@ -15,6 +15,7 @@ import "./styles/nav.css";
 import "./styles/hero.css";
 import "./styles/cards.css";
 import "./styles/others.css";
+import "./styles/daily.css";
 import "./styles/roadmap.css";
 import "./styles/skills.css";
 import "./styles/secret.css";
