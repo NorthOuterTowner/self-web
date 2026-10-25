@@ -28,6 +28,7 @@ import {
 import type { Note, Post, Resource } from "../src/content/types";
 import { textLength } from "../src/content/types";
 import { compileDaily } from "./daily";
+import { compileRandom, type RandomList } from "./random";
 import { IMAGE_EXTENSIONS, imageSize } from "./image";
 import { ContentError, parseDocument } from "./markdown";
 
@@ -74,6 +75,10 @@ export interface CompileResult {
   daily: Asset[];
   /** Total days with an entry, across all months. */
   dailyDays: number;
+  /** Word lists from content/random/, compacted, written to dist/data/random/. */
+  random: RandomList[];
+  /** Terms that appear in more than one word list. Reported, not fatal. */
+  randomShared: string[];
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -604,6 +609,10 @@ export async function compile(): Promise<CompileResult> {
   const daily = await compileDaily(CONTENT_DIR);
   errors.push(...daily.errors);
 
+  // content/random/*.txt: likewise copied rather than bundled.
+  const random = await compileRandom(CONTENT_DIR);
+  errors.push(...random.errors);
+
   return {
     posts,
     notes,
@@ -615,6 +624,8 @@ export async function compile(): Promise<CompileResult> {
     assets: [...assets.values()],
     daily: daily.files,
     dailyDays: daily.days,
+    random: random.lists,
+    randomShared: random.shared,
   };
 }
 
@@ -690,6 +701,15 @@ function report(result: CompileResult, wrote: boolean): void {
       `  daily: ${result.daily.length} 个月，${result.dailyDays} 天有记录`,
     );
   }
+  if (result.random.length > 0) {
+    const words = result.random.reduce((n, l) => n + l.count, 0);
+    console.log(`  random: ${result.random.length} 个领域，${words} 个词`);
+  }
+  if (result.randomShared.length > 0) {
+    console.log(
+      `  random: ${result.randomShared.length} 个词出现在多个领域里：\n    ${result.randomShared.join("\n    ")}`,
+    );
+  }
   if (result.empty.length > 0) {
     console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);
   }
@@ -757,7 +777,12 @@ export async function startWatcher(): Promise<void> {
   watch(CONTENT_DIR, { recursive: true }, (_event, filename) => {
     // Daily JSON is served straight from disk in dev; re-running here is
     // only so a malformed month is reported as soon as it is saved.
-    if (filename && !filename.endsWith(".md") && !filename.endsWith(".json")) {
+    if (
+      filename &&
+      !filename.endsWith(".md") &&
+      !filename.endsWith(".json") &&
+      !filename.endsWith(".txt")
+    ) {
       return;
     }
     clearTimeout(timer);

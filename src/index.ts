@@ -7,6 +7,8 @@
  */
 import index from "./index.html";
 import { serve } from "bun";
+import { readRandomList } from "../scripts/random";
+import { isRandomFieldId } from "./site.config";
 
 // In development the Markdown in content/ is compiled on startup and on every
 // save; the regenerated module then triggers Bun's hot reload. Loaded lazily so
@@ -65,6 +67,28 @@ async function daily(req: Request): Promise<Response> {
 }
 
 /**
+ * Word lists for /game, read from content/random/ on every request and
+ * compacted the same way the build compacts them, so dev and deploy serve
+ * the same bytes. Only ids declared in `randomFields` are served, which also
+ * rules out any path traversal.
+ */
+async function random(req: Request): Promise<Response> {
+  const name = new URL(req.url).pathname.slice("/data/random/".length);
+  const id = name.replace(/\.txt$/, "");
+  if (!name.endsWith(".txt") || !isRandomFieldId(id)) {
+    return new Response("Not found", { status: 404 });
+  }
+  const body = await readRandomList("./content", id);
+  if (body === undefined) return new Response("Not found", { status: 404 });
+  return new Response(body, {
+    headers: {
+      "cache-control": "no-cache",
+      "content-type": "text/plain; charset=utf-8",
+    },
+  });
+}
+
+/**
  * The gated page's Argon2id worker.
  *
  * `src/index.html` is the only thing the dev server bundles, and the worker is
@@ -107,6 +131,7 @@ const server = serve({
   routes: {
     "/media/*": media,
     "/data/daily/*": daily,
+    "/data/random/*": random,
     "/secret-worker.js": secretWorker,
 
     // SPA fallback — matches the 404.html trick used on GitHub Pages.

@@ -1,0 +1,154 @@
+/* Game — the /game page: a field picker, one large word, one button.
+ *
+ * The word sits in a hairline box that keeps its height whatever the word's
+ * length, so the button below never moves while the draw flickers. Each new
+ * word drops in from a few pixels above; the settled one does not move and
+ * takes the page tone. Hairlines, no radii, no shadows.
+ */
+
+.game {
+  /* Fjord is the nav's tone for this page, deepened toward ink for contrast
+     on bone, as daily does with birch. */
+  --game-tone: color-mix(in srgb, var(--fjord) 78%, var(--ink));
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+/* ---- Picker ---------------------------------------------------------- */
+
+.game__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--ink);
+}
+
+.game__select {
+  min-width: 12rem;
+  padding: var(--sp-2) var(--sp-3);
+  font: inherit;
+  font-size: var(--t-body);
+  color: var(--ink);
+  background: var(--snow);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.game__select:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+/* ---- Stage ----------------------------------------------------------- */
+
+.game__stage {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: clamp(16rem, 42vh, 26rem);
+  margin-top: var(--sp-8);
+  padding: var(--sp-6);
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.game__field {
+  color: var(--ink-3);
+}
+
+.game__word {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: clamp(2.25rem, 7vw, 5.5rem);
+  line-height: var(--lh-tight);
+  overflow-wrap: anywhere;
+  color: var(--ink-2);
+}
+
+.game__glyph {
+  display: inline-block;
+}
+
+.game__stage[data-phase="spinning"] .game__glyph {
+  animation: game-jump 140ms var(--ease-out) both;
+}
+
+.game__stage[data-phase="loading"] .game__glyph,
+.game__stage[data-phase="idle"] .game__glyph {
+  color: var(--ink-4);
+}
+
+.game__stage[data-phase="done"] .game__glyph {
+  color: var(--game-tone);
+  animation: game-settle 420ms var(--ease-out) both;
+}
+
+.game__stage[data-phase="error"] .game__glyph {
+  font-size: var(--t-h3);
+  color: var(--ink-3);
+}
+
+@keyframes game-jump {
+  from {
+    opacity: 0.35;
+    transform: translateY(-0.18em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes game-settle {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ---- Button ---------------------------------------------------------- */
+
+.game__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+.game__draw {
+  min-width: 12rem;
+  padding: var(--sp-3) var(--sp-8);
+  font-size: var(--t-body);
+  letter-spacing: 0.08em;
+  color: var(--bone);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.game__draw:hover:not(:disabled) {
+  background: var(--game-tone);
+  border-color: var(--game-tone);
+}
+
+.game__draw:disabled {
+  color: var(--ink-3);
+  background: var(--fog);
+  border-color: var(--line);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game__glyph {
+    animation: none !important;
+  }
+}

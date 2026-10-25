@@ -2,6 +2,7 @@ import { Route, Routes, useParams } from "react-router-dom";
 import { TopNav } from "./components/TopNav";
 import { CategoryPage } from "./pages/CategoryPage";
 import { DailyPage } from "./pages/DailyPage";
+import { GamePage } from "./pages/GamePage";
 import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
@@ -11,6 +12,7 @@ import { SeriesPage } from "./pages/SeriesPage";
 import { ResourcePage, SkillsPage } from "./pages/SkillsPage";
 import {
   daily,
+  game,
   getSeries,
   isCategoryId,
   others,
@@ -57,6 +59,7 @@ export function App() {
           <Route path={`/${skills.slug}/:slug`} element={<ResourcePage />} />
           <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
           <Route path={`/${daily.slug}`} element={<DailyPage />} />
+          <Route path={`/${game.slug}`} element={<GamePage />} />
 
           {/* Reached from the lock in the footer, and from nowhere else: it
               is not in `sections`, so it is neither in the top bar nor in

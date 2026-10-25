@@ -38,6 +38,7 @@ import { CodeIcon } from "@phosphor-icons/react/Code";
 import { CopyIcon } from "@phosphor-icons/react/Copy";
 import { FeatherIcon } from "@phosphor-icons/react/Feather";
 import { FilesIcon } from "@phosphor-icons/react/Files";
+import { DiceFiveIcon } from "@phosphor-icons/react/DiceFive";
 import { GithubLogoIcon } from "@phosphor-icons/react/GithubLogo";
 import { GraphIcon } from "@phosphor-icons/react/Graph";
 import { HouseIcon } from "@phosphor-icons/react/House";
@@ -75,6 +76,8 @@ export const sectionIcons = {
   // Four-pointed, like the registration marks around the notes field.
   others: StarFourIcon,
   daily: CalendarBlankIcon,
+  // A die: the page draws a word at random.
+  game: DiceFiveIcon,
 } satisfies Record<"home" | CategoryId, Icon> & Record<string, Icon>;
 
 export function sectionIcon(key: string): Icon | undefined {

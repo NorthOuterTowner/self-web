@@ -56,6 +56,10 @@ const cases: Case[] = [
     expect: ["LDPC", "blockquote", "toc__entry"],
   },
   {
+    path: "/game",
+    expect: ["game__stage", "全领域随机", "工学"],
+  },
+  {
     path: "/nope/does-not-exist",
     expect: ["Not Found"],
   },

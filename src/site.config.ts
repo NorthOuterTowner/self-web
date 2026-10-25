@@ -407,6 +407,44 @@ export const daily = {
   label: "Daily",
 } as const;
 
+/**
+ * The word draw at `/game`, rendered by `pages/GamePage.tsx`.
+ *
+ * Each field is exactly one file, `content/random/<id>.txt`: one term per
+ * line in double quotes, blank lines allowed as separators. `content:check`
+ * fails on a declared field with no file, a file with no field, a malformed
+ * line or a repeated word (see `scripts/random.ts`). The build writes each
+ * list to `data/random/<id>.txt` stripped to bare words, one per line.
+ *
+ * Eleven of the degree catalogue's 学科门类, in its order, then AI.
+ */
+export const game = {
+  slug: "game",
+  label: "Game",
+  title: "随机词",
+} as const;
+
+export const randomFields = [
+  { id: "philosophy", title: "哲学" },
+  { id: "economics", title: "经济学" },
+  { id: "law", title: "法学" },
+  { id: "education", title: "教育学" },
+  { id: "literature", title: "文学" },
+  { id: "history", title: "历史学" },
+  { id: "science", title: "理学" },
+  { id: "engineering", title: "工学" },
+  { id: "agriculture", title: "农学" },
+  { id: "medicine", title: "医学" },
+  { id: "management", title: "管理学" },
+  { id: "ai", title: "人工智能" },
+] as const;
+
+export type RandomFieldId = (typeof randomFields)[number]["id"];
+
+export function isRandomFieldId(value: unknown): value is RandomFieldId {
+  return randomFields.some((f) => f.id === value);
+}
+
 export const navExtras: NavExtra[] = [
   {
     key: "skills",
@@ -437,6 +475,15 @@ export const navExtras: NavExtra[] = [
     label: daily.label,
     title: "日常",
     tone: "birch",
+  },
+  {
+    key: "game",
+    to: `/${game.slug}`,
+    label: game.label,
+    title: game.title,
+    // All four accents are taken; fjord is the coolest against daily's birch
+    // sitting right beside it.
+    tone: "fjord",
   },
 ];
 

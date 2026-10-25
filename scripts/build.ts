@@ -112,6 +112,16 @@ for (const file of content.daily) {
 }
 mediaBytes += dailyBytes;
 
+// Word lists for /game, validated and stripped to bare words by the content
+// compiler. One file per field, fetched only when a draw lands on it, so the
+// lists never grow the bundle or the first load.
+let randomBytes = 0;
+for (const list of content.random) {
+  await Bun.write(`${outdir}/${list.to}`, list.body);
+  randomBytes += Buffer.byteLength(list.body);
+}
+mediaBytes += randomBytes;
+
 const built = [...result.outputs, ...worker.outputs];
 const total = built.reduce((n, o) => n + o.size, 0) + mediaBytes;
 for (const out of built) {
@@ -128,6 +138,9 @@ for (const asset of content.assets) {
     `  ${asset.to.replace(/^.*\//, "").padEnd(24)} ${(size / 1024).toFixed(1).padStart(8)} KB  media`,
   );
 }
+console.log(
+  `  ${`data/random/ (${content.random.length} 个领域)`.padEnd(24)} ${(randomBytes / 1024).toFixed(1).padStart(8)} KB  random`,
+);
 if (content.daily.length > 0) {
   console.log(
     `  ${`data/daily/ (${content.daily.length} 个月)`.padEnd(24)} ${(dailyBytes / 1024).toFixed(1).padStart(8)} KB  daily`,
