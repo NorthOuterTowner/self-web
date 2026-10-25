@@ -20,7 +20,7 @@ SOUR:FREQ? # read
 
 ## 常见命令
 
-1. *IDN?
+1. \*IDN?
 
     查询仪器身份：
 
@@ -30,7 +30,7 @@ SOUR:FREQ? # read
 
     可能返回形如：Manufacturer,Model,SerialNumber,Version这样的结果。
 
-2. *RST
+2. \*RST
 
     复位仪器：
 
@@ -40,11 +40,11 @@ SOUR:FREQ? # read
 
     清除当前配置、关闭输出或恢复默认状态。
 
-3. *CLS
+3. \*CLS
 
    清除状态和错误信息。
 
-4. *OPC?
+4. \*OPC?
 
     查询仪器是否完成操作，当仪器完成操作后，通常会返回1，这个命令通常用于等待长时间的测量完成，如：
 
@@ -53,11 +53,11 @@ SOUR:FREQ? # read
     print(inst.query("*OPC?"))
     ```
 
-5. *WAI
+5. \*WAI
 
-    等待前面的操作完成，不会像 *OPC 那样返回结果，而是让仪器进行等待。
+    等待前面的操作完成，不会像 \*OPC 那样返回结果，而是让仪器进行等待。
 
-6. *STB
+6. \*STB
 
     查询状态字节，如：
 
