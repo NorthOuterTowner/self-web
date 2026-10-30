@@ -57,7 +57,7 @@ const cases: Case[] = [
   },
   {
     path: "/game",
-    expect: ["game__stage", "全领域随机", "工学"],
+    expect: ["game__stage", "全部领域", "工学"],
   },
   {
     path: "/nope/does-not-exist",

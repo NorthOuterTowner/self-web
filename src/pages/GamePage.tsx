@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from "react";
+import { FieldPicker } from "../components/FieldPicker";
 import { loadRandomField, prefetchRandomField } from "../content/random";
 import {
   game,
-  randomFields,
+  getRandomField,
+  randomCategories,
+  randomFieldList,
   site,
-  type RandomFieldId,
+  type RandomFieldKey,
 } from "../site.config";
 
 /**
- * The word draw: pick a field (or all of them), press the button, and a term
- * from that field's list flickers for five seconds before it settles.
+ * The word draw: tick some fields in the picker, press the button, and a term
+ * from one of them flickers for five seconds before it settles.
  *
  * The result is decided the moment the button is pressed, in two steps:
- * first a field, uniformly; then a word within it, uniformly. So under 全领域
- * every field has the same chance however long its list is — a 450-word list
- * does not crowd out a 280-word one. The five seconds are only the show:
+ * first a field (小类) among the ticked ones, uniformly; then a word within
+ * it, uniformly. The unit is the field, not the category: categories differ
+ * in breadth, and a broad one gets its fair share by being split into more
+ * fields, not by having a longer list. The five seconds are only the show:
  * random words from the same list, each held a little longer than the last,
  * so the flicker slows into the answer instead of stopping dead. With
  * reduced motion the answer appears as soon as the list is in.
@@ -27,13 +31,9 @@ const SPIN_MS = 5000;
 const HOLD_FIRST_MS = 45;
 const HOLD_LAST_MS = 420;
 
-type Choice = RandomFieldId | "all";
 type Phase = "idle" | "loading" | "spinning" | "done" | "error";
 
-const fieldIds: RandomFieldId[] = randomFields.map((f) => f.id);
-const fieldTitle = Object.fromEntries(
-  randomFields.map((f) => [f.id, f.title]),
-) as Record<RandomFieldId, string>;
+const ALL_KEYS: RandomFieldKey[] = randomFieldList.map((f) => f.key);
 
 function pickOne<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!;
@@ -47,12 +47,32 @@ function pickOther(words: readonly string[], prev: string | null): string {
   return word;
 }
 
+/** What the picker button and the stage say about the current selection. */
+function describe(selected: ReadonlySet<RandomFieldKey>): string {
+  if (selected.size === ALL_KEYS.length) return "全部领域";
+  if (selected.size === 1) {
+    const [only] = selected;
+    return getRandomField(only!)?.label ?? "";
+  }
+  // Exactly one whole category, and nothing else.
+  const whole = randomCategories.find(
+    (c) =>
+      c.fields.length === selected.size &&
+      c.fields.every((f) => selected.has(`${c.id}/${f.id}`)),
+  );
+  if (whole) return whole.title;
+  return `${selected.size} 个小类`;
+}
+
 export function GamePage() {
-  const [choice, setChoice] = useState<Choice>("all");
+  const [selected, setSelected] = useState<Set<RandomFieldKey>>(
+    () => new Set(ALL_KEYS),
+  );
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [word, setWord] = useState<string | null>(null);
   /** The field the current or last draw came from. */
-  const [drawnField, setDrawnField] = useState<RandomFieldId | null>(null);
+  const [drawnField, setDrawnField] = useState<RandomFieldKey | null>(null);
   /** Bumped on every displayed word, to restart the jump animation. */
   const [tick, setTick] = useState(0);
 
@@ -70,19 +90,22 @@ export function GamePage() {
   }, []);
 
   const busy = phase === "loading" || phase === "spinning";
+  /** In declaration order, so the pool does not depend on tick order. */
+  const pool = ALL_KEYS.filter((k) => selected.has(k));
+  const summary = describe(selected);
 
   const draw = () => {
-    if (busy) return;
+    if (busy || pool.length === 0) return;
 
     // Step one: the field. Step two, once its list is in: the word.
-    const id = choice === "all" ? pickOne(fieldIds) : choice;
+    const key = pickOne(pool);
     const current = ++run.current;
     const startedAt = performance.now();
     clearTimeout(timer.current);
-    setDrawnField(id);
+    setDrawnField(key);
     setPhase("loading");
 
-    loadRandomField(id).then(
+    loadRandomField(key).then(
       (words) => {
         if (current !== run.current) return;
         const final = pickOne(words);
@@ -126,17 +149,18 @@ export function GamePage() {
     );
   };
 
-  // Under 全领域 the field stays hidden until the word lands, so the reveal
-  // is one moment rather than two.
+  // With several fields ticked, the drawn one stays hidden until the word
+  // lands, so the reveal is one moment rather than two.
+  const drawn = drawnField ? getRandomField(drawnField) : undefined;
   const fieldLabel =
-    choice !== "all"
-      ? fieldTitle[choice]
-      : (phase === "done" || phase === "error") && drawnField
-        ? fieldTitle[drawnField]
-        : "全领域";
+    pool.length === 1
+      ? summary
+      : (phase === "done" || phase === "error") && drawn
+        ? drawn.label
+        : summary;
 
   let display: string;
-  if (phase === "error") display = "加载失败";
+  if (phase === "error") display = "没能加载";
   else if (phase === "loading" || word === null) display = "?";
   else display = word;
 
@@ -149,34 +173,37 @@ export function GamePage() {
             <span className="blog__masthead-en">Word draw</span>
           </h1>
           <span className="label blog__masthead-count">
-            {randomFields.length} Fields
+            {ALL_KEYS.length} Fields
           </span>
         </header>
 
         <div className="game__bar">
-          <label className="label game__select-label" htmlFor="game-field">
-            领域
-          </label>
-          <select
-            id="game-field"
-            className="game__select"
-            value={choice}
+          <span className="label">领域</span>
+          <button
+            type="button"
+            className="game__pick"
+            aria-haspopup="dialog"
             disabled={busy}
-            onChange={(event) => {
-              const next = event.target.value as Choice;
-              setChoice(next);
-              if (next !== "all") prefetchRandomField(next);
-              if (phase === "error") setPhase("idle");
-            }}
+            onClick={() => setPickerOpen(true)}
           >
-            <option value="all">全领域随机</option>
-            {randomFields.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.title}
-              </option>
-            ))}
-          </select>
+            {summary}
+            <span className="game__pick-n">
+              {pool.length} / {ALL_KEYS.length}
+            </span>
+          </button>
         </div>
+
+        <FieldPicker
+          open={pickerOpen}
+          selected={selected}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={(next) => {
+            setSelected(next);
+            setPickerOpen(false);
+            if (next.size === 1) prefetchRandomField([...next][0]!);
+            if (phase === "error") setPhase("idle");
+          }}
+        />
 
         <div className="game__stage" data-phase={phase} aria-hidden="true">
           <p className="label game__field">{fieldLabel}</p>
@@ -190,10 +217,10 @@ export function GamePage() {
         {/* The flicker is hidden from screen readers; only the answer is
             announced, once. */}
         <p className="sr-only" aria-live="polite">
-          {phase === "done" && word && drawnField
-            ? `抽到的词语为：${word}，它来自${fieldTitle[drawnField]}`
+          {phase === "done" && word && drawn
+            ? `抽到：${word}，来自${drawn.label}`
             : phase === "error"
-              ? "词库加载失败，稍后再试。"
+              ? "词库没能加载，稍后再试。"
               : ""}
         </p>
 
@@ -202,7 +229,7 @@ export function GamePage() {
             type="button"
             className="game__draw"
             onClick={draw}
-            disabled={busy}
+            disabled={busy || pool.length === 0}
           >
             {busy ? "抽取中…" : phase === "done" ? "再抽一个" : "抽一个"}
           </button>

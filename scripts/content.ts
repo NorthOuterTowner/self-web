@@ -609,7 +609,7 @@ export async function compile(): Promise<CompileResult> {
   const daily = await compileDaily(CONTENT_DIR);
   errors.push(...daily.errors);
 
-  // content/random/*.txt: likewise copied rather than bundled.
+  // content/random/<category>/<field>.txt: likewise copied rather than bundled.
   const random = await compileRandom(CONTENT_DIR);
   errors.push(...random.errors);
 
@@ -703,7 +703,7 @@ function report(result: CompileResult, wrote: boolean): void {
   }
   if (result.random.length > 0) {
     const words = result.random.reduce((n, l) => n + l.count, 0);
-    console.log(`  random: ${result.random.length} 个领域，${words} 个词`);
+    console.log(`  random: ${result.random.length} 个小类，${words} 个词`);
   }
   if (result.randomShared.length > 0) {
     console.log(

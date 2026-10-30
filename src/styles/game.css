@@ -1,4 +1,5 @@
-/* Game — the /game page: a field picker, one large word, one button.
+/* Game — the /game page: a field picker (a two-pane dialog of categories
+ * and their fields), one large word, one button.
  *
  * The word sits in a hairline box that keeps its height whatever the word's
  * length, so the button below never moves while the draw flickers. Each new
@@ -24,21 +25,256 @@
   border-bottom: 1px solid var(--ink);
 }
 
-.game__select {
+/* Opens the picker. Reads as a field, not a call to action: the draw button
+   below is the one that does something. */
+.game__pick {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-3);
   min-width: 12rem;
   padding: var(--sp-2) var(--sp-3);
-  font: inherit;
   font-size: var(--t-body);
   color: var(--ink);
   background: var(--snow);
   border: 1px solid var(--line-strong);
-  border-radius: 0;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.game__pick:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.game__pick:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+
+.game__pick-n {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Picker dialog ----------------------------------------------------
+ *
+ * A native <dialog> in the top layer. Categories take the left third, the
+ * active category's fields the right two. Hairlines, no radius, no shadow,
+ * like the gated page's dialog.
+ */
+
+.picker {
+  width: min(44rem, calc(100vw - 2 * var(--gutter)));
+  max-height: min(36rem, calc(100vh - 2 * var(--gutter)));
+  padding: 0;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.picker[open] {
+  animation: picker-in var(--dur) var(--ease-out) both;
+}
+
+/* Tinted with the ink rather than black, as the gated page's veil is: a grey
+   scrim over warm paper goes green. */
+.picker::backdrop {
+  background: color-mix(in srgb, var(--ink) 58%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+@keyframes picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+.picker__panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: inherit;
+}
+
+.picker__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  padding: var(--sp-6) var(--sp-6) var(--sp-4);
+  border-bottom: 1px solid var(--ink);
+}
+
+.picker__title {
+  font-family: var(--times);
+  font-size: var(--t-h3);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.picker__count {
+  margin-left: auto;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.picker__body {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  min-height: 16rem;
+  overflow: hidden;
+}
+
+.picker__cats {
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+}
+
+.picker__cat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-left: var(--sp-4);
+  border-left: 2px solid transparent;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.picker__cat[data-active] {
+  background: var(--fog);
+  border-left-color: var(--game-tone, var(--ink));
+}
+
+.picker__cat-name {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+  text-align: left;
+  font-size: var(--t-body);
+  color: inherit;
+}
+
+.picker__cat-n {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.picker__fields {
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-6);
+}
+
+.picker__fields-head {
+  margin-bottom: var(--sp-3);
+  color: var(--ink-3);
+}
+
+.picker__field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  font-size: var(--t-body);
   cursor: pointer;
 }
 
-.game__select:disabled {
+.picker__check {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.picker__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-6);
+  border-top: 1px solid var(--ink);
+}
+
+.picker__spacer {
+  flex: 1;
+}
+
+.picker__link {
+  padding-bottom: 1px;
+  font-size: var(--t-small);
   color: var(--ink-3);
+  border-bottom: 1px solid currentColor;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.picker__link:hover {
+  color: var(--ink);
+}
+
+.picker__hint {
+  font-size: var(--t-small);
+  color: var(--clay);
+}
+
+.picker__button {
+  padding: var(--sp-2) var(--sp-6);
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.picker__button:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.picker__button--primary {
+  color: var(--bone);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.picker__button--primary:hover:not(:disabled) {
+  color: var(--bone);
+  background: var(--game-tone, var(--ink));
+  border-color: var(--game-tone, var(--ink));
+}
+
+.picker__button:disabled {
+  color: var(--ink-4);
+  background: var(--fog);
+  border-color: var(--line);
   cursor: default;
+}
+
+@media (max-width: 480px) {
+  .picker__head,
+  .picker__foot {
+    padding-inline: var(--sp-4);
+  }
+
+  .picker__foot {
+    flex-wrap: wrap;
+  }
+
+  .picker__fields {
+    padding-inline: var(--sp-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker[open] {
+    animation: none;
+  }
 }
 
 /* ---- Stage ----------------------------------------------------------- */

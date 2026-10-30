@@ -410,13 +410,20 @@ export const daily = {
 /**
  * The word draw at `/game`, rendered by `pages/GamePage.tsx`.
  *
- * Each field is exactly one file, `content/random/<id>.txt`: one term per
- * line in double quotes, blank lines allowed as separators. `content:check`
- * fails on a declared field with no file, a file with no field, a malformed
+ * Two levels: a category (大类) is a folder, a field (小类) is one file in it,
+ * `content/random/<category>/<field>.txt` — one term per line in double
+ * quotes, blank lines allowed as separators. `content:check` fails on a
+ * declared field with no file, a file or folder nobody declared, a malformed
  * line or a repeated word (see `scripts/random.ts`). The build writes each
- * list to `data/random/<id>.txt` stripped to bare words, one per line.
+ * list to `data/random/<category>/<field>.txt` stripped to bare words.
  *
- * Eleven of the degree catalogue's 学科门类, in its order, then AI.
+ * The draw is uniform over the *fields* that are ticked, not the categories.
+ * Categories differ wildly in breadth — 理学 spans five sciences, 教育学 is one
+ * — so splitting a broad category into fields is how it gets its fair share.
+ * A category with a single field lists just that one field in the picker.
+ *
+ * Ids are lowercase ASCII with hyphens: they are folder names, file names and
+ * URL segments. Renaming one means renaming its folder or file too.
  */
 export const game = {
   slug: "game",
@@ -424,25 +431,74 @@ export const game = {
   title: "随机词",
 } as const;
 
-export const randomFields = [
-  { id: "philosophy", title: "哲学" },
-  { id: "economics", title: "经济学" },
-  { id: "law", title: "法学" },
-  { id: "education", title: "教育学" },
-  { id: "literature", title: "文学" },
-  { id: "history", title: "历史学" },
-  { id: "science", title: "理学" },
-  { id: "engineering", title: "工学" },
-  { id: "agriculture", title: "农学" },
-  { id: "medicine", title: "医学" },
-  { id: "management", title: "管理学" },
-  { id: "ai", title: "人工智能" },
-] as const;
+export interface RandomFieldMeta {
+  id: string;
+  title: string;
+}
 
-export type RandomFieldId = (typeof randomFields)[number]["id"];
+export interface RandomCategoryMeta {
+  id: string;
+  title: string;
+  fields: RandomFieldMeta[];
+}
 
-export function isRandomFieldId(value: unknown): value is RandomFieldId {
-  return randomFields.some((f) => f.id === value);
+export const randomCategories: RandomCategoryMeta[] = [
+  { id: "philosophy", title: "哲学", fields: [{ id: "philosophy", title: "哲学" }] },
+  { id: "economics", title: "经济学", fields: [{ id: "economics", title: "经济学" }] },
+  { id: "law", title: "法学", fields: [{ id: "law", title: "法学" }] },
+  { id: "education", title: "教育学", fields: [{ id: "education", title: "教育学" }] },
+  { id: "literature", title: "文学", fields: [{ id: "literature", title: "文学" }] },
+  { id: "history", title: "历史学", fields: [{ id: "history", title: "历史学" }] },
+  { id: "science", title: "理学", fields: [{ id: "science", title: "理学" }] },
+  {
+    id: "engineering",
+    title: "工学",
+    fields: [
+      { id: "engineering", title: "工学" },
+      { id: "ai", title: "人工智能" },
+    ],
+  },
+  { id: "agriculture", title: "农学", fields: [{ id: "agriculture", title: "农学" }] },
+  { id: "medicine", title: "医学", fields: [{ id: "medicine", title: "医学" }] },
+  { id: "management", title: "管理学", fields: [{ id: "management", title: "管理学" }] },
+];
+
+/** `<category>/<field>`: the unit the draw picks from, and the file's path. */
+export type RandomFieldKey = string;
+
+/** One field, flattened with its category, as the page and the build use it. */
+export interface RandomField {
+  key: RandomFieldKey;
+  categoryId: string;
+  categoryTitle: string;
+  id: string;
+  title: string;
+  /** "工学 · 人工智能"; or just "工学" for the field named after its category. */
+  label: string;
+}
+
+export const randomFieldList: RandomField[] = randomCategories.flatMap((c) =>
+  c.fields.map((f) => ({
+    key: `${c.id}/${f.id}`,
+    categoryId: c.id,
+    categoryTitle: c.title,
+    id: f.id,
+    title: f.title,
+    // A field named after its category (the only field of most categories,
+    // and 工学's general list) would otherwise read "工学 · 工学".
+    label: f.title === c.title ? c.title : `${c.title} · ${f.title}`,
+  })),
+);
+
+const randomFieldByKey = new Map(randomFieldList.map((f) => [f.key, f]));
+
+export function getRandomField(key: string): RandomField | undefined {
+  return randomFieldByKey.get(key);
+}
+
+/** Exact match against the declared keys, which also rules out path tricks. */
+export function isRandomFieldKey(value: unknown): value is RandomFieldKey {
+  return typeof value === "string" && randomFieldByKey.has(value);
 }
 
 export const navExtras: NavExtra[] = [

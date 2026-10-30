@@ -113,8 +113,9 @@ for (const file of content.daily) {
 mediaBytes += dailyBytes;
 
 // Word lists for /game, validated and stripped to bare words by the content
-// compiler. One file per field, fetched only when a draw lands on it, so the
-// lists never grow the bundle or the first load.
+// compiler. One file per field under its category's folder, fetched only when
+// a draw lands on it, so the lists never grow the bundle or the first load.
+// Bun.write creates the category folders.
 let randomBytes = 0;
 for (const list of content.random) {
   await Bun.write(`${outdir}/${list.to}`, list.body);
@@ -139,7 +140,7 @@ for (const asset of content.assets) {
   );
 }
 console.log(
-  `  ${`data/random/ (${content.random.length} 个领域)`.padEnd(24)} ${(randomBytes / 1024).toFixed(1).padStart(8)} KB  random`,
+  `  ${`data/random/ (${content.random.length} 个小类)`.padEnd(24)} ${(randomBytes / 1024).toFixed(1).padStart(8)} KB  random`,
 );
 if (content.daily.length > 0) {
   console.log(
