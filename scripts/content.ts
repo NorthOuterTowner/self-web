@@ -77,8 +77,6 @@ export interface CompileResult {
   dailyDays: number;
   /** Word lists from content/random/, compacted, written to dist/data/random/. */
   random: RandomList[];
-  /** Terms that appear in more than one word list. Reported, not fatal. */
-  randomShared: string[];
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -624,8 +622,7 @@ export async function compile(): Promise<CompileResult> {
     assets: [...assets.values()],
     daily: daily.files,
     dailyDays: daily.days,
-    random: random.lists,
-    randomShared: random.shared,
+    random: random.lists
   };
 }
 
@@ -704,11 +701,6 @@ function report(result: CompileResult, wrote: boolean): void {
   if (result.random.length > 0) {
     const words = result.random.reduce((n, l) => n + l.count, 0);
     console.log(`  random: ${result.random.length} 个小类，${words} 个词`);
-  }
-  if (result.randomShared.length > 0) {
-    console.log(
-      `  random: ${result.randomShared.length} 个词出现在多个领域里：\n    ${result.randomShared.join("\n    ")}`,
-    );
   }
   if (result.empty.length > 0) {
     console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);

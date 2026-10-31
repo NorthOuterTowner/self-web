@@ -27,7 +27,7 @@ const LINE = /^"([^"\r\n]+)"$/;
 
 export interface RandomList {
   key: RandomFieldKey;
-  /** Path inside dist/, e.g. `data/random/engineering/ai.txt`. */
+  /** Path inside dist/, e.g. `data/random/engineering/computer-science.txt`. */
   to: string;
   /** The shipped body: bare terms, `\n`-separated, no trailing newline. */
   body: string;
@@ -37,8 +37,6 @@ export interface RandomList {
 export interface RandomResult {
   lists: RandomList[];
   errors: string[];
-  /** Terms found in more than one field. Reported, not fatal. */
-  shared: string[];
 }
 
 /** Validate one list's source text. Returns the terms, or errors. */
@@ -77,7 +75,6 @@ export async function compileRandom(contentDir: string): Promise<RandomResult> {
   const dir = resolve(contentDir, RANDOM_DIR);
   const lists: RandomList[] = [];
   const errors: string[] = [];
-  const owners = new Map<string, RandomFieldKey[]>();
 
   // Relative paths with forward slashes, whatever the platform's separator.
   const files = new Set(
@@ -109,7 +106,6 @@ export async function compileRandom(contentDir: string): Promise<RandomResult> {
     errors.push(...parsed.errors);
     if (parsed.errors.length > 0) continue;
 
-    for (const w of parsed.words) owners.set(w, [...(owners.get(w) ?? []), field.key]);
     lists.push({
       key: field.key,
       to: `data/${RANDOM_DIR}/${path}`,
@@ -118,11 +114,7 @@ export async function compileRandom(contentDir: string): Promise<RandomResult> {
     });
   }
 
-  const shared = [...owners]
-    .filter(([, o]) => o.length > 1)
-    .map(([w, o]) => `"${w}"  (${o.join(", ")})`);
-
-  return { lists, errors, shared };
+  return { lists, errors };
 }
 
 /** One list as shipped, for the dev server. Undefined if missing or broken. */

@@ -443,24 +443,151 @@ export interface RandomCategoryMeta {
 }
 
 export const randomCategories: RandomCategoryMeta[] = [
-  { id: "philosophy", title: "哲学", fields: [{ id: "philosophy", title: "哲学" }] },
-  { id: "economics", title: "经济学", fields: [{ id: "economics", title: "经济学" }] },
-  { id: "law", title: "法学", fields: [{ id: "law", title: "法学" }] },
-  { id: "education", title: "教育学", fields: [{ id: "education", title: "教育学" }] },
-  { id: "literature", title: "文学", fields: [{ id: "literature", title: "文学" }] },
-  { id: "history", title: "历史学", fields: [{ id: "history", title: "历史学" }] },
-  { id: "science", title: "理学", fields: [{ id: "science", title: "理学" }] },
+  {
+    id: "philosophy",
+    title: "哲学",
+    fields: [
+      { id: "philosophy", title: "哲学" },
+      { id: "logic", title: "逻辑学" },
+      { id: "religious-studies", title: "宗教学" },
+    ],
+  },
+  {
+    id: "economics",
+    title: "经济学",
+    fields: [
+      { id: "economics", title: "经济学" },
+      { id: "finance", title: "金融学" },
+      { id: "accounting", title: "会计学" },
+      { id: "auditing", title: "审计学" },
+    ],
+  },
+  {
+    id: "law",
+    title: "法学",
+    fields: [
+      { id: "law", title: "法学" },
+      { id: "political-science", title: "政治学" },
+      { id: "sociology", title: "社会学" },
+      { id: "ethnology", title: "民族学" },
+      { id: "public-security", title: "公安学" },
+    ],
+  },
+  {
+    id: "education",
+    title: "教育学",
+    fields: [
+      { id: "education", title: "教育学" },
+      { id: "psychology", title: "心理学" },
+      { id: "sports-science", title: "体育学" },
+    ],
+  },
+  {
+    id: "literature",
+    title: "文学",
+    fields: [
+      { id: "linguistics", title: "语言学" },
+      { id: "ancient-literature", title: "中国古代语言文学" },
+      { id: "modern-literature", title: "中国现当代语言文学" },
+      { id: "foreign-literature", title: "外国语言文学" },
+      { id: "journalism", title: "新闻传播学" },
+    ],
+  },
+  {
+    id: "history",
+    title: "历史学",
+    fields: [
+      { id: "chinese-history", title: "中国史" },
+      { id: "ancient-world-history", title: "世界上古史" },
+      { id: "medieval-world-history", title: "世界中古史" },
+      { id: "early-modern-world-history", title: "世界近代早期史" },
+      { id: "modern-world-history", title: "世界近代史" },
+      { id: "contemporary-world-history", title: "世界现当代史" },
+      { id: "archaeology", title: "考古学" },
+      { id: "historical-geography", title: "历史地理学" },
+    ],
+  },
+  {
+    id: "science",
+    title: "理学",
+    fields: [
+      { id: "mathematics", title: "数学" },
+      { id: "physics", title: "物理学" },
+      { id: "chemistry", title: "化学" },
+      { id: "astronomy", title: "天文学" },
+      { id: "geography", title: "地理学" },
+      { id: "atmospheric-science", title: "大气科学" },
+      { id: "marine-science", title: "海洋科学" },
+      { id: "earth-science", title: "地球科学" },
+      { id: "biology", title: "生物学" },
+      { id: "ecology", title: "生态学" },
+    ],
+  },
   {
     id: "engineering",
     title: "工学",
     fields: [
-      { id: "engineering", title: "工学" },
-      { id: "ai", title: "人工智能" },
+      { id: "mechanical", title: "力学与机械工程" },
+      { id: "materials", title: "材料与冶金工程" },
+      { id: "energy-power", title: "能源与动力工程" },
+      { id: "electrical", title: "电气工程" },
+      { id: "electronics-communication", title: "电子与通信工程" },
+      { id: "computer-science", title: "计算机科学" },
+      { id: "civil", title: "建筑与土木工程" },
+      { id: "hydraulic", title: "水利工程" },
+      { id: "geology-mining", title: "地质与矿业工程" },
+      { id: "aerospace", title: "航空航天" },
+      { id: "ordnance", title: "兵器科学与技术" },
+      { id: "food-science", title: "食品科学" },
     ],
   },
-  { id: "agriculture", title: "农学", fields: [{ id: "agriculture", title: "农学" }] },
-  { id: "medicine", title: "医学", fields: [{ id: "medicine", title: "医学" }] },
-  { id: "management", title: "管理学", fields: [{ id: "management", title: "管理学" }] },
+  {
+    id: "agriculture",
+    title: "农学",
+    fields: [
+      { id: "crop-science", title: "作物学" },
+      { id: "horticulture", title: "园艺学" },
+      { id: "plant-protection", title: "植物保护" },
+      { id: "animal-science", title: "畜牧学" },
+      { id: "forestry", title: "林学" },
+      { id: "fisheries", title: "水产" },
+      { id: "grassland", title: "草学" },
+    ],
+  },
+  {
+    id: "medicine",
+    title: "医学",
+    fields: [
+      { id: "basic-medicine", title: "基础医学" },
+      { id: "clinical-medicine", title: "临床医学" },
+      { id: "stomatology", title: "口腔医学" },
+      { id: "public-health", title: "公共卫生与预防医学" },
+      { id: "pharmacy", title: "药学" },
+      { id: "tcm", title: "中医学" },
+      { id: "nursing", title: "护理学" },
+      { id: "forensic-medicine", title: "法医学" },
+    ],
+  },
+  {
+    id: "management",
+    title: "管理学",
+    fields: [
+      { id: "library-information", title: "图书情报与档案管理" },
+      { id: "logistics", title: "物流与供应链管理" },
+      { id: "tourism", title: "旅游管理" },
+    ],
+  },
+  {
+    id: "arts",
+    title: "艺术学",
+    fields: [
+      { id: "music-dance", title: "音乐与舞蹈学" },
+      { id: "drama-film", title: "戏剧与影视学" },
+      { id: "fine-arts", title: "美术与书法" },
+      { id: "design", title: "设计学" },
+      { id: "art-heritage", title: "艺术遗产" },
+    ],
+  },
 ];
 
 /** `<category>/<field>`: the unit the draw picks from, and the file's path. */
@@ -473,7 +600,7 @@ export interface RandomField {
   categoryTitle: string;
   id: string;
   title: string;
-  /** "工学 · 人工智能"; or just "工学" for the field named after its category. */
+  /** "工学 · 计算机科学"; or just "哲学" for the field named after its category. */
   label: string;
 }
 
