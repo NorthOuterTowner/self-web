@@ -6,6 +6,7 @@ import { GamePage } from "./pages/GamePage";
 import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { RoadmapPage } from "./pages/RoadmapPage";
 import { SecretPage } from "./pages/SecretPage";
 import { SeriesPage } from "./pages/SeriesPage";
@@ -16,6 +17,7 @@ import {
   getSeries,
   isCategoryId,
   others,
+  profile,
   roadmap,
   secret,
   skills,
@@ -65,6 +67,7 @@ export function App() {
               is not in `sections`, so it is neither in the top bar nor in
               the site map the 404 page prints. */}
           <Route path={`/${secret.slug}`} element={<SecretPage />} />
+          <Route path={`/${profile.slug}`} element={<ProfilePage />} />
 
           <Route path="/:category" element={<CategoryPage />} />
           <Route path="/:category/:slug" element={<CategoryChild />} />

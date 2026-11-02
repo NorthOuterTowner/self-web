@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { socialIcons } from "../lib/icons";
-import { secret, site } from "../site.config";
+import { profile, secret, site } from "../site.config";
 
 /**
  * The marks are Phosphor's GitHub and LinkedIn logos.
@@ -27,6 +27,7 @@ const LINKS: Array<{
 }> = [
   { label: "GitHub", href: site.github, Icon: socialIcons.github },
   { label: "LinkedIn", href: site.linkedin, Icon: socialIcons.linkedin },
+  { label: profile.label, to: `/${profile.slug}`, Icon: socialIcons.profile },
   { label: secret.label, to: `/${secret.slug}`, Icon: socialIcons.secret },
 ];
 

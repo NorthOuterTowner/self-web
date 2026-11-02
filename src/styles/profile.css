@@ -1,0 +1,186 @@
+/* Profile — the /profile page: a résumé in one narrow column.
+ *
+ * The body is `content/profile.html`, injected as-is, so every rule here is
+ * scoped to `.cv` and keyed on plain elements and a handful of `cv-*`
+ * classes. That way the HTML file only carries structure and can be extended
+ * by hand without touching this sheet.
+ *
+ * The column is capped well short of the shell, which is what leaves the
+ * generous margins either side on a wide screen. On a phone it falls back to
+ * the site gutter. Hairlines, no radii, no shadows.
+ */
+
+.profile {
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.cv {
+  /* 宋体 + Times New Roman, the usual pairing for a Chinese résumé. Times is
+     listed first because it has no CJK glyphs: Latin letters and digits take
+     Times, and every Chinese character falls through to the Song face. SimSun
+     is Windows, Songti SC / STSong macOS and iOS, Noto / Source Han Serif the
+     Linux and Android stand-ins. System fonts only, as everywhere else. */
+  --cv-font:
+    "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", Tinos,
+    SimSun, "宋体", "Songti SC", STSong, "Noto Serif SC", "Noto Serif CJK SC",
+    "Source Han Serif SC", serif;
+
+  max-width: 46rem;
+  margin-inline: auto;
+  /* Fixed rather than fluid, and a step under the site's body size: a résumé
+     is dense by nature, and the LaTeX original was set at 10pt. */
+  font-family: var(--cv-font);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* Faux bold on SimSun, which has no bold cut, is smeared and uneven; the
+   browser's synthesis is still better than nothing, so it is allowed here
+   even though base.css turns it off for the rest of the site. */
+.cv strong,
+.cv h3,
+.cv .cv-name {
+  font-synthesis-weight: auto;
+}
+
+/* ---- Header --------------------------------------------------------- */
+
+.cv .cv-header {
+  padding-bottom: var(--sp-4);
+  text-align: center;
+  border-bottom: 1px solid var(--ink);
+}
+
+.cv .cv-name {
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.cv .cv-contact {
+  margin-top: var(--sp-2);
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+
+/* ---- Sections ------------------------------------------------------- */
+
+.cv section {
+  margin-top: var(--sp-8);
+}
+
+/* The LaTeX version's \large bold title over a rule. */
+.cv h2 {
+  padding-bottom: var(--sp-1);
+  margin-bottom: var(--sp-3);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.cv .cv-entry + .cv-entry {
+  margin-top: var(--sp-4);
+}
+
+/* Name on the left, place or date pushed right — the tabular* rows. */
+.cv .cv-entry__head,
+.cv .cv-entry__sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--sp-4);
+}
+
+.cv h3 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cv .cv-entry__head > span {
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+
+.cv .cv-entry__sub {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+/* ---- Body text ------------------------------------------------------ */
+
+.cv p {
+  margin-top: var(--sp-1);
+}
+
+.cv ul {
+  margin-top: var(--sp-2);
+  padding-left: 1.25em;
+  list-style: disc;
+}
+
+.cv li {
+  padding-left: 0.25em;
+}
+
+.cv li + li {
+  margin-top: var(--sp-1);
+}
+
+.cv li::marker {
+  color: var(--ink-4);
+}
+
+.cv strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cv a {
+  border-bottom: 1px solid var(--line-strong);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.cv a:hover {
+  border-bottom-color: var(--ink);
+}
+
+/* ---- Page chrome ---------------------------------------------------- */
+
+.profile__error {
+  color: var(--ink-3);
+}
+
+.profile__foot {
+  max-width: 46rem;
+  margin: var(--sp-12) auto 0;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 520px) {
+  .cv .cv-header {
+    text-align: left;
+  }
+
+  .cv .cv-name {
+    font-size: 1.375rem;
+  }
+}
+
+@media print {
+  .nav,
+  .profile__foot {
+    display: none;
+  }
+
+  .profile {
+    padding: 0;
+  }
+}

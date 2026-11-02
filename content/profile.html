@@ -1,0 +1,107 @@
+<!--
+  个人简介 —— 渲染在 /profile 页面中间的正文栏里。
+
+  这是一段 HTML 片段，不是完整网页：不要写 <html>、<head>、<body>、<style>
+  或 <script>。页面两侧的留白、字体和配色都由网站负责（src/styles/profile.css），
+  这里只写结构。
+
+  维护方法：照着下面的格式继续往后加即可。
+
+    一个板块：<section> 里放一个 <h2> 标题，然后是若干条目。
+    一个条目：<div class="cv-entry">
+                <div class="cv-entry__head">  左：<h3>名称</h3>  右：<span>地点或日期</span></div>
+                <div class="cv-entry__sub">   左：<span>职位或技术栈</span>  右：<span>日期</span></div>
+                <ul> <li>要点</li> ... </ul>
+              </div>
+    不需要右侧内容时，直接省略那个 <span>。
+    强调用 <strong>，链接用 <a href="...">。百分号直接写 %，不用转义。
+-->
+
+<header class="cv-header">
+  <h1 class="cv-name">Nils Liden</h1>
+  <p class="cv-contact">
+    <a href="https://github.com/NorthOuterTowner">github.com/NorthOuterTowner</a>
+  </p>
+</header>
+
+<section>
+  <h2>教育背景</h2>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>北京交通大学 (211)</h3>
+      <span>北京, 中国</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>软件工程专业，本科</span>
+      <span>2023年9月 – 2027年7月</span>
+    </div>
+    <p>均分：87.0，专业排名：前 15%</p>
+  </div>
+</section>
+
+<section>
+  <h2>专业技能</h2>
+
+  <ul>
+    <li>具备后端服务架构设计经验，熟练使用 Flask、FastAPI、Node.js 构建模块化 RESTful API 服务，掌握接口设计、业务分层、中间件开发、身份认证及权限控制机制。熟练使用 Vue 3、TypeScript、JavaScript 开发可扩展的前端应用。理解 Java、Spring Boot、MyBatis 生态，能够进行 Java 开发。熟悉 MySQL、MongoDB、Redis 等多种 SQL 和 NoSQL 数据库。</li>
+    <li>熟练使用 Git 进行代码协作。能够使用 Gerrit 和 Jenkins 进行 CI/CD 操作，对于 CI/CD 流程有比较深入的理解，熟悉 Linux 和 Docker 进行应用构建。熟悉机器学习、深度学习和大模型相关的知识，能够在项目中结合业务进行应用。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>实习经历</h2>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>爱立信 (Ericsson)</h3>
+      <span>北京, 中国</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>软件开发实习生</span>
+      <span>2026年3月 – 2027年1月</span>
+    </div>
+    <ul>
+      <li><strong>主导</strong>企业 Agent Group 智能编排系统核心调度层开发，采用中心化 DAG 编排架构将复杂业务解耦为可复用子任务流，实现多子 Agent 并行调度与状态同步，并集成 Playwright 打通需模拟用户交互场景，构建全流程无人化闭环，任务端到端自动化率提升至 X%（待核对）。</li>
+      <li><strong>架构并落地</strong> ReAct Agent Runtime，将 LLM 流式 reasoning/content 输出、tool calls 解析、工具结果回灌与对话历史维护串成统一闭环，支撑 Agent 围绕本地文件、命令、检索等工具完成多轮代码任务，多轮任务成功率提升 X%（待核对）。</li>
+      <li><strong>抽象设计</strong> ToolRegistry 工具注册与执行框架，标准化接入文件读写、命令执行、代码检索、Web Search/Fetch、MCP 等 X+ 类工具能力；同轮多 tool calls 经线程池并行执行，工具调度吞吐提升 X%（待核对）。</li>
+      <li><strong>构建</strong> Memory、Prompt 分层、长上下文与 Skill 加载机制，实现长期记忆检索、对话历史压缩、系统提示词组合与技能按需注入，长轮次任务上下文膨胀降低 X%（待核对），显著降低提示词维护成本。</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>项目经验</h2>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>铁路司机用健康监测系统</h3>
+      <span>2025年3月 – 2026年5月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Node.js, Vue 3 &amp; TS, MySQL, Redis</span>
+    </div>
+    <ul>
+      <li><strong>项目介绍：</strong>通过多模态传感器构造智能化体检机，为铁路司机提供驾驶前全方位健康检测，从源头保障行车安全。系统覆盖心率、血压、疲劳状态等多维度指标检测。</li>
+      <li><strong>后端开发（独立负责）：</strong>使用 MySQL 设计并构建高内聚的系统数据库表结构，通过合理的索引设计与范式优化，使核心业务查询响应时间降低 40%。基于 Node.js 编写整套高并发 RESTful API，秒均可支撑 300+ 次请求，全面覆盖用户管理、健康档案、体检数据分析、软件版本控制及基于角色的动态权限管理等核心模块。引入进程管理机制（Spawn）动态拉起人脸识别 Python 子进程，实现体检全流程自动化，端到端检测耗时控制在 3 分钟以内。设计基于 Redis 的认证状态管理，认证状态访问延迟降至微秒级，通过记录客户端 IP 实现请求频率限制，有效抵御 DoS 恶意攻击；借助 Redis TTL 机制实现验证码限时存储与校验。采用 JWT 结合定制化中间件，构建安全的用户身份验证与精细化权限拦截体系。针对邮件服务，引入服务端渲染（SSR）策略并利用 EJS 模板引擎动态生成邮件内容，使邮件加载速度提升 50%，显著优化用户体验。深度对接大语言模型（LLM）接口，实现体检数据的智能化深度分析与健康趋势精准评估，AI 分析报告生成时间控制在 5 秒以内，分析准确率达 90% 以上。</li>
+      <li><strong>前端开发（独立负责）：</strong>基于 Vue 3 和 TypeScript 从零构建 Web 端后台管理系统，支持普通用户在线查看体检指标、生成个人健康档案并获取 AI 健康分析报告，同时为管理员提供全方位系统运维和数据管理面板。深度封装 Axios 请求库，通过定制请求与响应拦截器统一全局 HTTP 异常处理、Token 自动注入及通用响应体规范化解析，使前端异常捕获率达到 100%，接口调用失败重试机制将网络波动导致的请求失败率降低 70%。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>校医院挂号系统</h3>
+      <span>2025年9月 – 2026年1月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Vue 3 &amp; TS, Element Plus, MySQL, Uni-app</span>
+    </div>
+    <ul>
+      <li><strong>项目介绍：</strong>为校医院提供一站式智能化管理平台，支持微信小程序端患者在线挂号、缴费、查报告，后台系统支撑院方预约管理、排班调度与运营监控，服务覆盖全校 2 万余名师生。</li>
+      <!-- 原 LaTeX 中这一条是空的，待补充：
+      <li><strong>后端开发：</strong></li>
+      -->
+      <li><strong>前端开发：</strong>深度参与前后端接口契约对接与联调测试，基于 Vue 3 与 TypeScript 构建高复用、可维护的核心业务组件与页面模块，组件复用率超过 60%，显著降低后续迭代开发成本。引入 Element Plus 组件库统一设计语言，确保界面风格一致性与交互体验流畅度。采用 Pinia 进行响应式全局状态治理，结合 Vue Router 构建多层级路由架构及动态权限守卫，页面路由切换速度优化 30%，权限校验准确率达 100%，保障系统访问安全。独立负责数据中心可视化模块，基于 ECharts 定制设计落地一套多维度、高交互性的数据看板（Dashboard），支持实时数据聚合、图表联动与多视图切换，数据展示维度覆盖挂号量、科室就诊分布、医生排班利用率等 8+ 核心指标，为运营决策提供直观数据支撑。</li>
+    </ul>
+  </div>
+</section>

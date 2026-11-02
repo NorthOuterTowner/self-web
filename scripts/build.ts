@@ -123,6 +123,17 @@ for (const list of content.random) {
 }
 mediaBytes += randomBytes;
 
+// The résumé for /profile. A hand-maintained HTML fragment, copied as-is and
+// fetched at runtime, so editing it never touches the bundle. Missing is a
+// build failure: the footer links to the page unconditionally.
+const profileSrc = Bun.file("./content/profile.html");
+if (!(await profileSrc.exists())) {
+  console.error("content/profile.html 缺失：页脚的 Profile 链接会指向一个空页面");
+  process.exit(1);
+}
+await Bun.write(`${outdir}/data/profile.html`, await profileSrc.bytes());
+mediaBytes += profileSrc.size;
+
 const built = [...result.outputs, ...worker.outputs];
 const total = built.reduce((n, o) => n + o.size, 0) + mediaBytes;
 for (const out of built) {

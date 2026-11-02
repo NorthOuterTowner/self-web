@@ -72,6 +72,22 @@ async function daily(req: Request): Promise<Response> {
  * and deploy serve the same bytes. Only keys declared in `randomCategories`
  * are served — an exact match, which also rules out any path traversal.
  */
+/**
+ * The résumé fragment for /profile, straight from content/profile.html. The
+ * build copies it to dist/data/profile.html; here it is read on every
+ * request so an edit shows up on reload.
+ */
+async function profileHtml(): Promise<Response> {
+  const file = Bun.file("./content/profile.html");
+  if (!(await file.exists())) return new Response("Not found", { status: 404 });
+  return new Response(file, {
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-cache",
+    },
+  });
+}
+
 async function random(req: Request): Promise<Response> {
   const name = new URL(req.url).pathname.slice("/data/random/".length);
   const key = name.replace(/\.txt$/, "");
@@ -132,6 +148,7 @@ const server = serve({
     "/media/*": media,
     "/data/daily/*": daily,
     "/data/random/*": random,
+    "/data/profile.html": profileHtml,
     "/secret-worker.js": secretWorker,
 
     // SPA fallback — matches the 404.html trick used on GitHub Pages.

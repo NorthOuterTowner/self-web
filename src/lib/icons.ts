@@ -42,6 +42,7 @@ import { DiceFiveIcon } from "@phosphor-icons/react/DiceFive";
 import { GithubLogoIcon } from "@phosphor-icons/react/GithubLogo";
 import { GraphIcon } from "@phosphor-icons/react/Graph";
 import { HouseIcon } from "@phosphor-icons/react/House";
+import { IdentificationCardIcon } from "@phosphor-icons/react/IdentificationCard";
 import { LinkedinLogoIcon } from "@phosphor-icons/react/LinkedinLogo";
 import { LockIcon } from "@phosphor-icons/react/Lock";
 import { StarFourIcon } from "@phosphor-icons/react/StarFour";
@@ -93,6 +94,7 @@ export function sectionIcon(key: string): Icon | undefined {
 export const socialIcons = {
   github: GithubLogoIcon,
   linkedin: LinkedinLogoIcon,
+  profile: IdentificationCardIcon,
   secret: LockIcon,
 } satisfies Record<string, Icon>;
 

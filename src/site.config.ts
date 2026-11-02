@@ -688,3 +688,16 @@ export const secret = {
   slug: "secret",
   label: "secret",
 } as const;
+
+/**
+ * The résumé at `/profile`, reached from the footer like the gated page and
+ * for the same reason kept out of `sections`: it is about the author, not a
+ * section of the site. The text is `content/profile.html`, a hand-maintained
+ * HTML fragment, shipped as `data/profile.html` and rendered by
+ * `pages/ProfilePage.tsx`.
+ */
+export const profile = {
+  slug: "profile",
+  label: "Profile",
+  title: "个人简介",
+} as const;
