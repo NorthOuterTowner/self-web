@@ -243,15 +243,12 @@
     flex: 0 0 var(--nav-fade);
   }
 
-  /* The bar is short, so a link scrolled half out of view is a link you
-     cannot read. Snapping lands them whole. */
-  .nav__list {
-    scroll-snap-type: x proximity;
-  }
-
-  .nav__link {
-    scroll-snap-align: center;
-  }
+  /* No scroll snapping. It used to be `x proximity` with every link centred,
+     but the first and last links can never be centred — their snap points
+     clamp to the two ends — and on iOS that, together with the programmatic
+     scroll TopNav does on navigation, could leave the bar refusing to move
+     under a finger. A plain momentum scroll is what every native tab strip
+     does anyway. */
 }
 
 @media (max-width: 700px) {
