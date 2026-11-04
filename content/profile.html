@@ -1,22 +1,3 @@
-<!--
-  个人简介 —— 渲染在 /profile 页面中间的正文栏里。
-
-  这是一段 HTML 片段，不是完整网页：不要写 <html>、<head>、<body>、<style>
-  或 <script>。页面两侧的留白、字体和配色都由网站负责（src/styles/profile.css），
-  这里只写结构。
-
-  维护方法：照着下面的格式继续往后加即可。
-
-    一个板块：<section> 里放一个 <h2> 标题，然后是若干条目。
-    一个条目：<div class="cv-entry">
-                <div class="cv-entry__head">  左：<h3>名称</h3>  右：<span>地点或日期</span></div>
-                <div class="cv-entry__sub">   左：<span>职位或技术栈</span>  右：<span>日期</span></div>
-                <ul> <li>要点</li> ... </ul>
-              </div>
-    不需要右侧内容时，直接省略那个 <span>。
-    强调用 <strong>，链接用 <a href="...">。百分号直接写 %，不用转义。
--->
-
 <header class="cv-header">
   <h1 class="cv-name">Nils Liden</h1>
   <p class="cv-contact">
@@ -44,14 +25,14 @@
   <h2>专业技能</h2>
 
   <ul>
-    <li>后端：具备后端服务架构设计经验，熟练使用 Flask、FastAPI、Node.js 构建模块化 RESTful API 服务，掌握接口设计、业务分层、中间件开发、身份认证及权限控制机制。</li>
-    <li>前端：熟练使用 Vue 3、TypeScript、JavaScript 开发可扩展的前端应用。</li>
-    <li>DB：熟悉 MySQL、MongoDB、Redis 等多种 SQL 和 NoSQL 数据库。</li>
-    <li>协作：熟练使用 Git 进行代码协作，有丰富的 Github，Gitlab，Gitee 和 Gerrit 的使用经历和丰富的 merge conflict 解决经验。</li>
-    <li>CI/CD：能够使用 Gerrit 和 Jenkins 进行 CI/CD 操作，熟悉 Linux 和 Docker 进行应用构建。</li>
-    <li>AI：熟悉传统机器学习、深度学习、神经网络、图神经网络、Transformer 架构、Agent 行业落地相关的知识，有在项目中结合业务进行应用的经验。</li>
-    <li>通信：了解 Radio 的 PA 系统评估和 PA、发射、接收链路的校验流程。<strong>[正在持续扩展中]</strong></li>
-    <li>了解：理解 Java、Spring Boot、MyBatis 生态，能够进行 Java 开发。</li>
+    <li><strong>后端：</strong>具备后端服务架构设计经验，熟练使用 Python（Flask、FastAPI、Django）、Node.js（Express）构建模块化 RESTful API 服务，能够使用 Java（Spring Boot、MyBatis / MyBatis Plus）进行开发。掌握接口设计、业务分层、中间件开发、JWT 身份认证与基于角色的权限控制、SSE 流式推送，以及乐观锁、限流等并发与安全手段。</li>
+    <li><strong>前端：</strong>熟练使用 Vue 3、Angular、TypeScript、JavaScript 开发可扩展的前端应用，熟悉 Pinia、Vue Router、Element Plus、ECharts，能够使用 Uni-app 开发微信小程序。</li>
+    <li><strong>数据库：</strong>熟悉 MySQL、MongoDB、Redis 等 SQL 与 NoSQL 数据库，以及 Milvus、ChromaDB 等向量数据库。</li>
+    <li><strong>AI：</strong>熟悉传统机器学习（LightGBM、XGBoost、TabNet）、深度学习与 PyTorch、图神经网络（GCN / STGCN）、Transformer 架构。熟悉 LLM 应用开发，包括 ReAct Agent、Tool Calling、MCP、Multi-Agent 编排、RAG、Prompt 分层与上下文压缩，有结合业务落地的经验。</li>
+    <li><strong>通信：</strong>了解 Radio PA 评估及 3GPP 射频指标（饱和功率、ACLR、杂散发射、互调失真、增益平坦度等），了解 PA、发射、接收链路的校验流程，了解基于 SCPI / VISA 的测试仪器程控。</li>
+    <li><strong>嵌入式与机器人：</strong>了解 ROS2、激光 SLAM 与导航规划（Gmapping、DWA / TEB），了解 OpenHarmony 与 C / C++ 嵌入式开发，熟悉串口、I2C、SPI 外设对接及 MQTT、NB-IoT 通信。</li>
+    <li><strong>协作：</strong>熟练使用 Git 进行代码协作，有丰富的 GitHub、GitLab、Gitee 和 Gerrit 使用经历和 merge conflict 解决经验。</li>
+    <li><strong>CI/CD：</strong>能够使用 Gerrit 和 Jenkins 进行 CI/CD 操作，熟悉 Linux 和 Docker 进行应用构建与部署。</li>
   </ul>
 </section>
 
@@ -63,6 +44,7 @@
       <h3>爱立信 (Ericsson)</h3>
       <span>北京, 中国</span>
     </div>
+
     <div class="cv-entry__sub">
       <span>Radio Integration Engineer</span>
       <span>2026年10月 – 至今</span>
@@ -70,8 +52,17 @@
     <ul>
       <li><strong>负责</strong> Radio 立项过程中的需求分析和建议。</li>
       <li><strong>负责</strong> Radio PA 评估相关的工作。</li>
-      <li><strong>负责</strong> Radio PA 校验、发射和接收链路校验，并负责 radio 整机调试上线的 debug 工作。</li>
-      <li><strong>主导</strong> 对 Radio Debug 所需工具开发的架构设计工作。 </li>
+      <li><strong>负责</strong> Radio PA 校验、发射和接收链路校验，并负责 Radio 整机调试上线的 debug 工作。</li>
+      <li><strong>主导</strong> Radio Debug 工具（Radias）的架构设计工作。</li>
+    </ul>
+
+    <div class="cv-entry__sub">
+      <span>软件开发实习生</span>
+      <span>2026年3月 – 2026年9月</span>
+    </div>
+    <ul>
+      <li><strong>负责</strong> Radio NFF 问题识别项目 Deep Log 的日志特征工程、模型训练与 Offline / Online 应用开发。</li>
+      <li><strong>主导</strong> Radio 领域工作 Agent（Guru）的 Agent Runtime、工具框架与多 Agent 编排调度层开发。</li>
     </ul>
   </div>
 </section>
@@ -81,51 +72,143 @@
 
   <div class="cv-entry">
     <div class="cv-entry__head">
-      <h3> Radias </h3>
+      <h3>Radias —— Radio Integration Debug 工具</h3>
       <span>2026年7月 – 至今</span>
     </div>
     <div class="cv-entry__sub">
-      <span>技术栈：Python, Flask, Angular, TypeScript, Ericsson, Telecommunications, PA, Radio</span>
-      <span>基于 Python + Angular 的 Radio Integration Debug 工具。</span>
+      <span>技术栈：Python, Flask, Angular, TypeScript</span>
     </div>
+    <p class="project-description">爱立信内部的 Radio 整机集成调试工具，面向 Radio Integration 工程师，覆盖 PA 评估、射频链路校验与调试数据管理，供跨国团队协同使用。</p>
     <ul>
-      <li><strong>设计</strong>客户端软件前后端架构，保证软件的开发规范性和易用性。并开发配套的多个系列 skill，保证负责业务开发的工程师可以以低代码形式直接进行符合代码规范和软件架构的开发。</li>
-      <li><strong>负责</strong>PA 评估相关的符合 3GPP 测试用例的设计与编写，涵盖饱和功率、邻道泄漏、杂散发射、互调失真、增益平坦度等核心射频性能指标，保障射频链路输出的稳定性和合规性。</li>
-      <li><strong>协助</strong>PA 和射频链路校逻辑验相关工作。</li>
-      <li><strong>规范</strong>数据存储，保证数据格式的统一性和在存储空间与读取加载速度之间进行最合适的数据格式选择。</li>
-      <li><strong>独立负责</strong>数据库设计和服务器端应用的编写，完成数据接收，上传和备份工作，支持数据分块传输和内容校验，用户身份鉴权工作，支持跨国团队的分布式部署与协同。</li>
+      <li><strong>架构设计：</strong>设计客户端前后端分层架构与开发规范，并配套开发系列 Skill，使负责业务的工程师能以低代码方式直接开发出符合代码规范与架构约束的功能模块。</li>
+      <li><strong>PA 评估：</strong>依据 3GPP 规范设计并编写 PA 评估测试用例，覆盖饱和功率、邻道泄漏比（ACLR）、杂散发射、互调失真、增益平坦度等核心射频指标，保障射频链路输出的稳定性与合规性。</li>
+      <li><strong>链路校验：</strong>参与 PA 及发射、接收链路校验逻辑的开发与验证。</li>
+      <li><strong>数据规范：</strong>统一调试数据的存储格式，在存储体积与读取加载速度之间权衡选型。</li>
+      <li><strong>服务端（独立负责）：</strong>完成数据库设计与服务端开发，实现数据接收、上传与备份，支持分块传输与内容校验、用户身份鉴权，以及跨国团队的分布式部署与协同。</li>
     </ul>
   </div>
 
   <div class="cv-entry">
     <div class="cv-entry__head">
-      <h3>Deep Log —— Radio NFF 问题的识别与检验应用</h3>
-      <span>2026年3月 – 2026年5月</span>
-    </div>
-    <div class="cv-entry__sub">
-      <span>技术栈：ML、Python、Angular、Node.js、Telecommunications, Radio</span>
-      <span>由于站上出现的 NFF 问题在返厂后各项数据正常，常规的工厂测试难以发现问题所在，因此本项目通过对站上的软件和硬件日志进行收集和建立机器学习模型进行分析的方式，来尝试进行 NFF 问题的进一步解决。</span>
-    </div>
-    <ul>
-      <li>针对 Radio 站上存在的 NFF(No Fault Found) 问题，通过对 elog，telog 等内容的分析，搭建基于 LightGBM，XGBoost，TabNet 等多种传统机器学习模型的数据分析功能。</li>
-      <li>对于训练完毕的模型，进行 Offline 版本和 Online 版本的应用开发，供用户直接进行使用，以进行 NFF 问题的发现和识别。 </li>
-    </ul>
-  </div>
-
-  <div class="cv-entry">
-    <div class="cv-entry__head">
-      <h3> Guru —— Radio 领域工作 Agent </h3>
+      <h3>Guru —— Radio 领域工作 Agent</h3>
       <span>2026年5月 – 2026年7月</span>
     </div>
     <div class="cv-entry__sub">
-      <span>技术栈：Node.js, Vue 3 &amp; TS, MySQL, Redis, Milvus, Docker</span>
-      <span>该项目为 Radio 相关领域的日常工作全覆盖 agent，包括相关问题的知识问答，PPT撰写，Radio 日志分析等多项功能。</span>
+      <span>技术栈：Node.js, Vue 3 &amp; TS, MySQL, Redis, Milvus, Docker, Playwright</span>
     </div>
+    <p class="project-description">爱立信内部面向 Radio 团队日常工作的 Agent，覆盖领域知识问答、PPT 撰写、Radio 日志分析等场景。</p>
     <ul>
-      <li><strong>主导</strong>企业 Agent Group 智能编排系统核心调度层开发，采用中心化 DAG 编排架构将复杂业务解耦为可复用子任务流，实现多子 Agent 并行调度与状态同步，并集成 Playwright 打通需模拟用户交互场景，构建全流程无人化闭环，任务端到端自动化率提升至 100%。</li>
-      <li><strong>架构并落地</strong> ReAct Agent Runtime，将 LLM 流式 reasoning/content 输出、tool calls 解析、工具结果回灌与对话历史维护串成统一闭环，支撑 Agent 围绕本地文件、命令、检索等工具完成多轮代码任务，多轮任务成功率提升至 90%+。</li>
-      <li><strong>抽象设计</strong> ToolRegistry 工具注册与执行框架，标准化接入文件读写、命令执行、代码检索、Web Search/Fetch、MCP 这 5 类工具能力；同轮多 tool calls 经线程池并行执行。。</li>
-      <li><strong>构建</strong> Memory、Prompt 分层、长上下文与 Skill 加载机制，实现长期记忆检索、对话历史压缩、系统提示词组合与技能按需注入，长轮次任务上下文膨胀降低 65%，显著降低提示词维护成本。</li>
+      <li><strong>多 Agent 编排：</strong>主导 Agent Group 核心调度层开发，采用中心化 DAG 编排将复杂业务拆解为可复用的子任务流，实现多个子 Agent 的并行调度与状态同步；集成 Playwright 覆盖需要模拟用户操作的环节，已接入流程实现端到端无人值守执行。</li>
+      <li><strong>Agent Runtime：</strong>设计并落地 ReAct Agent Runtime，将 LLM 流式 reasoning / content 输出、tool call 解析、工具结果回灌与对话历史维护串成统一闭环，支撑 Agent 围绕知识检索、日志解析、文档生成等工具完成多轮任务，多轮任务成功率达 90%+。</li>
+      <li><strong>工具框架：</strong>抽象设计 ToolRegistry 工具注册与执行框架，标准化接入文件读写、命令执行、代码检索、Web Search / Fetch、MCP 共 5 类工具；同一轮中的多个 tool call 并发执行，缩短单轮等待时间。</li>
+      <li><strong>知识检索：</strong>基于 Milvus 构建 Radio 领域知识库的向量检索，为知识问答与日志分析提供领域上下文。</li>
+      <li><strong>上下文与记忆：</strong>构建 Memory、Prompt 分层与 Skill 按需加载机制，实现长期记忆检索、对话历史压缩与系统提示词组合，长轮次任务的上下文 token 占用降低 65%；提示词按层拆分后可独立维护。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>Deep Log —— Radio NFF 问题识别与检验应用</h3>
+      <span>2026年3月 – 2026年5月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Python, LightGBM, XGBoost, TabNet, Angular, Node.js</span>
+    </div>
+    <p class="project-description">爱立信内部项目。站上出现的 NFF（No Fault Found）问题在返厂后各项数据正常，常规工厂测试难以复现，本项目通过收集站上软硬件日志并建立机器学习模型，辅助定位 NFF 问题。</p>
+    <ul>
+      <li><strong>数据与特征：</strong>采集站上 elog、telog 等软硬件日志，以返厂检测结论（NFF / 真实硬件故障）为标签，提取告警与错误码频次、时间窗口统计等特征，构建结构化训练数据集。</li>
+      <li><strong>模型对比：</strong>对 LightGBM、XGBoost、TabNet 等模型进行训练与对比，选用表现最优的 LightGBM 作为线上模型。</li>
+      <li><strong>效果评估：</strong>按返厂时间顺序划分数据集，以时间最晚的 20% 样本作为测试集，统计 NFF 类别的召回率与 F1：最优模型召回率 86%，F1 为 0.81。</li>
+      <li><strong>应用落地：</strong>基于训练完成的模型开发 Offline 与 Online 两个版本的应用，供工程师直接上传日志进行 NFF 问题的发现与识别。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>iCar 智能小车平台（ROS2 自动驾驶 + OpenHarmony IoT 感知）</h3>
+      <span>2026年6月 – 2026年8月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：ROS2 Foxy, Python / C++, Jetson Orin Nano, SLAM, Docker, OpenHarmony, AT32, Hi3861, NB-IoT, MQTT, C, ArkTS</span>
+    </div>
+    <p class="project-description">基于 Jetson Orin Nano + ROS2 Foxy 搭建集成激光雷达与深度相机的智能小车，完成从底盘控制到自动驾驶算法的闭环；同时基于 OpenHarmony 与雅特力 AT32 底盘控制板，开发支持磁吸式模块化拓展的多传感器环境感知系统。</p>
+    <ul>
+      <li><strong>SLAM 建图：</strong>主导激光 SLAM 建图与自动导航模块开发，基于 Docker 部署 Gmapping 节点，完成教学楼多层、每层 500 平方米以上场景的栅格地图构建，并通过 RViz 设定初始位姿与下发目标点。</li>
+      <li><strong>路径规划：</strong>配置 DWA / TEB 局部路径规划器，实现动态障碍物绕行与自动导航，实车测试导航到点成功率达 100%，避障响应延迟低于 200 ms。</li>
+      <li><strong>感知应用：</strong>开发多模态感知节点，实现激光雷达自动避障、自动跟随、雷达警卫，以及基于深度相机的 HSV 颜色目标追踪，追踪距离稳定在 1.5 m。</li>
+      <li><strong>远程调试：</strong>利用 WiFi 热点与 VNC 实现小车系统远程操作，编写一键启停脚本简化多节点启动流程，调试时间降低 80%。</li>
+      <li><strong>IoT 感知：</strong>集成 GPS、NB-IoT（MN316）、WiFi（Hi3861）、PM2.5、烟雾、温湿度（AHT20）、光照、大气压（BME280）等 8 类磁吸式模块，完成串口 / I2C / SPI 协议对接与数据采集。</li>
+      <li><strong>通信链路：</strong>搭建基于 NB-IoT 与 WiFi 的双链路通信网络，实现环境数据的实时上报与远程指令下发。</li>
+      <li><strong>固件与联调：</strong>参与底盘 C 固件烧录与鸿蒙 ArkTS 端 APP 联调，完成自动循线功能的固件刷写与测试验证，支持异常告警与多维度环境监测。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>AI 动态问卷智能调研与分析平台</h3>
+      <span>2026年3月 – 2026年7月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Python (Django), Vue 3 &amp; TS, MySQL, MongoDB, ChromaDB, LLM (DeepSeek / SiliconFlow), RAG, openai-whisper</span>
+    </div>
+    <p class="project-description">面向市场调研场景的一站式 AI 平台，覆盖“对话式问卷生成”“虚拟样本模拟”到“多模态数据解析（含访谈音视频分析）与证据溯源”的全流程，整合大模型流式生成、RAG 本地知识库检索与音视频处理。</p>
+    <ul>
+      <li><strong>主导 AI 问卷生成与协同引擎开发：</strong>基于 Django 对接 DeepSeek / SiliconFlow 等大模型，利用 SSE（Server-Sent Events）实现问卷的流式生成与实时微调；开发 Multi-Agent 协同起草功能，让多个 AI 角色模拟讨论并输出问卷；设计一致性校验机制，自动识别空题、逻辑错误及语义模糊问题，并提供一键修复能力。</li>
+      <li><strong>构建基于虚拟画像的模拟答卷系统：</strong>设计并实现模拟问卷生成器，基于 Persona（用户画像）工程为大模型注入多维度特征，支持自定义目标人群分布（如考研倾向、焦虑程度）。通过异步任务队列与前端轮询机制，实现大规模（50–100 份）虚拟样本的高效生成与入库，并支持真实样本与模拟样本的交叉对比统计。</li>
+      <li><strong>落地 RAG 检索与多模态数据解析分析链路：</strong>搭建基于 ChromaDB 和 Sentence-Transformers 的本地 RAG 索引，支持外部调研数据的自动化向量构建与语义检索（支持 JSONL 导入）。集成 openai-whisper 处理访谈录音 / 视频，将转录文本纳入 AI 分析报告，实现基于时间戳的证据溯源。</li>
+      <li><strong>开发深度数据分析与溯源可视化（前后端协同）：</strong>实现异步生成 Markdown 格式的 AI 深度分析报告（含情绪倾向、逻辑一致性等指标）；开发“追溯标注”功能，报告中的结论均可点击穿透，联动展示原始答卷、访谈记录等底层证据，保障 AI 结论的可解释性。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>校医院挂号系统</h3>
+      <span>2025年9月 – 2026年1月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Java, Spring Boot, MyBatis Plus, Vue 3 &amp; TS, Element Plus, Pinia, ECharts, MySQL, Uni-app</span>
+    </div>
+    <p class="project-description">为校医院提供一站式管理平台：患者通过微信小程序在线挂号、缴费、查报告，后台支撑院方预约管理、排班调度与运营监控。</p>
+    <ul>
+      <li><strong>挂号并发优化：</strong>基于 Spring Boot + MyBatis Plus 完成部分后端接口开发；针对高并发的挂号接口，采用乐观锁等机制防止号源超卖，接口单机吞吐达 300+ QPS。</li>
+      <li><strong>业务组件：</strong>基于 Vue 3 + TypeScript 与 Element Plus 构建核心业务组件与页面模块，组件复用率超过 60%，统一界面风格；深度参与前后端接口契约对接与联调测试。</li>
+      <li><strong>状态与权限：</strong>采用 Pinia 管理全局状态，结合 Vue Router 构建多层级路由与动态权限守卫，按角色控制页面与操作的访问范围。</li>
+      <li><strong>数据看板（独立负责）：</strong>基于 ECharts 设计多维度数据看板，支持实时数据聚合、图表联动与多视图切换，覆盖挂号量、科室就诊分布、医生排班利用率等 8+ 项核心指标，为运营决策提供数据支撑。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>基于 LightGBM 预测的一站式共享单车智能调度平台</h3>
+      <span>2025年7月 – 2025年9月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Vue 3 &amp; TS, Node.js, Express, Python, LightGBM, 爬虫, 地图 API (Google)</span>
+    </div>
+    <p class="project-description">面向城市共享单车运维场景，打造集“实时数据采集–流量预测–调度建议–路径规划–任务派发–站点优化”于一体的智能调度平台，解决单车潮汐现象导致的“无车可骑”与“车辆堆积”问题。</p>
+    <ul>
+      <li><strong>开发实时数据采集与清洗管道：</strong>编写定时爬虫任务，以分钟级频率实时抓取各站点车辆库存数据，经去重、异常值过滤与时间对齐后入库，为流量预测与调度决策提供准实时数据底座。</li>
+      <li><strong>构建基于 LightGBM 的时空流量预测引擎：</strong>清洗历史骑行轨迹与订单数据，提取时间（早 / 晚高峰）、空间（区域属性）、天气等特征，结合实时库存数据训练 LightGBM 模型，以小时为粒度预测各站点的借还需求；以最后两周数据作为测试集，站点级借还量预测 MAE 约 1.8 辆 / 小时。</li>
+      <li><strong>设计自动化调度建议与路径规划算法：</strong>基于预测结果与站点实时库存设计“供需失衡”判定逻辑，自动生成调车建议（从冗余站点调出、向紧缺站点调入）；结合 TSP（旅行商问题）思想与地图 API 为运维人员规划调车路线，并在前端实现路线导航。</li>
+      <li><strong>开发全流程业务闭环与可视化看板：</strong>基于 Node.js + Express 搭建后端，实现调度任务的生成、派发与状态流转；前端基于 Vue 3 + TS 开发，集成地图组件以热力图动态展示单车分布，辅助运维人员掌握全局车辆态势。</li>
+      <li><strong>探索停车站点优化策略：</strong>对历史违停与流量数据进行聚类分析，识别高频拥堵区域，为新增电子围栏 / 停车站点的选址提供数据依据。</li>
+    </ul>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__head">
+      <h3>高校排课系统 —— 基于多维约束的高校排课引擎</h3>
+      <span>2025年4月 – 2025年9月</span>
+    </div>
+    <div class="cv-entry__sub">
+      <span>技术栈：Vue.js, Node.js, Express, 算法设计（遗传算法、贪心、回溯、CSP）</span>
+    </div>
+    <p class="project-description">针对中国西北地区某高校的真实课表与课程安排需求，开发支持多维度硬 / 软约束的智能排课系统，解决人工排课耗时长、冲突率高、资源分配不均的问题。</p>
+    <ul>
+      <li><strong>设计并实现多算法融合的排课引擎：</strong>将“教师、班级、教室、时间”的多维冲突问题抽象为 CSP（约束满足问题）模型，采用<strong>贪心算法 + 回溯搜索</strong>快速生成初始可行解，再引入<strong>遗传算法（GA）</strong>对初始解进行全局迭代优化，跳出局部最优。</li>
+      <li><strong>构建后端架构：</strong>基于 Node.js + Express 搭建 RESTful API，设计关系型数据库表结构，对教学任务、教师时间偏好、教室容量等硬 / 软约束进行精细化配置，支撑复杂的排课规则。</li>
+      <li><strong>开发可视化排课工作台：</strong>基于 Vue.js 开发前端交互界面，提供按班级、教师、教室多视角切换的课表网格视图，支持排课任务的异步下发、进度实时展示与冲突告警的高亮定位。</li>
+      <li><strong>业务成果：</strong>系统完成该校的自动排课；通过调节软约束（教师时间偏好、课程间隔均匀度）的权重，将排课冲突率降至 0%，单次排课耗时缩短至 10 分钟。</li>
     </ul>
   </div>
 
@@ -137,128 +220,34 @@
     <div class="cv-entry__sub">
       <span>技术栈：Node.js, Vue 3 &amp; TS, MySQL, Redis</span>
     </div>
+    <p class="project-description">通过多模态传感器构造智能化体检机，为铁路司机提供驾驶前健康检测，覆盖心率、血压、疲劳状态等多维度指标，从源头保障行车安全。前后端均为独立负责。</p>
     <ul>
-      <li><strong>项目介绍：</strong>通过多模态传感器构造智能化体检机，为铁路司机提供驾驶前全方位健康检测，从源头保障行车安全。系统覆盖心率、血压、疲劳状态等多维度指标检测。</li>
-      <li><strong>后端开发（独立负责）：</strong>使用 MySQL 设计并构建高内聚的系统数据库表结构，通过合理的索引设计与范式优化，使核心业务查询响应时间降低 40%。基于 Node.js 编写整套高并发 RESTful API，秒均可支撑 300+ 次请求，全面覆盖用户管理、健康档案、体检数据分析、软件版本控制及基于角色的动态权限管理等核心模块。引入进程管理机制（Spawn）动态拉起人脸识别 Python 子进程，实现体检全流程自动化，端到端检测耗时控制在 3 分钟以内。设计基于 Redis 的认证状态管理，认证状态访问延迟降至微秒级，通过记录客户端 IP 实现请求频率限制，有效抵御 DoS 恶意攻击；借助 Redis TTL 机制实现验证码限时存储与校验。采用 JWT 结合定制化中间件，构建安全的用户身份验证与精细化权限拦截体系。针对邮件服务，引入服务端渲染（SSR）策略并利用 EJS 模板引擎动态生成邮件内容，使邮件加载速度提升 50%，显著优化用户体验。深度对接大语言模型（LLM）接口，实现体检数据的智能化深度分析与健康趋势精准评估，AI 分析报告生成时间控制在 5 秒以内，分析准确率达 90% 以上。</li>
-      <li><strong>前端开发（独立负责）：</strong>基于 Vue 3 和 TypeScript 从零构建 Web 端后台管理系统，支持普通用户在线查看体检指标、生成个人健康档案并获取 AI 健康分析报告，同时为管理员提供全方位系统运维和数据管理面板。深度封装 Axios 请求库，通过定制请求与响应拦截器统一全局 HTTP 异常处理、Token 自动注入及通用响应体规范化解析，使前端异常捕获率达到 100%，接口调用失败重试机制将网络波动导致的请求失败率降低 70%。</li>
+      <li><strong>数据库设计：</strong>使用 MySQL 设计系统表结构，通过索引设计与范式优化，使核心业务查询响应时间降低 40%。</li>
+      <li><strong>接口服务：</strong>基于 Node.js 编写整套 RESTful API，覆盖用户管理、健康档案、体检数据分析、软件版本控制及基于角色的权限管理等模块，单机支撑 300+ QPS。</li>
+      <li><strong>体检流程自动化：</strong>通过子进程（spawn）动态拉起人脸识别 Python 服务，串联身份核验与各项检测，端到端检测耗时控制在 3 分钟以内。</li>
+      <li><strong>认证与安全：</strong>采用 JWT 结合自定义中间件实现身份认证与权限拦截；基于 Redis 管理认证状态，访问延迟在亚毫秒级；按客户端 IP 进行请求频率限制，防御接口刷量与 DoS 攻击；借助 Redis TTL 实现验证码的限时存储与校验。</li>
+      <li><strong>AI 健康分析：</strong>对接大语言模型（LLM）接口，对体检数据进行分析并评估健康趋势，AI 分析报告生成时间控制在 5 秒以内。</li>
+      <li><strong>邮件服务：</strong>基于 EJS 模板引擎在服务端渲染通知邮件，模板与数据解耦，便于统一维护。</li>
+      <li><strong>Web 管理后台：</strong>基于 Vue 3 和 TypeScript 从零构建 Web 端后台，普通用户可在线查看体检指标、生成个人健康档案并获取 AI 健康分析报告，管理员可进行系统运维与数据管理。</li>
+      <li><strong>请求层封装：</strong>封装 Axios 请求与响应拦截器，统一全局 HTTP 异常处理、Token 自动注入与响应体解析；引入失败重试机制，将网络波动导致的请求失败率降低 70%。</li>
     </ul>
   </div>
 
   <div class="cv-entry">
     <div class="cv-entry__head">
-      <h3>校医院挂号系统</h3>
-      <span>2025年9月 – 2026年1月</span>
-    </div>
-    <div class="cv-entry__sub">
-      <span>技术栈：Vue 3 &amp; TS, Element Plus, MySQL, Uni-app</span>
-    </div>
-    <ul>
-      <li><strong>项目介绍：</strong>为校医院提供一站式智能化管理平台，支持微信小程序端患者在线挂号、缴费、查报告，后台系统支撑院方预约管理、排班调度与运营监控。</li>
-      <li><strong>后端开发：</strong>完成基于 Java + Springboot + MyBatis Plus 的部分接口开发，针对挂号这一高并发接口，通过乐观锁等多种机制进行并发优化，将并发量提升至单机300+qps。</li>
-      <li><strong>前端开发：</strong>深度参与前后端接口契约对接与联调测试，基于 Vue 3 与 TypeScript 构建高复用、可维护的核心业务组件与页面模块，组件复用率超过 60%，显著降低后续迭代开发成本。引入 Element Plus 组件库统一设计语言，确保界面风格一致性与交互体验流畅度。采用 Pinia 进行响应式全局状态治理，结合 Vue Router 构建多层级路由架构及动态权限守卫，页面路由切换速度优化 30%，权限校验准确率达 100%，保障系统访问安全。独立负责数据中心可视化模块，基于 ECharts 定制设计落地一套多维度、高交互性的数据看板（Dashboard），支持实时数据聚合、图表联动与多视图切换，数据展示维度覆盖挂号量、科室就诊分布、医生排班利用率等 8+ 核心指标，为运营决策提供直观数据支撑。</li>
-    </ul>
-  </div>
-
-  <div class="cv-entry">
-      <div class="cv-entry__head">
-        <h3>iCar 智能小车自动驾驶平台（ROS2 + SLAM + 导航）</h3>
-        <span>2026年6月 – 2026年8月</span>
-      </div>
-      <div class="cv-entry__sub">
-        <span>技术栈：ROS2 Foxy, Python/C++, Jetson Orin Nano, SLAM, Docker, Linux</span>
-        <span>基于 Jetson Orin Nano + ROS2 Foxy 搭建多传感器融合的智能小车平台，集成激光雷达与深度相机，完成从底层底盘控制到上层自动驾驶算法的闭环。</span>
-      </div>
-      <ul>
-        <li><strong>主导</strong>激光 SLAM 建图与自动导航模块开发，基于 Docker 部署 Gmapping 节点，完成教学楼多层每层 500 平方米以上场景的栅格地图构建，并通过 RViz 实现初始位姿设定与目标点下发。</li>
-        <li><strong>配置</strong>DWA/TEB 局部路径规划器，实现动态障碍物绕行与自动导航，实车测试导航到点成功率达 100%，避障响应延迟低于 200 ms。</li>
-        <li><strong>开发</strong>多模态感知应用节点，实现激光雷达自动避障、自动跟随、雷达警卫功能，以及基于深度相机的 HSV 颜色目标追踪，保持追踪距离稳定在 1.5 m。</li>
-        <li><strong>优化</strong>远程控制链路，利用 WiFi 热点与 VNC 实现小车系统远程操作，并编写一键启停脚本优化多节点启动流程，降低调试时间 80%。</li>
-      </ul>
-  </div>
-
-  <div class="cv-entry">
-      <div class="cv-entry__head">
-        <h3>iCar 智能小车 IoT 环境感知与通信系统</h3>
-        <span>2026年6月 – 2026年8月</span>
-      </div>
-      <div class="cv-entry__sub">
-        <span>技术栈：OpenHarmony, AT32, Hi3861, NB-IoT, MQTT, C, ArkTS</span>
-        <span>基于 OpenHarmony 操作系统与雅特力 AT32 底盘控制板，开发跨物联网与嵌入式领域的多传感器环境感知系统，支持磁吸式模块化拓展。</span>
-      </div>
-      <ul>
-        <li><strong>集成</strong>GPS、NB-IoT（MN316）、WiFi（Hi3861）、PM2.5、烟雾、温湿度（AHT20）、光照、大气压（BME280）等 8 类磁吸式 IoT 模块，完成串口/I2C/SPI 协议对接与数据采集。</li>
-        <li><strong>搭建</strong>基于 NB-IoT 与 WiFi 的双链路通信网络，实现环境数据的实时上报与远程指令下发。</li>
-        <li><strong>参与</strong>底盘 C 固件烧录与鸿蒙 ArkTS 端 APP 联调，完成自动循线功能的固件刷写与测试验证，支持异常告警与多维度环境监测。</li>
-      </ul>
-  </div>
-
-  <div class="cv-entry">
-      <div class="cv-entry__head">
-        <h3>AI 动态问卷智能调研与分析平台</h3>
-        <span>2026年3月 – 2026年7月</span>
-      </div>
-      <div class="cv-entry__sub">
-        <span>技术栈：Python(Django), Vue 3 & TS, MySQL, MongoDB, ChromaDB, LLM(DeepSeek/SiliconFlow), RAG, openai-whisper</span>
-        <span>面向市场调研场景的一站式 AI 平台，支持从“对话式问卷生成”到“虚拟样本模拟”，再到“多模态数据解析（含访谈音视频分析）与证据溯源”的全流程闭环。系统整合了大模型流式生成、RAG 本地知识库检索与底层音视频处理技术。</span>
-      </div>
-      <ul>
-        <li><strong>主导 AI 问卷生成与协同引擎开发：</strong>基于 Django 对接 DeepSeek/SiliconFlow 等大模型，利用 SSE（Server-Sent Events）实现问卷的流式生成与实时微调；开发 Multi-Agent 协同起草功能，让多个 AI 角色模拟讨论并输出问卷；设计一致性校验机制，自动识别空题、逻辑错误及语义模糊问题，并提供一键修复能力。</li>
-        <li><strong>构建基于虚拟画像的模拟答卷系统：</strong>设计并实现模拟问卷生成器，基于 Persona（用户画像）工程为大模型注入多维度特征，支持自定义目标人群分布（如考研倾向、焦虑程度）。通过异步任务队列与前端轮询机制，实现大规模（50-100份）虚拟样本的高效生成与入库，并支持真实样本与模拟样本的交叉对比统计。</li>
-        <li><strong>落地 RAG 检索与多模态数据解析分析链路：</strong>搭建基于 ChromaDB 和 Sentence-Transformers 的本地 RAG 索引，支持外部调研数据的自动化向量构建与语义检索（支持 JSONL 导入）。集成 <code>openai-whisper</code> 处理访谈录音/视频，将转录文本纳入 AI 分析报告，实现基于时间戳的证据溯源。</li>
-        <li><strong>开发深度数据分析与溯源可视化（前后端协同）：</strong>实现异步生成 Markdown 格式的 AI 深度分析报告（含情绪倾向、逻辑一致性等指标）。创新性地开发“追溯标注”功能，报告中的结论均可穿透点击，联动展示原始答卷、访谈记录等底层证据，保障 AI 结论的可解释性。</li>
-      </ul>
-  </div>
-
-  <div class="cv-entry">
-    <div class="cv-entry__head">
-      <h3>高校排课系统 —— 基于多维约束的高校排课引擎</h3>
-      <span>2025年4月 – 2025年9月</span>
-    </div>
-    <div class="cv-entry__sub">
-      <span>技术栈：Vue.js, Node.js, Express, 算法设计（遗传算法、贪心、回溯、CSP）</span>
-      <span>针对中国西北地区某高校的真实课表与课程安排需求，开发的一套支持多维度硬/软约束的智能排课系统。旨在解决传统人工排课耗时长、冲突率高、资源分配不均等痛点。</span>
-    </div>
-    <ul>
-      <li><strong>设计并实现多算法融合的排课引擎：</strong>针对高校排课中“教师、班级、教室、时间”的多维冲突问题，抽象为 CSP（约束满足问题）模型。创新性地采用 <strong>贪心算法 + 回溯搜索</strong> 快速生成初始可行解，并引入 <strong>遗传算法（GA）</strong> 对初始解进行全局迭代优化，有效跳出局部最优，大幅提升排课质量。</li>
-      <li><strong>构建高内聚的后端架构：</strong>基于 Node.js + Express 搭建 RESTful API，设计合理的关系型数据库表结构，对教学任务、教师时间偏好、教室容量等硬/软约束进行精细化配置，支撑复杂的排课规则。</li>
-      <li><strong>开发可视化排课工作台：</strong>基于 Vue.js 开发前端交互界面，提供直观的课表网格视图（如按班级、教师、教室多视角切换），支持排课任务的异步下发、进度实时展示以及冲突告警的精准高亮定位。</li>
-      <li><strong>业务成果与优化：</strong>系统成功处理该高校的庞大排课数据。通过软约束（如教师时间偏好、课程间隔均匀度）的权重调节，将排课冲突率降至极低水平，排课耗时缩短至 10 分钟，显著提升了教务管理效率。</li>
-    </ul>
-  </div>
-
-  <div class="cv-entry">
-    <div class="cv-entry__head">
-      <h3>基于 STGCN 优化的多维度城市路网交通流量预测系统</h3>
+      <h3>基于 STGCN 的多维度城市路网交通流量预测系统</h3>
       <span>2024年6月 – 2025年5月</span>
     </div>
     <div class="cv-entry__sub">
-      <span>技术栈：Python, PyTorch, STGCN, 爬虫(Scrapy/Requests), Pandas</span>
-      <span>基于北京市交通流量数据集与真实路网拓扑结构，构建城市级交通流量预测系统。针对传统时序模型难以捕捉复杂路网空间依赖的问题，采用并优化 STGCN（时空图卷积网络），并融合多源异构数据（天气、节假日等）实现高精度的多维度路网流量预测。</span>
+      <span>技术栈：Python, PyTorch, STGCN, 爬虫 (Scrapy / Requests), Pandas</span>
     </div>
+    <p class="project-description">基于北京市交通流量数据集与真实路网拓扑结构构建城市级交通流量预测系统。针对传统时序模型难以捕捉路网空间依赖的问题，采用 STGCN（时空图卷积网络），并融合天气、节假日等多源异构数据进行多维度路网流量预测。</p>
     <ul>
-      <li><strong>主导 STGCN 时空预测模型的构建与优化：</strong>基于北京市路网状况构建拓扑图（Graph），将路网节点间的空间依赖关系与历史车流时间序列相结合。在基础 STGCN 模型上进行针对性优化（如引入注意力机制/改进图卷积核），有效提升了模型对复杂交通态势（如拥堵扩散）的拟合能力。</li>
-      <li><strong>设计多源异构数据融合特征工程：</strong>开发定向爬虫实时接入天气预报数据，并融合季节、节假日、工作日、道路宽度、潮汐车道等 6+ 维度特征。通过独热编码与归一化处理，将外部环境变量与路网时空特征进行张量拼接，显著降低了特殊天气或节假日带来的预测偏差。</li>
-      <li><strong>构建端到端的数据处理与预测流水线：</strong>清洗北京市海量交通流量原始数据，构建滑动窗口时间序列数据集；编写自动化数据加载与图邻接矩阵生成脚本，实现从数据采集、特征提取到模型训练与推理的完整闭环。</li>
-      <li><strong>系统评估与工程化：</strong>完成模型在验证集上的超参数调优，输出多维度（如高峰期、恶劣天气）下的流量预测结果。结合可视化工具对预测结果与真实路网状态进行对比展示，为交通管理部门提供直观的数据支撑。</li>
+      <li><strong>构建 STGCN 时空预测模型：</strong>基于北京市路网构建拓扑图（Graph），将路网节点间的空间依赖关系与历史车流时间序列相结合，用于拟合拥堵扩散等复杂交通态势。</li>
+      <li><strong>设计多源异构数据融合特征工程：</strong>开发定向爬虫接入天气预报数据，并融合季节、节假日、工作日、道路宽度、潮汐车道等 6+ 维度特征；通过独热编码与归一化处理，将外部环境变量与路网时空特征进行张量拼接，降低特殊天气或节假日带来的预测偏差。</li>
+      <li><strong>构建端到端的数据处理与预测流水线：</strong>清洗北京市交通流量原始数据，构建滑动窗口时间序列数据集；编写自动化数据加载与图邻接矩阵生成脚本，实现从数据采集、特征提取到模型训练与推理的完整闭环。</li>
+      <li><strong>系统评估与可视化：</strong>完成模型在验证集上的超参数调优，输出高峰期、恶劣天气等多种场景下的流量预测结果，并将预测结果与真实路网状态进行对比可视化展示。</li>
     </ul>
   </div>
-
-<div class="cv-entry">
-    <div class="cv-entry__head">
-      <h3>基于 LightGBM 预测的一站式共享单车智能调度平台</h3>
-      <span>2025年7月 – 2025年9月</span>
-    </div>
-    <div class="cv-entry__sub">
-      <span>技术栈：Vue 3 & TS, Node.js, Express, Python, LightGBM, 爬虫, 地图 API (Google)</span>
-      <span>面向城市共享单车运维场景，打造集“实时数据采集-流量预测-调度建议-路径规划-任务派发-站点优化”于一体的全链路智能调度平台。旨在解决单车潮汐现象导致的“无车可骑”与“车辆堆积”痛点，提升运维效率。</span>
-    </div>
-    <ul>
-      <li><strong>开发实时数据采集与清洗管道：</strong>编写定时爬虫任务，以分钟级频率（每分钟）实时抓取并解析各站点的车辆库存数据，通过去重、异常值过滤与时间对齐后存入数据库，为后续的流量预测与调度决策提供准实时的数据底座。</li>
-      <li><strong>构建基于 LightGBM 的时空流量预测引擎：</strong>清洗历史骑行轨迹与订单数据，提取时间（早/晚高峰）、空间（区域属性）、天气等特征，结合实时库存数据训练 LightGBM 模型，预测各站点未来时段的车辆借还需求，为调度决策提供精准的数据支撑。</li>
-      <li><strong>设计自动化调度建议与路径规划算法：</strong>基于预测结果与站点实时库存，设计“供需失衡”判定逻辑，自动生成调车建议（如从冗余站点调出、向紧缺站点调入）；结合 TSP（旅行商问题）思想与地图 API，为运维人员规划最优调车路线，并通过前端实现路线导航。</li>
-      <li><strong>开发全流程业务闭环与可视化看板：</strong>基于 Node.js + Express 搭建高并发后端，实现调度任务的生成、派发与状态流转；前端基于 Vue 3 + TS 开发，集成地图组件实现单车分布的热力图（Heatmap）动态展示，辅助运维人员宏观掌控车辆态势。</li>
-      <li><strong>探索停车站点优化策略：</strong>通过历史违停与流量数据聚类分析，识别高频拥堵区域，为新增电子围栏/停车站点的选址提供数据依据，提升城市慢行交通的承载能力。</li>
-    </ul>
-</div>
 
 </section>

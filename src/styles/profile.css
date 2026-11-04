@@ -113,10 +113,24 @@
   color: var(--ink-3);
 }
 
+/* A second role under the same employer: the sub row after the first role's
+   bullets needs breathing room, or it reads as one more bullet. */
+.cv .cv-entry ul + .cv-entry__sub {
+  margin-top: var(--sp-3);
+}
+
 /* ---- Body text ------------------------------------------------------ */
 
 .cv p {
   margin-top: var(--sp-1);
+}
+
+/* A project's one- or two-sentence summary, between the stack row and the
+   bullets. Upright and full width, unlike the italic flex row above it,
+   which is sized for a date and breaks long prose. */
+.cv .project-description {
+  font-size: 0.8125rem;
+  color: var(--ink-3);
 }
 
 .cv ul {
