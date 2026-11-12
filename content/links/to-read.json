@@ -1,11 +1,19 @@
 [
   {
-    "category": "工程实践",
+    "category": "Computer Science",
     "links": [
       {
-        "title": "The Twelve-Factor App",
-        "url": "https://12factor.net/zh_cn/",
-        "description": "构建 SaaS 应用的十二条原则。"
+        "title": "What is MCP",
+        "url": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro"
+      }
+    ]
+  },
+  {
+    "category": "Telecommunications",
+    "links":[
+      {
+        "title": "5G 基础知识",
+        "url": "https://blog.csdn.net/jinruimeng/article/details/130165410"
       }
     ]
   }

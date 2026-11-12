@@ -6,21 +6,21 @@
         "title": "regex101",
         "url": "https://regex101.com/",
         "description": "在线调试正则表达式，逐步解释匹配过程。"
-      },
-      {
-        "title": "crontab.guru",
-        "url": "https://crontab.guru/",
-        "description": "把 cron 表达式翻译成人话。"
       }
     ]
   },
   {
-    "category": "绘图",
-    "links": [
+    "category": "Daily Use",
+    "links":[
       {
-        "title": "Excalidraw",
-        "url": "https://excalidraw.com/",
-        "description": "手绘风格的白板，画架构草图很顺手。"
+        "title": "ilovepdf",
+        "url": "https://www.ilovepdf.com/",
+        "description": "PDF 转换工具"
+      },
+      {
+        "title": "drawio",
+        "url": "https://app.diagrams.net/",
+        "description": "架构图绘图工具"
       }
     ]
   }
