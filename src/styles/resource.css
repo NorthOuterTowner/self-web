@@ -1,0 +1,270 @@
+/* Resource — the /resource hub and the link shelves under it.
+ *
+ * Both are grids of small cards that fill fixed-minimum-width columns, so
+ * adding entries wraps them onto new rows instead of growing the ones there
+ * are. Hairlines, no radii, no shadows; fjord is the nav's tone for the
+ * section, deepened toward ink as the word draw does.
+ */
+
+.hub,
+.shelf {
+  --resource-tone: color-mix(in srgb, var(--fjord) 78%, var(--ink));
+  padding-block: var(--sp-12) var(--sp-16);
+}
+
+.hub__intro {
+  max-width: 34rem;
+  font-family: var(--times);
+  font-size: var(--t-body);
+  line-height: 1.62;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* ---- Hub cards ------------------------------------------------------- */
+
+.hub__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+/* Capped so that with only a handful of entries on a wide screen the cards
+   stay card-sized rather than stretching across the column. */
+.hub__grid > li {
+  max-width: 17rem;
+}
+
+.hub__card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--ink);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.hub__card:hover,
+.hub__card:focus-visible {
+  background: var(--snow);
+  border-color: var(--line-strong);
+  border-top-color: var(--resource-tone);
+}
+
+.hub__top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.hub__title {
+  font-size: var(--t-h3);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
+.hub__en {
+  margin-top: var(--sp-1);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--resource-tone);
+}
+
+/* ---- Shelf search ---------------------------------------------------- */
+
+.shelf__search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--ink);
+}
+
+.shelf__field {
+  position: relative;
+  flex: 1 1 18rem;
+  display: flex;
+  align-items: center;
+}
+
+.shelf__icon {
+  position: absolute;
+  left: var(--sp-3);
+  width: 15px;
+  height: 15px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+.shelf__input {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) calc(var(--sp-3) + 15px + var(--sp-2));
+  font: inherit;
+  font-size: var(--t-body);
+  color: var(--ink);
+  background: var(--snow);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.shelf__input::placeholder {
+  color: var(--ink-4);
+}
+
+.shelf__input:hover,
+.shelf__input:focus {
+  border-color: var(--ink);
+}
+
+.shelf__input:focus-visible {
+  outline: 2px solid var(--resource-tone);
+  outline-offset: 2px;
+}
+
+/* Two joined buttons; the checked one is filled. */
+.shelf__scopes {
+  display: flex;
+}
+
+.shelf__scope {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  white-space: nowrap;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.shelf__scope + .shelf__scope {
+  border-left: none;
+}
+
+.shelf__scope:hover {
+  color: var(--ink);
+}
+
+.shelf__scope[aria-checked="true"] {
+  color: var(--bone);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+
+.shelf__empty {
+  margin-top: var(--sp-8);
+  color: var(--ink-3);
+}
+
+/* ---- Shelf groups ---------------------------------------------------- */
+
+.shelf__group {
+  margin-top: var(--sp-8);
+}
+
+.shelf__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  font-size: var(--t-body);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.shelf__heading-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.shelf__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.shelf__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  height: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line-strong);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+a.shelf__card:hover,
+a.shelf__card:focus-visible {
+  background: var(--snow);
+  border-color: var(--line-strong);
+  border-left-color: var(--resource-tone);
+}
+
+.shelf__title {
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
+.shelf__note {
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* Pushed to the bottom so the hosts line up across a row. */
+.shelf__host {
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  color: var(--ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .hub__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hub__grid > li {
+    max-width: none;
+  }
+
+  .shelf__scopes {
+    width: 100%;
+  }
+
+  .shelf__scope {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub__card,
+  .shelf__card,
+  .shelf__input,
+  .shelf__scope {
+    transition: none;
+  }
+}

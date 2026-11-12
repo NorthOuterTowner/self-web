@@ -8,7 +8,7 @@
 import index from "./index.html";
 import { serve } from "bun";
 import { readRandomList } from "../scripts/random";
-import { isRandomFieldKey } from "./site.config";
+import { getLinkShelf, isRandomFieldKey } from "./site.config";
 
 // In development the Markdown in content/ is compiled on startup and on every
 // save; the regenerated module then triggers Bun's hot reload. Loaded lazily so
@@ -67,11 +67,25 @@ async function daily(req: Request): Promise<Response> {
 }
 
 /**
- * Word lists for /game, read from content/random/<category>/<field>.txt on
- * every request and compacted the same way the build compacts them, so dev
- * and deploy serve the same bytes. Only keys declared in `randomCategories`
- * are served — an exact match, which also rules out any path traversal.
+ * Link shelves, straight from content/links/. The build copies them to
+ * dist/data/links/; here they are read on every request so an edit shows up
+ * on reload. Only shelves declared in `linkShelves` are served — an exact
+ * match on the slug, which also rules out any path traversal.
  */
+async function links(req: Request): Promise<Response> {
+  const name = new URL(req.url).pathname.slice("/data/links/".length);
+  const shelf = name.endsWith(".json") ? getLinkShelf(name.slice(0, -5)) : undefined;
+  if (!shelf) return new Response("Not found", { status: 404 });
+  const file = Bun.file(`./content/links/${shelf.slug}.json`);
+  if (!(await file.exists())) return new Response("Not found", { status: 404 });
+  return new Response(file, {
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-cache",
+    },
+  });
+}
+
 /**
  * The résumé fragment for /profile, straight from content/profile.html. The
  * build copies it to dist/data/profile.html; here it is read on every
@@ -88,6 +102,12 @@ async function profileHtml(): Promise<Response> {
   });
 }
 
+/**
+ * Word lists for /resource/random, read from content/random/<category>/<field>.txt on
+ * every request and compacted the same way the build compacts them, so dev
+ * and deploy serve the same bytes. Only keys declared in `randomCategories`
+ * are served — an exact match, which also rules out any path traversal.
+ */
 async function random(req: Request): Promise<Response> {
   const name = new URL(req.url).pathname.slice("/data/random/".length);
   const key = name.replace(/\.txt$/, "");
@@ -148,6 +168,7 @@ const server = serve({
     "/media/*": media,
     "/data/daily/*": daily,
     "/data/random/*": random,
+    "/data/links/*": links,
     "/data/profile.html": profileHtml,
     "/secret-worker.js": secretWorker,
 

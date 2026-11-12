@@ -7,7 +7,7 @@ import {
 } from "../site.config";
 
 /**
- * The /game field picker: categories (大类) on the left third, the active
+ * The word draw's field picker: categories (大类) on the left third, the active
  * category's fields (小类) on the right two thirds.
  *
  * Fields are what get ticked; a category's box only reflects them. All of its

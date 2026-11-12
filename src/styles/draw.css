@@ -1,5 +1,5 @@
-/* Game — the /game page: a field picker (a two-pane dialog of categories
- * and their fields), one large word, one button.
+/* Word draw — the /resource/random page: a field picker (a two-pane dialog
+ * of categories and their fields), one large word, one button.
  *
  * The word sits in a hairline box that keeps its height whatever the word's
  * length, so the button below never moves while the draw flickers. Each new
@@ -7,16 +7,16 @@
  * takes the page tone. Hairlines, no radii, no shadows.
  */
 
-.game {
+.draw {
   /* Fjord is the nav's tone for this page, deepened toward ink for contrast
      on bone, as daily does with birch. */
-  --game-tone: color-mix(in srgb, var(--fjord) 78%, var(--ink));
+  --draw-tone: color-mix(in srgb, var(--fjord) 78%, var(--ink));
   padding-block: var(--sp-12) var(--sp-16);
 }
 
 /* ---- Picker ---------------------------------------------------------- */
 
-.game__bar {
+.draw__bar {
   display: flex;
   align-items: center;
   gap: var(--sp-4);
@@ -27,7 +27,7 @@
 
 /* Opens the picker. Reads as a field, not a call to action: the draw button
    below is the one that does something. */
-.game__pick {
+.draw__pick {
   display: inline-flex;
   align-items: baseline;
   gap: var(--sp-3);
@@ -40,16 +40,16 @@
   transition: border-color var(--dur-fast) var(--ease-out);
 }
 
-.game__pick:hover:not(:disabled) {
+.draw__pick:hover:not(:disabled) {
   border-color: var(--ink);
 }
 
-.game__pick:disabled {
+.draw__pick:disabled {
   color: var(--ink-3);
   cursor: default;
 }
 
-.game__pick-n {
+.draw__pick-n {
   margin-left: auto;
   font-family: var(--mono);
   font-size: var(--t-micro);
@@ -141,7 +141,7 @@
 
 .picker__cat[data-active] {
   background: var(--fog);
-  border-left-color: var(--game-tone, var(--ink));
+  border-left-color: var(--draw-tone, var(--ink));
 }
 
 .picker__cat-name {
@@ -245,8 +245,8 @@
 
 .picker__button--primary:hover:not(:disabled) {
   color: var(--bone);
-  background: var(--game-tone, var(--ink));
-  border-color: var(--game-tone, var(--ink));
+  background: var(--draw-tone, var(--ink));
+  border-color: var(--draw-tone, var(--ink));
 }
 
 .picker__button:disabled {
@@ -279,7 +279,7 @@
 
 /* ---- Stage ----------------------------------------------------------- */
 
-.game__stage {
+.draw__stage {
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: clamp(16rem, 42vh, 26rem);
@@ -289,11 +289,11 @@
   background: var(--paper);
 }
 
-.game__field {
+.draw__field {
   color: var(--ink-3);
 }
 
-.game__word {
+.draw__word {
   display: grid;
   place-items: center;
   margin: 0;
@@ -305,30 +305,30 @@
   color: var(--ink-2);
 }
 
-.game__glyph {
+.draw__glyph {
   display: inline-block;
 }
 
-.game__stage[data-phase="spinning"] .game__glyph {
-  animation: game-jump 140ms var(--ease-out) both;
+.draw__stage[data-phase="spinning"] .draw__glyph {
+  animation: draw-jump 140ms var(--ease-out) both;
 }
 
-.game__stage[data-phase="loading"] .game__glyph,
-.game__stage[data-phase="idle"] .game__glyph {
+.draw__stage[data-phase="loading"] .draw__glyph,
+.draw__stage[data-phase="idle"] .draw__glyph {
   color: var(--ink-4);
 }
 
-.game__stage[data-phase="done"] .game__glyph {
-  color: var(--game-tone);
-  animation: game-settle 420ms var(--ease-out) both;
+.draw__stage[data-phase="done"] .draw__glyph {
+  color: var(--draw-tone);
+  animation: draw-settle 420ms var(--ease-out) both;
 }
 
-.game__stage[data-phase="error"] .game__glyph {
+.draw__stage[data-phase="error"] .draw__glyph {
   font-size: var(--t-h3);
   color: var(--ink-3);
 }
 
-@keyframes game-jump {
+@keyframes draw-jump {
   from {
     opacity: 0.35;
     transform: translateY(-0.18em);
@@ -339,7 +339,7 @@
   }
 }
 
-@keyframes game-settle {
+@keyframes draw-settle {
   from {
     transform: scale(1.06);
   }
@@ -350,7 +350,7 @@
 
 /* ---- Button ---------------------------------------------------------- */
 
-.game__foot {
+.draw__foot {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -358,7 +358,7 @@
   margin-top: var(--sp-8);
 }
 
-.game__draw {
+.draw__button {
   min-width: 12rem;
   padding: var(--sp-3) var(--sp-8);
   font-size: var(--t-body);
@@ -371,12 +371,12 @@
     color var(--dur-fast) var(--ease-out);
 }
 
-.game__draw:hover:not(:disabled) {
-  background: var(--game-tone);
-  border-color: var(--game-tone);
+.draw__button:hover:not(:disabled) {
+  background: var(--draw-tone);
+  border-color: var(--draw-tone);
 }
 
-.game__draw:disabled {
+.draw__button:disabled {
   color: var(--ink-3);
   background: var(--fog);
   border-color: var(--line);
@@ -384,7 +384,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game__glyph {
+  .draw__glyph {
     animation: none !important;
   }
 }

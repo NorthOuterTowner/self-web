@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { FieldPicker } from "../components/FieldPicker";
 import { loadRandomField, prefetchRandomField } from "../content/random";
 import {
-  game,
   getRandomField,
   randomCategories,
   randomFieldList,
+  resourceHub,
   site,
+  wordDraw,
   type RandomFieldKey,
 } from "../site.config";
 
@@ -64,7 +66,7 @@ function describe(selected: ReadonlySet<RandomFieldKey>): string {
   return `${selected.size} 个小类`;
 }
 
-export function GamePage() {
+export function WordDrawPage() {
   const [selected, setSelected] = useState<Set<RandomFieldKey>>(
     () => new Set(ALL_KEYS),
   );
@@ -82,7 +84,7 @@ export function GamePage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
-    document.title = `${game.title} — ${site.name}`;
+    document.title = `${wordDraw.title} — ${site.name}`;
     return () => {
       run.current++;
       clearTimeout(timer.current);
@@ -166,28 +168,28 @@ export function GamePage() {
 
   return (
     <div className="page page--reading">
-      <div className="shell game">
+      <div className="shell draw">
         <header className="blog__masthead">
           <h1 className="blog__masthead-title">
-            {game.title}
-            <span className="blog__masthead-en">Word draw</span>
+            {wordDraw.title}
+            <span className="blog__masthead-en">{wordDraw.titleEn}</span>
           </h1>
           <span className="label blog__masthead-count">
             {ALL_KEYS.length} Fields
           </span>
         </header>
 
-        <div className="game__bar">
+        <div className="draw__bar">
           <span className="label">领域</span>
           <button
             type="button"
-            className="game__pick"
+            className="draw__pick"
             aria-haspopup="dialog"
             disabled={busy}
             onClick={() => setPickerOpen(true)}
           >
             {summary}
-            <span className="game__pick-n">
+            <span className="draw__pick-n">
               {pool.length} / {ALL_KEYS.length}
             </span>
           </button>
@@ -205,10 +207,10 @@ export function GamePage() {
           }}
         />
 
-        <div className="game__stage" data-phase={phase} aria-hidden="true">
-          <p className="label game__field">{fieldLabel}</p>
-          <p className="game__word">
-            <span className="game__glyph" key={tick}>
+        <div className="draw__stage" data-phase={phase} aria-hidden="true">
+          <p className="label draw__field">{fieldLabel}</p>
+          <p className="draw__word">
+            <span className="draw__glyph" key={tick}>
               {display}
             </span>
           </p>
@@ -224,15 +226,21 @@ export function GamePage() {
               : ""}
         </p>
 
-        <div className="game__foot">
+        <div className="draw__foot">
           <button
             type="button"
-            className="game__draw"
+            className="draw__button"
             onClick={draw}
             disabled={busy || pool.length === 0}
           >
             {busy ? "抽取中…" : phase === "done" ? "再抽一个" : "抽一个"}
           </button>
+        </div>
+
+        <div className="note__foot">
+          <Link to={`/${resourceHub.slug}`} className="toc__back">
+            ← 全部{resourceHub.title}
+          </Link>
         </div>
       </div>
     </div>

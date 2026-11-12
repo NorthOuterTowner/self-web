@@ -56,8 +56,21 @@ const cases: Case[] = [
     expect: ["LDPC", "blockquote", "toc__entry"],
   },
   {
+    path: "/resource",
+    expect: ["hub__card", "随机选词", "资源库", "工具站", "To Read"],
+  },
+  {
+    path: "/resource/random",
+    expect: ["draw__stage", "全部领域", "工学"],
+  },
+  {
+    path: "/resource/tools",
+    expect: ["shelf__search", "shelf__card", "仅标题", "regex101"],
+  },
+  {
+    // The old address redirects to the draw.
     path: "/game",
-    expect: ["game__stage", "全部领域", "工学"],
+    expect: ["draw__stage"],
   },
   {
     path: "/nope/does-not-exist",

@@ -407,8 +407,50 @@ export const daily = {
   label: "Daily",
 } as const;
 
+/* ------------------------------------------------------------------ *
+ * Resource — 资源
+ * ------------------------------------------------------------------ */
+
 /**
- * The word draw at `/game`, rendered by `pages/GamePage.tsx`.
+ * The hub at `/resource`: a grid of small cards, one per entry in
+ * `resourceEntries`, each opening its own page at `/resource/<slug>`.
+ *
+ * Two kinds of entry sit behind the cards. The word draw is a page of its
+ * own (`pages/WordDrawPage.tsx`). Every other entry is a link shelf — named
+ * groups of title + link + optional description, with a search bar on top — and
+ * they all share `pages/LinkShelfPage.tsx`. The links themselves are in
+ * `content/links/<slug>.json`; the format is described in
+ * `src/content/links.ts`.
+ *
+ * Adding a shelf: add its id to `LinkShelfId`, an entry to `linkShelves`,
+ * and the file `content/links/<slug>.json` (`content:check` fails until it
+ * exists). The card, the route and the search come for free.
+ */
+export const resourceHub = {
+  slug: "resource",
+  label: "Resource",
+  title: "资源",
+  titleEn: "Resource",
+  intro: "常用的链接、工具和一些小玩意，按用途分开放。",
+} as const;
+
+/** What a hub card needs. */
+export interface ResourceEntryMeta {
+  /** The segment after `/resource/`. */
+  slug: string;
+  title: string;
+  titleEn: string;
+}
+
+export type LinkShelfId = "library" | "tools" | "to-read";
+
+export interface LinkShelfMeta extends ResourceEntryMeta {
+  /** Also the file name, `content/links/<slug>.json`. */
+  slug: LinkShelfId;
+}
+
+/**
+ * The word draw, rendered by `pages/WordDrawPage.tsx`.
  *
  * Two levels: a category (大类) is a folder, a field (小类) is one file in it,
  * `content/random/<category>/<field>.txt` — one term per line in double
@@ -425,11 +467,40 @@ export const daily = {
  * Ids are lowercase ASCII with hyphens: they are folder names, file names and
  * URL segments. Renaming one means renaming its folder or file too.
  */
-export const game = {
-  slug: "game",
-  label: "Game",
-  title: "随机词",
-} as const;
+export const wordDraw: ResourceEntryMeta = {
+  slug: "random",
+  title: "随机选词",
+  titleEn: "Word draw",
+};
+
+export const linkShelves: LinkShelfMeta[] = [
+  {
+    slug: "library",
+    title: "资源库",
+    titleEn: "Library",
+  },
+  {
+    slug: "tools",
+    title: "工具站",
+    titleEn: "Tools",
+  },
+  {
+    slug: "to-read",
+    title: "To Read",
+    titleEn: "Reading list",
+  },
+];
+
+/** Hub order: the cards appear in this order. */
+export const resourceEntries: ResourceEntryMeta[] = [wordDraw, ...linkShelves];
+
+export function resourceEntryPath(entry: ResourceEntryMeta): string {
+  return `/${resourceHub.slug}/${entry.slug}`;
+}
+
+export function getLinkShelf(slug: string | undefined): LinkShelfMeta | undefined {
+  return linkShelves.find((s) => s.slug === slug);
+}
 
 export interface RandomFieldMeta {
   id: string;
@@ -660,10 +731,10 @@ export const navExtras: NavExtra[] = [
     tone: "birch",
   },
   {
-    key: "game",
-    to: `/${game.slug}`,
-    label: game.label,
-    title: game.title,
+    key: "resource",
+    to: `/${resourceHub.slug}`,
+    label: resourceHub.label,
+    title: resourceHub.title,
     // All four accents are taken; fjord is the coolest against daily's birch
     // sitting right beside it.
     tone: "fjord",

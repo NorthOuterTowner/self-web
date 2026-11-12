@@ -1,0 +1,27 @@
+[
+  {
+    "category": "Web 开发",
+    "links": [
+      {
+        "title": "MDN Web Docs",
+        "url": "https://developer.mozilla.org/zh-CN/",
+        "description": "HTML、CSS、JavaScript 与 Web API 的标准参考。"
+      },
+      {
+        "title": "Can I use",
+        "url": "https://caniuse.com/",
+        "description": "查浏览器对某个特性的支持情况。"
+      }
+    ]
+  },
+  {
+    "category": "通信",
+    "links": [
+      {
+        "title": "3GPP Specifications",
+        "url": "https://www.3gpp.org/specifications-technologies",
+        "description": "3GPP 规范的入口，射频指标的出处。"
+      }
+    ]
+  }
+]

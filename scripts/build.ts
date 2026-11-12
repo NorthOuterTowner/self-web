@@ -112,7 +112,17 @@ for (const file of content.daily) {
 }
 mediaBytes += dailyBytes;
 
-// Word lists for /game, validated and stripped to bare words by the content
+// Link shelves for /resource/<shelf>. Same deal as the daily months: fetched
+// by URL, one shelf per page, re-serialised to drop the whitespace.
+let linksBytes = 0;
+for (const file of content.links) {
+  const json = JSON.stringify(await Bun.file(file.from).json());
+  await Bun.write(`${outdir}/${file.to}`, json);
+  linksBytes += Buffer.byteLength(json);
+}
+mediaBytes += linksBytes;
+
+// Word lists for /resource/random, validated and stripped to bare words by the content
 // compiler. One file per field under its category's folder, fetched only when
 // a draw lands on it, so the lists never grow the bundle or the first load.
 // Bun.write creates the category folders.
@@ -152,6 +162,9 @@ for (const asset of content.assets) {
 }
 console.log(
   `  ${`data/random/ (${content.random.length} 个小类)`.padEnd(24)} ${(randomBytes / 1024).toFixed(1).padStart(8)} KB  random`,
+);
+console.log(
+  `  ${`data/links/ (${content.links.length} 个资源页)`.padEnd(24)} ${(linksBytes / 1024).toFixed(1).padStart(8)} KB  links`,
 );
 if (content.daily.length > 0) {
   console.log(

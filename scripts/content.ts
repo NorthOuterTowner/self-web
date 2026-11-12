@@ -28,6 +28,7 @@ import {
 import type { Note, Post, Resource } from "../src/content/types";
 import { textLength } from "../src/content/types";
 import { compileDaily } from "./daily";
+import { compileLinks } from "./links";
 import { compileRandom, type RandomList } from "./random";
 import { IMAGE_EXTENSIONS, imageSize } from "./image";
 import { ContentError, parseDocument } from "./markdown";
@@ -77,6 +78,10 @@ export interface CompileResult {
   dailyDays: number;
   /** Word lists from content/random/, compacted, written to dist/data/random/. */
   random: RandomList[];
+  /** Shelf files from content/links/, copied to dist/data/links/. */
+  links: Asset[];
+  /** Total links across all shelves. */
+  linkCount: number;
 }
 
 export async function compile(): Promise<CompileResult> {
@@ -611,6 +616,10 @@ export async function compile(): Promise<CompileResult> {
   const random = await compileRandom(CONTENT_DIR);
   errors.push(...random.errors);
 
+  // content/links/<shelf>.json: likewise copied rather than bundled.
+  const links = await compileLinks(CONTENT_DIR);
+  errors.push(...links.errors);
+
   return {
     posts,
     notes,
@@ -622,7 +631,9 @@ export async function compile(): Promise<CompileResult> {
     assets: [...assets.values()],
     daily: daily.files,
     dailyDays: daily.days,
-    random: random.lists
+    random: random.lists,
+    links: links.files,
+    linkCount: links.links,
   };
 }
 
@@ -702,6 +713,9 @@ function report(result: CompileResult, wrote: boolean): void {
     const words = result.random.reduce((n, l) => n + l.count, 0);
     console.log(`  random: ${result.random.length} 个小类，${words} 个词`);
   }
+  if (result.links.length > 0) {
+    console.log(`  links: ${result.links.length} 个资源页，${result.linkCount} 条链接`);
+  }
   if (result.empty.length > 0) {
     console.log(`  空分类: ${result.empty.join(", ")}  (页面会显示占位状态)`);
   }
@@ -767,8 +781,8 @@ export async function startWatcher(): Promise<void> {
   await run();
 
   watch(CONTENT_DIR, { recursive: true }, (_event, filename) => {
-    // Daily JSON is served straight from disk in dev; re-running here is
-    // only so a malformed month is reported as soon as it is saved.
+    // Daily and link JSON are served straight from disk in dev; re-running
+    // here is only so a malformed file is reported as soon as it is saved.
     if (
       filename &&
       !filename.endsWith(".md") &&

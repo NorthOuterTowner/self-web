@@ -38,13 +38,14 @@ import { CodeIcon } from "@phosphor-icons/react/Code";
 import { CopyIcon } from "@phosphor-icons/react/Copy";
 import { FeatherIcon } from "@phosphor-icons/react/Feather";
 import { FilesIcon } from "@phosphor-icons/react/Files";
-import { DiceFiveIcon } from "@phosphor-icons/react/DiceFive";
 import { GithubLogoIcon } from "@phosphor-icons/react/GithubLogo";
 import { GraphIcon } from "@phosphor-icons/react/Graph";
 import { HouseIcon } from "@phosphor-icons/react/House";
 import { IdentificationCardIcon } from "@phosphor-icons/react/IdentificationCard";
 import { LinkedinLogoIcon } from "@phosphor-icons/react/LinkedinLogo";
 import { LockIcon } from "@phosphor-icons/react/Lock";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/MagnifyingGlass";
+import { SquaresFourIcon } from "@phosphor-icons/react/SquaresFour";
 import { StarFourIcon } from "@phosphor-icons/react/StarFour";
 import { XIcon } from "@phosphor-icons/react/X";
 import type { Icon } from "@phosphor-icons/react/lib";
@@ -77,8 +78,8 @@ export const sectionIcons = {
   // Four-pointed, like the registration marks around the notes field.
   others: StarFourIcon,
   daily: CalendarBlankIcon,
-  // A die: the page draws a word at random.
-  game: DiceFiveIcon,
+  // A grid of tiles: the hub is a grid of small cards.
+  resource: SquaresFourIcon,
 } satisfies Record<"home" | CategoryId, Icon> & Record<string, Icon>;
 
 export function sectionIcon(key: string): Icon | undefined {
@@ -122,3 +123,8 @@ export const dailyIcons = {
   prev: CaretLeftIcon,
   next: CaretRightIcon,
 } satisfies Record<"prev" | "next", Icon>;
+
+/** The search field on the link shelves. */
+export const shelfIcons = {
+  search: MagnifyingGlassIcon,
+} satisfies Record<"search", Icon>;

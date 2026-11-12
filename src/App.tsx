@@ -1,26 +1,30 @@
-import { Route, Routes, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { TopNav } from "./components/TopNav";
 import { CategoryPage } from "./pages/CategoryPage";
 import { DailyPage } from "./pages/DailyPage";
-import { GamePage } from "./pages/GamePage";
 import { Home } from "./pages/Home";
+import { LinkShelfPage } from "./pages/LinkShelfPage";
 import { NotFound } from "./pages/NotFound";
 import { NotePage, OthersIndex } from "./pages/NotePage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { ResourceHubPage } from "./pages/ResourceHubPage";
 import { RoadmapPage } from "./pages/RoadmapPage";
 import { SecretPage } from "./pages/SecretPage";
 import { SeriesPage } from "./pages/SeriesPage";
 import { ResourcePage, SkillsPage } from "./pages/SkillsPage";
+import { WordDrawPage } from "./pages/WordDrawPage";
 import {
   daily,
-  game,
   getSeries,
   isCategoryId,
   others,
   profile,
+  resourceEntryPath,
+  resourceHub,
   roadmap,
   secret,
   skills,
+  wordDraw,
 } from "./site.config";
 
 /**
@@ -61,7 +65,19 @@ export function App() {
           <Route path={`/${skills.slug}/:slug`} element={<ResourcePage />} />
           <Route path={`/${roadmap.slug}`} element={<RoadmapPage />} />
           <Route path={`/${daily.slug}`} element={<DailyPage />} />
-          <Route path={`/${game.slug}`} element={<GamePage />} />
+          {/* The hub, the word draw, and the link shelves. The draw's static
+              path outranks `:slug`, which resolves to a shelf or NotFound. */}
+          <Route path={`/${resourceHub.slug}`} element={<ResourceHubPage />} />
+          <Route path={resourceEntryPath(wordDraw)} element={<WordDrawPage />} />
+          <Route
+            path={`/${resourceHub.slug}/:slug`}
+            element={<LinkShelfPage />}
+          />
+          {/* The draw used to live at /game; keep old links working. */}
+          <Route
+            path="/game"
+            element={<Navigate to={resourceEntryPath(wordDraw)} replace />}
+          />
 
           {/* Reached from the lock in the footer, and from nowhere else: it
               is not in `sections`, so it is neither in the top bar nor in

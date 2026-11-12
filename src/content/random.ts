@@ -1,5 +1,5 @@
 /**
- * Word lists for the draw at `/game`, fetched by URL one field at a time.
+ * Word lists for the draw at `/resource/random`, fetched by URL one field at a time.
  *
  * Nothing here is in the bundle, and nothing is fetched when the page opens.
  * A field's list is requested only when a draw lands on it (or, when exactly

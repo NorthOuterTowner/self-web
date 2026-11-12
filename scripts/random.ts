@@ -1,5 +1,5 @@
 /**
- * Build-time check and compaction for the word lists behind `/game`.
+ * Build-time check and compaction for the word lists behind `/resource/random`.
  *
  * Layout: `content/random/<category>/<field>.txt`, one folder per category
  * (大类) and one file per field (小类), as declared in `randomCategories` in

@@ -1,0 +1,12 @@
+[
+  {
+    "category": "工程实践",
+    "links": [
+      {
+        "title": "The Twelve-Factor App",
+        "url": "https://12factor.net/zh_cn/",
+        "description": "构建 SaaS 应用的十二条原则。"
+      }
+    ]
+  }
+]
