@@ -431,7 +431,6 @@ export const resourceHub = {
   label: "Resource",
   title: "资源",
   titleEn: "Resource",
-  intro: "常用的链接、工具和一些小玩意，按用途分开放。",
 } as const;
 
 /** What a hub card needs. */

@@ -63,8 +63,6 @@ export function ResourceHubPage() {
           </span>
         </header>
 
-        <p className="hub__intro">{resourceHub.intro}</p>
-
         <ul className="hub__grid">
           {resourceEntries.map((entry, i) => (
             <li key={entry.slug}>
